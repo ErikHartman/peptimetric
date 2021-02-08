@@ -3,22 +3,21 @@ import openpyxl
 import numpy as np
 
 
-def read_file(file):
-    df = pd.DataFrame()
+def read_file(file): # reads a file and outputs a dataframe
     df = pd.read_excel(file)
     return df
 
-def drop_zeros(df, colname):
+def drop_zeros(df, colname): #drops 0s in dataframe for given column
     df = df[df[colname] != 0]
     return df
 
-def col_width(length, df, accession):
+def col_width(length, df, accession): #calculates the column width
     df = df.groupby(by=[accession]).sum()
     n = len(df.index)
     width = length/n
     return width
 
-def amino_acid_frequency(list):
+def amino_acid_frequency(list): #gets the frequency for amino acids
     letters = {
         'A': 0,
         'G': 0,
@@ -46,7 +45,7 @@ def amino_acid_frequency(list):
             letters[letter] += 1
     return letters
 
-def group(list):
+def group(list): #Groups amino acids for sequences in a list. Returns grouped
     grouped=[]
     nonpolar=['G','A','V','L','I','P','F','W','M']
     polar=['S','T','C','Y','N','Q']
