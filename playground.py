@@ -29,3 +29,4 @@ label = range(len(intensity))
 print(len(intensity), len(label))
 plt.scatter(x=label, y=intensity)
 plt.show()
+
