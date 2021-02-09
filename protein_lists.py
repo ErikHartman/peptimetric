@@ -1,4 +1,3 @@
-from methods import *
 from protein import *
 
 
@@ -16,7 +15,7 @@ def create_dataframe(protein_list):
     area=[]
     for protein in protein_list:
         accession.append(protein.accession_id)
-        area.append(protein.height_mean())
+        area.append(protein.area_mean())
     df = pd.DataFrame(list(zip(accession, area)), columns=['Accession', 'Area'])
     return df
 

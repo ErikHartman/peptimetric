@@ -1,7 +1,4 @@
 import pandas as pd
-import openpyxl
-import numpy as np
-
 
 def read_file(file): # reads a file and outputs a dataframe
     df = pd.read_excel(file)
@@ -10,12 +7,6 @@ def read_file(file): # reads a file and outputs a dataframe
 def drop_zeros(df, colname): #drops 0s in dataframe for given column
     df = df[df[colname] != 0]
     return df
-
-def col_width(length, df, accession): #calculates the column width
-    df = df.groupby(by=[accession]).sum()
-    n = len(df.index)
-    width = length/n
-    return width
 
 def amino_acid_frequency(list): #gets the frequency for amino acids
     letters = {

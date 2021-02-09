@@ -21,11 +21,17 @@ for df in dfs:
 
 g1_proteins = create_dataframe(g_protein_list[0])
 g2_proteins = create_dataframe(g_protein_list[1])
-print(g1_proteins)
-
-
+g3_proteins = g1_proteins.merge(g2_proteins, on='Accession', suffixes= ['_g1','_g2'], how='outer')
+g3_proteins['Area_g2']=-g3_proteins['Area_g2']
+g3_proteins = g3_proteins.fillna(0)
 print(g3_proteins)
+
+
 r = range(len(g3_proteins))
 print(r, len(g1_proteins), len(g2_proteins))
 
-
+fig = plt.figure()
+ax = plt.subplot(111)
+ax.bar(r, g3_proteins['Area_g2'], color='r')
+ax.bar(r, g3_proteins['Area_g1'], color='b')
+plt.show()
