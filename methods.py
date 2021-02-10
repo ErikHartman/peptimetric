@@ -6,7 +6,8 @@ def read_file(file): # reads a file and outputs a dataframe
 
 def drop_zeros(df, colname): #drops 0s in dataframe for given column
     df = df[df[colname] != 0]
-    return df
+
+    return 0
 
 def amino_acid_frequency(list): #gets the frequency for amino acids
     letters = {

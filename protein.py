@@ -12,7 +12,6 @@ class protein():
     def area_mean(self):
         return self.df['Area'].mean()
 
-
     def intensity_mean(self):
         return self.df['-10lgP'].mean()
 
