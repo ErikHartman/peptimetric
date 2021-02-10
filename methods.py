@@ -57,3 +57,5 @@ def group(list): #Groups amino acids for sequences in a list. Returns grouped
     return grouped
 
 
+def print_my_list(list):
+    print(list)
