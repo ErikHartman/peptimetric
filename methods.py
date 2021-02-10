@@ -1,11 +1,30 @@
 import pandas as pd
+import tkinter as tk
+import matplotlib.pyplot as plt
+from tkinter.filedialog import askopenfilenames, askopenfilename
 
 
-def read_file(file): # reads a file and outputs a dataframe
-    df = pd.read_excel(file)
-    return df
+def read_files():
+    root = tk.Tk()
+    root.withdraw()
+    filenames = askopenfilenames(initialdir="/Documents", title="Open files", multiple=True,
+                                 filetype=(("Excel", "*.xlsx"), ("Excel", "*.xls")))
+    dfs = []
+    for filename in filenames:
+        print("opening", filename)
+        dfs.append(pd.read_excel(filename))
+        print(dfs[-1])
+    return dfs
 
-def amino_acid_frequency(list): #gets the frequency for amino acids
+
+def concatenate_dataframes(dfs):
+    master_dataframe = pd.DataFrame()
+    for df in dfs:
+        master_dataframe = master_dataframe.append(df)
+    return master_dataframe
+
+
+def amino_acid_frequency(peptide_list):
     letters = {
         'A': 0,
         'G': 0,
@@ -28,28 +47,83 @@ def amino_acid_frequency(list): #gets the frequency for amino acids
         'D': 0,
         'E': 0
     }
-    for sequence in list:
+    for sequence in peptide_list:
         for letter in sequence:
             letters[letter] += 1
     return letters
 
 
-def group(list): #Groups amino acids for sequences in a list. Returns grouped
+def group_amino_acids(peptide_list):
     grouped=[]
-    nonpolar=['G','A','V','L','I','P','F','W','M']
-    polar=['S','T','C','Y','N','Q']
-    basic=['K','R','H']
-    acidic=['D','E']
-    for sequence in list:
-        new_item=''
+    non_polar = ['G', 'A', 'V', 'L', 'I', 'P', 'F', 'W', 'M']
+    polar = ['S', 'T', 'C', 'Y', 'N', 'Q']
+    basic = ['K', 'R', 'H']
+    acidic = ['D', 'E']
+    for sequence in peptide_list:
+        new_item = ''
         for letter in sequence:
-            if letter in nonpolar:
-                new_item+='N'
+            if letter in non_polar:
+                new_item += 'N'
             if letter in polar:
-                new_item+='P'
+                new_item += 'P'
             if letter in basic:
-                new_item+='B'
+                new_item += 'B'
             if letter in acidic:
-                new_item+='A'
+                new_item += 'A'
         grouped.append(new_item)
     return grouped
+
+
+Normal_amino_acids = {
+        'A' : 8.25,
+        'G': 7.08,
+        'V': 6.86,
+        'L': 9.65,
+        'I': 5.92,
+        'P': 4.73,
+        'F': 3.68,
+        'W': 1.09,
+        'M': 2.41,
+        'S': 6.63,
+        'T': 5.35,
+        'C': 1.38,
+        'Y': 2.92,
+        'N': 4.06,
+        'Q': 3.93,
+        'K': 5.81,
+        'R': 5.53,
+        'H': 2.27,
+        'D': 5.46,
+        'E': 6.72
+    }
+
+
+def create_venn(df):
+    df['Peptide'] = df['Peptide'].str.replace('[^a-zA-Z]', '')
+    df['N-cut'] = df['Peptide'].apply(lambda x: x[0:4])
+    df['C-cut'] = df['Peptide'].apply(lambda x: x[-4::1])
+    df['First aa'] = df['Peptide'].apply(lambda x: x[0:1])
+    df['Last aa'] = df['Peptide'].apply(lambda x: x[-1::1])
+    aminoacids = amino_acid_frequency(df['Peptide'])
+    N_aminoacids = amino_acid_frequency(df['N-cut'])
+    C_aminoacids = amino_acid_frequency(df['C-cut'])
+    First_aa = amino_acid_frequency(df['First aa'])
+    Last_aa = amino_acid_frequency(df['Last aa'])
+    fig, ax = plt.subplots(3, 2, figsize=(20, 10))
+    wp = {'linewidth': 0.5, 'edgecolor': "#afabb3"}
+
+    ax[0, 0].pie(aminoacids.values(), labels=aminoacids.keys(), wedgeprops=wp)
+    ax[2, 0].pie(N_aminoacids.values(), labels=N_aminoacids.keys(), wedgeprops=wp)
+    ax[1, 0].pie(C_aminoacids.values(), labels=C_aminoacids.keys(), wedgeprops=wp)
+    ax[1, 1].pie(First_aa.values(), labels=First_aa.keys(), wedgeprops=wp)
+    ax[2, 1].pie(Last_aa.values(), labels=Last_aa.keys(), wedgeprops=wp)
+    ax[0, 1].pie(Normal_amino_acids.values(), labels=Normal_amino_acids.keys(), wedgeprops=wp)
+
+    ax[0, 0].set_title('Full sequence')
+    ax[0, 1].set_title('SwissProt all proteins')
+    ax[2, 0].set_title('N-terminal sequence')
+    ax[1, 0].set_title('C-terminal sequence')
+    ax[1, 1].set_title('First amino acid')
+    ax[2, 1].set_title('Last amino acid')
+
+    plt.show()
