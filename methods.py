@@ -56,4 +56,7 @@ def group(list): #Groups amino acids for sequences in a list. Returns grouped
         grouped.append(new_item)
     return grouped
 
+def zero():
+    return 0
+
 
