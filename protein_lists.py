@@ -2,12 +2,12 @@ from protein import *
 
 
 def create_protein_list(df):
-    protein_df = df.groupby(by='Accession', as_index=False).mean()
-    protein_list = []
-    for accession in protein_df['Accession']:
+    p_df = df.groupby(by='Accession', as_index=False).mean()
+    p_list = []
+    for accession in p_df['Accession']:
         p = protein(df, accession)
-        protein_list.append(p)
-    return protein_list
+        p_list.append(p)
+    return p_list
 
 
 def create_dataframe(protein_list):

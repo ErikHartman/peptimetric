@@ -24,7 +24,9 @@ g2_proteins = create_dataframe(g_protein_list[1])
 g3_proteins = g1_proteins.merge(g2_proteins, on='Accession', suffixes= ['_g1','_g2'], how='outer')
 g3_proteins['Area_g2']=-g3_proteins['Area_g2']
 g3_proteins = g3_proteins.fillna(0)
-print(g3_proteins)
+
+master_df = dfs[0].merge(dfs[1], how= 'outer', on='Peptide', suffixes = ['_1','_2'])
+print(master_df.columns)
 
 
 r = range(len(g3_proteins))

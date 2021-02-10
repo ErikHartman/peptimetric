@@ -10,7 +10,8 @@ class protein():
         return self.df['Area'].sum()
 
     def area_mean(self):
-        return np.log(self.df['Area'].mean())
+        return self.df['Area'].mean()
+
 
     def intensity_mean(self):
         return self.df['-10lgP'].mean()
