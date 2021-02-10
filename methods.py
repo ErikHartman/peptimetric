@@ -5,8 +5,6 @@ def read_file(file): # reads a file and outputs a dataframe
     df = pd.read_excel(file)
     return df
 
-
-
 def amino_acid_frequency(list): #gets the frequency for amino acids
     letters = {
         'A': 0,
