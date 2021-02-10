@@ -1,10 +1,27 @@
 import pandas as pd
+import tkinter as tk
+from tkinter.filedialog import askopenfilename, askopenfilenames
+from tkinter import messagebox
+from tkinter import Menu
 
 
-def read_file(file): # reads a file and outputs a dataframe
-    df = pd.read_excel(file)
-    return df
+def read_files():
+    root = tk.Tk()
+    root.withdraw()
+    filenames = askopenfilenames(initialdir="/Documents", title="Open files", multiple=True, filetype=(("Excel", "*.xlsx"), ("Excel", "*.xls")))
+    dfs = []
+    for filename in filenames:
+        print("opening", filename)
+        dfs.append(pd.read_excel(filename))
+        print(dfs[-1])
+    return dfs
 
+
+def concatenate_dataframes(dfs):
+    master_dataframe = pd.DataFrame()
+    for df in dfs:
+        master_dataframe = master_dataframe.append(df)
+    return master_dataframe
 
 
 def amino_acid_frequency(list): #gets the frequency for amino acids
