@@ -60,3 +60,5 @@ def zero():
     return 0
 
 
+def print_my_list(list):
+    print(list)
