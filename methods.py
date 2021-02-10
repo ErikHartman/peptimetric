@@ -1,13 +1,11 @@
 import pandas as pd
 
+
 def read_file(file): # reads a file and outputs a dataframe
     df = pd.read_excel(file)
     return df
 
-def drop_zeros(df, colname): #drops 0s in dataframe for given column
-    df = df[df[colname] != 0]
 
-    return 0
 
 def amino_acid_frequency(list): #gets the frequency for amino acids
     letters = {
@@ -37,6 +35,7 @@ def amino_acid_frequency(list): #gets the frequency for amino acids
             letters[letter] += 1
     return letters
 
+
 def group(list): #Groups amino acids for sequences in a list. Returns grouped
     grouped=[]
     nonpolar=['G','A','V','L','I','P','F','W','M']
@@ -56,10 +55,3 @@ def group(list): #Groups amino acids for sequences in a list. Returns grouped
                 new_item+='A'
         grouped.append(new_item)
     return grouped
-
-def zero():
-    return 0
-
-
-def print_my_list(list):
-    print(list)
