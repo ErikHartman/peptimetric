@@ -2,6 +2,9 @@ import pandas as pd
 import tkinter as tk
 import matplotlib.pyplot as plt
 from tkinter.filedialog import askopenfilenames, askopenfilename
+from Bio import SeqIO
+import requests
+from io import StringIO
 
 
 def read_files():
@@ -127,3 +130,12 @@ def create_venn(df):
     ax[2, 1].set_title('Last amino acid')
 
     plt.show()
+
+def get_FASTA(accession):
+    link = "http://www.uniprot.org/uniprot/"+accession+".fasta"
+    data = requests.get(link).text
+
+    fasta_iterator = SeqIO.parse(StringIO(data), "fasta")
+
+    for seq in fasta_iterator:
+        print(seq.format("fasta"))

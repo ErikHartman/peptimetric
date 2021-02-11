@@ -1,6 +1,3 @@
 from methods import *
 
-g1 = read_files()
-g1 = concatenate_dataframes(g1)
-
-
+get_FASTA("P02649")
