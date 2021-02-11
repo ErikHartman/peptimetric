@@ -1,7 +1,8 @@
 import pandas as pd
 import tkinter as tk
 import matplotlib.pyplot as plt
-from tkinter.filedialog import askopenfilenames, askopenfilename
+from tkinter.filedialog import askopenfilenames
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 def read_files():
@@ -54,7 +55,7 @@ def amino_acid_frequency(peptide_list):
 
 
 def group_amino_acids(peptide_list):
-    grouped=[]
+    grouped = []
     non_polar = ['G', 'A', 'V', 'L', 'I', 'P', 'F', 'W', 'M']
     polar = ['S', 'T', 'C', 'Y', 'N', 'Q']
     basic = ['K', 'R', 'H']
@@ -75,27 +76,27 @@ def group_amino_acids(peptide_list):
 
 
 Normal_amino_acids = {
-        'A' : 8.25,
-        'G': 7.08,
-        'V': 6.86,
-        'L': 9.65,
-        'I': 5.92,
-        'P': 4.73,
-        'F': 3.68,
-        'W': 1.09,
-        'M': 2.41,
-        'S': 6.63,
-        'T': 5.35,
-        'C': 1.38,
-        'Y': 2.92,
-        'N': 4.06,
-        'Q': 3.93,
-        'K': 5.81,
-        'R': 5.53,
-        'H': 2.27,
-        'D': 5.46,
-        'E': 6.72
-    }
+    'A': 8.25,
+    'G': 7.08,
+    'V': 6.86,
+    'L': 9.65,
+    'I': 5.92,
+    'P': 4.73,
+    'F': 3.68,
+    'W': 1.09,
+    'M': 2.41,
+    'S': 6.63,
+    'T': 5.35,
+    'C': 1.38,
+    'Y': 2.92,
+    'N': 4.06,
+    'Q': 3.93,
+    'K': 5.81,
+    'R': 5.53,
+    'H': 2.27,
+    'D': 5.46,
+    'E': 6.72
+}
 
 
 def create_venn(df):
@@ -128,27 +129,35 @@ def create_venn(df):
 
     plt.show()
 
+
 def create_protein_graphic(protein_list, grouping, difference_metric):
-    protein_list.group()
+    protein_list = protein_list.group()
     nbr_of_peptides = []
     height = []
     trivial_name = []
     for protein in protein_list:
         nbr_of_peptides.append(protein.get_nbr_of_peptides())
-        height.append(protein.get_area_mean())
+        height.append(protein.get_area_mean())  # make flexible for difference metric
         trivial_name.append(protein.get_trivial_name())
 
     dark = "#53c653"
     medium = "#8cd98c"
     light = "#d9f2d9"
     col = []
-
     max_nbr_of_peptides = max(nbr_of_peptides)
+
     for n in nbr_of_peptides:
-        if n < max_nbr_of_peptides/3:
+        if n < max_nbr_of_peptides / 3:
             col.append(light)
-        elif n >= 2*max_nbr_of_peptides/3:
+        elif n >= 2 * max_nbr_of_peptides / 3:
             col.append(dark)
         else:
             col.append(medium)
-    plt.bar(trivial_name, height, color=col)
+
+    figure = plt.bar(trivial_name, height, color=col)
+
+    root = tk.Tk()
+    bar = FigureCanvasTkAgg(figure, root)
+    bar.get_tk_widget().pack()
+
+    root.mainloop()
