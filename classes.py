@@ -1,3 +1,8 @@
+from Bio import SeqIO
+import requests
+from io import StringIO
+
+
 class protein():
     def __init__(self, df, accession):
         self.df = df[df['Accession'] == accession]
@@ -6,16 +11,16 @@ class protein():
     #ADD COMPARE_METHODS
     #ADD GET_FASTA
     
-    def area_sum(self):
+    def get_area_sum(self):
         return self.df['Area'].sum()
 
-    def area_mean(self):
+    def get_area_mean(self):
         return self.df['Area'].mean()
 
-    def intensity_mean(self):
+    def get_intensity_mean(self):
         return self.df['-10lgP'].mean()
 
-    def get_number_of_peptides(self):
+    def get_nbr_of_peptides(self):
         return len(self.df.index)
 
     def get_id(self):
@@ -29,4 +34,11 @@ class protein():
     def print(self):
         print(self.df)
 
+    def get_FASTA(self):
+        link = "http://www.uniprot.org/uniprot/" + self.get_id() + ".fasta"
+        data = requests.get(link).text
 
+        fasta_iterator = SeqIO.parse(StringIO(data), "fasta")
+
+        for seq in fasta_iterator:
+            print(seq.format("fasta"))

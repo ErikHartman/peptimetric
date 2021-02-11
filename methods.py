@@ -2,9 +2,6 @@ import pandas as pd
 import tkinter as tk
 import matplotlib.pyplot as plt
 from tkinter.filedialog import askopenfilenames, askopenfilename
-from Bio import SeqIO
-import requests
-from io import StringIO
 
 
 def read_files():
@@ -131,11 +128,27 @@ def create_venn(df):
 
     plt.show()
 
-def get_FASTA(accession):
-    link = "http://www.uniprot.org/uniprot/"+accession+".fasta"
-    data = requests.get(link).text
+def create_protein_graphic(protein_list, grouping, difference_metric):
+    protein_list.group()
+    nbr_of_peptides = []
+    height = []
+    trivial_name = []
+    for protein in protein_list:
+        nbr_of_peptides.append(protein.get_nbr_of_peptides())
+        height.append(protein.get_area_mean())
+        trivial_name.append(protein.get_trivial_name())
 
-    fasta_iterator = SeqIO.parse(StringIO(data), "fasta")
+    dark = "#53c653"
+    medium = "#8cd98c"
+    light = "#d9f2d9"
+    col = []
 
-    for seq in fasta_iterator:
-        print(seq.format("fasta"))
+    max_nbr_of_peptides = max(nbr_of_peptides)
+    for n in nbr_of_peptides:
+        if n < max_nbr_of_peptides/3:
+            col.append(light)
+        elif n >= 2*max_nbr_of_peptides/3:
+            col.append(dark)
+        else:
+            col.append(medium)
+    plt.bar(trivial_name, height, color=col)
