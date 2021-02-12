@@ -10,10 +10,13 @@ def create_protein_list(df):
     return p_list
 
 
-def create_peptide_list(Protein, sequence):
+def create_peptide_list(protein_list, accession):
     peptide_list = []
-    for index, row in Protein.iterrows():
-        peptide_list.append(row)
+    for protein in protein_list:
+        if protein.get_id() == accession:
+            for index, row in protein.df.iterrows():
+                peptide_list.append(row)
+
     return peptide_list
 
 

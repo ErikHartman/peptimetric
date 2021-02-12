@@ -26,8 +26,7 @@ class Protein:
         return len(self.df.index)
 
     def get_id(self):
-        peptide_id = self.accession[3, 9]
-        return peptide_id
+        return self.accession.split('|')[1]
 
     def get_trivial_name(self):
         peptide_trivial_name = self.accession[10, len(self.accession)]

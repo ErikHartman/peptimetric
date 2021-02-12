@@ -8,8 +8,11 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 def read_files():
     root = tk.Tk()
     root.withdraw()
-    filenames = askopenfilenames(initialdir="/Documents", title="Open files", multiple=True,
-                                 filetype=(("Excel", "*.xlsx"), ("Excel", "*.xls")))
+    filenames = askopenfilenames(initialdir="/Documents", title="Open files", multiple=True, filetypes=[
+            ("All Files", "*.*"),
+            ("Excel", "*.xls"),
+            ("Excel", "*.xlsx"),
+            ])
     dfs = []
     for filename in filenames:
         print("opening", filename)
@@ -23,6 +26,10 @@ def concatenate_dataframes(dfs: list) -> pd.DataFrame:
     for df in dfs:
         master_dataframe = master_dataframe.append(df)
     return master_dataframe
+
+
+def choose_protein() -> str:
+    return input('Choose protein: ')
 
 
 def amino_acid_frequency(peptide_list):
@@ -130,14 +137,21 @@ def create_venn(df):
     plt.show()
 
 
-def create_protein_graphic(protein_list, grouping, difference_metric):
-    protein_list = protein_list.group()
+def create_protein_graphic(protein_list, difference_metric):
+    grouping = input('Choose grouping method (1-3): ')
+    if grouping == 1:
+        protein_list = protein_list.group()
+    elif grouping == 2:
+        protein_list = protein_list.group()
+    else:
+        protein_list = protein_list.group()
+
     nbr_of_peptides = []
     height = []
     trivial_name = []
     for protein in protein_list:
         nbr_of_peptides.append(protein.get_nbr_of_peptides())
-        height.append(protein.get_area_mean())  # make flexible for difference metric
+        height.append(protein.get_area_mean()) # make flexible
         trivial_name.append(protein.get_trivial_name())
 
     dark = "#53c653"
