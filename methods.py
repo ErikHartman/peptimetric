@@ -3,20 +3,18 @@ import tkinter as tk
 import matplotlib.pyplot as plt
 from tkinter.filedialog import askopenfilenames
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from classes import *
 
 
 def read_files():
     root = tk.Tk()
     root.withdraw()
-<<<<<<< Updated upstream
     filenames = askopenfilenames(initialdir="/Documents", title="Open files", multiple=True, filetypes=[
             ("All Files", "*.*"),
             ("Excel", "*.xls"),
             ("Excel", "*.xlsx"),
             ])
-=======
-    filenames = askopenfilenames(initialdir="/Documents/GitHub/kand/example_files", title="Open files", multiple=True,)
->>>>>>> Stashed changes
+
     dfs = []
     for filename in filenames:
         print("opening", filename)
@@ -179,3 +177,18 @@ def create_protein_graphic(protein_list, difference_metric):
     bar.get_tk_widget().pack()
 
     root.mainloop()
+
+def group_on_alphabet(protein_list):
+    protein_list.sort(key= lambda x: x.get_trivial_name())
+    return protein_list
+
+def rt_check(df):
+    rt_dataframe = df.loc[:, df.columns.str.startswith('RT')]
+    columns = df[list(rt_dataframe)]
+    for index, row in rt_dataframe.itterows():
+        rt_min = 0; 
+        for rt in columns[row]:
+
+            if
+    return columns
+

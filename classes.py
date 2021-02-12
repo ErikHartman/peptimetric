@@ -11,8 +11,6 @@ class Protein:
         self.df = df[df['Accession'] == accession]
         self.accession = accession
 
-    # ADD COMPARE_METHODS
-
     def get_area_sum(self):
         area_columns = self.df.loc[:, self.df.columns.str.startswith('Area')]
         return area_columns.sum()
@@ -32,8 +30,11 @@ class Protein:
         return self.accession.split('|')[1]
 
     def get_trivial_name(self):
-        peptide_trivial_name = self.accession[10, len(self.accession)]
-        return peptide_trivial_name
+        substring = ':sp'
+        trivial_name = self.accession.split('|')[2]
+        if substring in trivial_name:
+            trivial_name = trivial_name.replace(substring, '')
+        return trivial_name
 
     def print(self):
         print(self.df)
@@ -46,6 +47,9 @@ class Protein:
 
         for seq in fasta_iterator:
             print(seq.format("fasta"))
+
+    def fold_change(self, protein):
+        return self.get_area_sum()/protein.get_area_sum()
 
 
 class Peptide:
