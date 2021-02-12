@@ -2,6 +2,7 @@ import pandas as pd
 import tkinter as tk
 import matplotlib.pyplot as plt
 from tkinter.filedialog import askopenfilenames
+from matplotlib_venn import venn2, venn3
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from classes import *
 
@@ -170,13 +171,10 @@ def create_protein_graphic(protein_list, difference_metric):
         else:
             col.append(medium)
 
-    figure = plt.bar(trivial_name, height, color=col)
+    plt.bar(trivial_name, height, color=col)
+    plt.show()
 
-    root = tk.Tk()
-    bar = FigureCanvasTkAgg(figure, root)
-    bar.get_tk_widget().pack()
 
-    root.mainloop()
 
 def group_on_alphabet(protein_list):
     protein_list.sort(key= lambda x: x.get_trivial_name())
@@ -191,4 +189,19 @@ def rt_check(df):
 
             if
     return columns
+
+def create_venn(df):
+    df = df.fillna(0)
+    g1 = []
+    g2 = []
+    print(df.columns)
+    for i in range(len(df.index)):
+        if df['Area_g1'][i] != 0:
+            g1.append(df['Peptide'][i])
+        if df['Area_g2'][i] != 0:
+            g2.append(df['Peptide'][i])
+
+    v = venn2([set(g1), set(g2)], set_labels=('g1', 'g2'))
+    plt.show()
+
 

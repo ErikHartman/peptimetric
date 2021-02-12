@@ -1,3 +1,4 @@
+
 from methods import *
 from lists import *
 
@@ -16,4 +17,3 @@ for protein in protein_list:
     print(protein.get_trivial_name())
 
 print(rt_check(master))
-

@@ -42,11 +42,14 @@ class Protein:
     def get_fasta(self):
         link = "http://www.uniprot.org/uniprot/" + self.get_id() + ".fasta"
         data = requests.get(link).text
-
         fasta_iterator = SeqIO.parse(StringIO(data), "fasta")
 
         for seq in fasta_iterator:
-            print(seq.format("fasta"))
+            sequence = seq.format('fasta').split('\n')
+            sequence = sequence[1:len(sequence)-1]
+            sequence = str(''.join(sequence))
+
+        return sequence
 
     def fold_change(self, protein):
         return self.get_area_sum()/protein.get_area_sum()
@@ -63,11 +66,14 @@ class Peptide:
         return self.sequence
 
     def get_start(self):
-        protein_sequence = list(self.protein.get_fasta())
-        peptide_sequence = self.create_array()
+        protein_sequence = self.protein.get_fasta
+
+        for i in range(len(protein_sequence)):
+            if self.sequence == protein_sequence[i:i+len(self.sequence)]:
+                return i+1
 
     def get_end(self):
-        return self.get_start + len(self.create_array())
+        return self.get_start + len(self.sequence)
 
     def create_array(self):
         return list(self.get_sequence())
