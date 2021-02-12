@@ -171,20 +171,10 @@ def create_protein_graphic(protein_list):
     plt.show()
 
 
-
 def group_on_alphabet(protein_list):
     protein_list.sort(key= lambda x: x.get_trivial_name())
     return protein_list
 
-def rt_check(df):
-    rt_dataframe = df.loc[:, df.columns.str.startswith('RT')]
-    columns = df[list(rt_dataframe)]
-    for index, row in rt_dataframe.itterows():
-        rt_min = 0; 
-        for rt in columns[row]:
-
-            if
-    return columns
 
 def create_venn(df):
     df = df.fillna(0)
