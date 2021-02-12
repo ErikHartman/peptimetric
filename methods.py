@@ -1,14 +1,37 @@
 import pandas as pd
+import tkinter as tk
+import matplotlib.pyplot as plt
+from tkinter.filedialog import askopenfilenames
+from matplotlib_venn import venn2, venn3
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from classes import *
 
-def read_file(file): # reads a file and outputs a dataframe
-    df = pd.read_excel(file)
-    return df
 
-def drop_zeros(df, colname): #drops 0s in dataframe for given column
-    df = df[df[colname] != 0]
-    return df
+def read_files():
+    root = tk.Tk()
+    root.withdraw()
 
-def amino_acid_frequency(list): #gets the frequency for amino acids
+    filenames = askopenfilenames(initialdir="/Documents/GitHub/kand/example_files", title="Open files", multiple=True,)
+    dfs = []
+    for filename in filenames:
+        print("opening", filename)
+        dfs.append(pd.read_excel(filename))
+        print(dfs[-1])
+    return dfs
+
+
+def concatenate_dataframes(dfs: list) -> pd.DataFrame:
+    master_dataframe = pd.DataFrame()
+    for df in dfs:
+        master_dataframe = master_dataframe.append(df)
+    return master_dataframe
+
+
+def choose_protein() -> str:
+    return input('Choose protein: ')
+
+
+def amino_acid_frequency(peptide_list):
     letters = {
         'A': 0,
         'G': 0,
@@ -31,34 +54,33 @@ def amino_acid_frequency(list): #gets the frequency for amino acids
         'D': 0,
         'E': 0
     }
-    for sequence in list:
+    for sequence in peptide_list:
         for letter in sequence:
             letters[letter] += 1
     return letters
 
-def group(list): #Groups amino acids for sequences in a list. Returns grouped
-    grouped=[]
-    nonpolar=['G','A','V','L','I','P','F','W','M']
-    polar=['S','T','C','Y','N','Q']
-    basic=['K','R','H']
-    acidic=['D','E']
-    for sequence in list:
-        new_item=''
+
+def group_amino_acids(peptide_list):
+    grouped = []
+    non_polar = ['G', 'A', 'V', 'L', 'I', 'P', 'F', 'W', 'M']
+    polar = ['S', 'T', 'C', 'Y', 'N', 'Q']
+    basic = ['K', 'R', 'H']
+    acidic = ['D', 'E']
+    for sequence in peptide_list:
+        new_item = ''
         for letter in sequence:
-            if letter in nonpolar:
-                new_item+='N'
+            if letter in non_polar:
+                new_item += 'N'
             if letter in polar:
-                new_item+='P'
+                new_item += 'P'
             if letter in basic:
-                new_item+='B'
+                new_item += 'B'
             if letter in acidic:
-                new_item+='A'
+                new_item += 'A'
         grouped.append(new_item)
     return grouped
 
 
-<<<<<<< Updated upstream
-=======
 Normal_amino_acids = {
     'A': 8.25,
     'G': 7.08,
@@ -149,10 +171,20 @@ def create_protein_graphic(protein_list):
     plt.show()
 
 
+
 def group_on_alphabet(protein_list):
     protein_list.sort(key= lambda x: x.get_trivial_name())
     return protein_list
 
+def rt_check(df):
+    rt_dataframe = df.loc[:, df.columns.str.startswith('RT')]
+    columns = df[list(rt_dataframe)]
+    for index, row in rt_dataframe.itterows():
+        rt_min = 0; 
+        for rt in columns[row]:
+
+            if
+    return columns
 
 def create_venn(df):
     df = df.fillna(0)
@@ -169,4 +201,3 @@ def create_venn(df):
     plt.show()
 
 
->>>>>>> Stashed changes
