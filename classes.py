@@ -11,18 +11,21 @@ class Protein:
         self.df = df[df['Accession'] == accession]
         self.accession = accession
 
-    #ADD COMPARE_METHODS
-    
-    def get_area_sum(self): # Needs to work with many groups
-        return self.df['Area'].sum()
+    # ADD COMPARE_METHODS
 
-    def get_area_mean(self): # Needs to work with many groups
-        return self.df['Area'].mean()
+    def get_area_sum(self):
+        area_columns = self.df.loc[:, self.df.columns.str.startswith('Area')]
+        return area_columns.sum()
 
-    def get_intensity_mean(self): # Needs to work with many groups
-        return self.df['-10lgP'].mean()
+    def get_area_mean(self):
+        area_columns = self.df.loc[:, self.df.columns.str.startswith('Area')]
+        return area_columns.mean()
 
-    def get_nbr_of_peptides(self): # Needs to work with many groups
+    def get_intensity_mean(self):
+        intensity_columns = self.df.loc[:, self.df.columns.str.startswith('-10lgP')]
+        return intensity_columns.mean()
+
+    def get_nbr_of_peptides(self):  # Needs to work with many groups
         return len(self.df.index)
 
     def get_id(self):
