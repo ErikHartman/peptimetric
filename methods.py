@@ -10,16 +10,9 @@ from classes import *
 def read_files():
     root = tk.Tk()
     root.withdraw()
-<<<<<<< Updated upstream
-    filenames = askopenfilenames(initialdir="/Documents", title="Open files", multiple=True, filetypes=[
-            ("All Files", "*.*"),
-            ("Excel", "*.xls"),
-            ("Excel", "*.xlsx"),
-            ])
 
-=======
     filenames = askopenfilenames(initialdir="/Documents/GitHub/kand/example_files", title="Open files", multiple=True,)
->>>>>>> Stashed changes
+
     dfs = []
     for filename in filenames:
         print("opening", filename)

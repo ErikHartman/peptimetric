@@ -11,19 +11,16 @@ class Protein:
         self.df = df[df['Accession'] == accession]
         self.accession = accession
 
-<<<<<<< Updated upstream
     def get_area_sum(self):
         area_columns = self.df.loc[:, self.df.columns.str.startswith('Area')]
         return area_columns.sum()
 
-=======
     # ADD COMPARE_METHODS
 
     def get_area_sum(self):
         area_columns = self.df.loc[:, self.df.columns.str.startswith('Area')]
         return area_columns.sum()
 
->>>>>>> Stashed changes
     def get_area_mean(self):
         area_columns = self.df.loc[:, self.df.columns.str.startswith('Area')]
         return area_columns.mean()
