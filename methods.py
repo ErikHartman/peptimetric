@@ -138,7 +138,7 @@ def create_venn(df):
     plt.show()
 
 
-def create_protein_graphic(protein_list, difference_metric):
+def create_protein_graphic(protein_list):
     grouping = input('Choose grouping method (1-3): ')
     if grouping == 1:
         protein_list = protein_list.group()
