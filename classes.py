@@ -1,6 +1,7 @@
 from Bio import SeqIO
 import requests
 from io import StringIO
+from Bio import AlignIO
 
 
 class Protein:
@@ -10,18 +11,17 @@ class Protein:
         self.accession = accession
 
     #ADD COMPARE_METHODS
-    #ADD GET_FASTA
     
-    def get_area_sum(self): # Needs to work with many samples
+    def get_area_sum(self): # Needs to work with many groups
         return self.df['Area'].sum()
 
-    def get_area_mean(self): # Needs to work with many samples
+    def get_area_mean(self): # Needs to work with many groups
         return self.df['Area'].mean()
 
-    def get_intensity_mean(self): # Needs to work with many samples
+    def get_intensity_mean(self): # Needs to work with many groups
         return self.df['-10lgP'].mean()
 
-    def get_nbr_of_peptides(self): # Needs to work with many samples
+    def get_nbr_of_peptides(self): # Needs to work with many groups
         return len(self.df.index)
 
     def get_id(self):
@@ -47,15 +47,16 @@ class Protein:
 
 class Peptide:
 
-    def __init__(self, df):
-        self.df = df
-        self.sequence = df['Peptide']
+    def __init__(self, protein, sequence):
+        self.sequence = sequence
+        self.df = protein[protein['Peptide'] == sequence]
 
     def get_sequence(self):
         return self.sequence
 
     def get_start(self):
-        return 0
+        alignment = AlignIO.read(self.df['Peptide'])
+        
 
     def get_end(self):
         return 0
@@ -63,5 +64,9 @@ class Peptide:
     def create_array(self):
         return list(self.get_sequence())
 
-    def is_unique(self): # Needs to work with many samples
-        return self.df.get_area() != 0
+    def is_unique(self):
+        area_columns = [column for column in self.protein if column.startswith('Area')]
+        for col in area_columns:
+            if col == 0:
+                return True
+        return False
