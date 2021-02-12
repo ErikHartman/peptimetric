@@ -1,13 +1,20 @@
-from protein import *
+from classes import *
 
 
 def create_protein_list(df):
     p_df = df.groupby(by='Accession', as_index=False).mean()
     p_list = []
     for accession in p_df['Accession']:
-        p = protein(df, accession)
+        p = Protein(df, accession)
         p_list.append(p)
     return p_list
+
+
+def create_peptide_list(Protein, sequence):
+    peptide_list = []
+    for index, row in Protein.iterrows():
+        peptide_list.append(row)
+    return peptide_list
 
 
 def create_dataframe(protein_list):

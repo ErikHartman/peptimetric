@@ -18,7 +18,7 @@ def read_files():
     return dfs
 
 
-def concatenate_dataframes(dfs):
+def concatenate_dataframes(dfs: list) -> pd.DataFrame:
     master_dataframe = pd.DataFrame()
     for df in dfs:
         master_dataframe = master_dataframe.append(df)
