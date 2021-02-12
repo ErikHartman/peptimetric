@@ -12,7 +12,6 @@ def read_files():
     root.withdraw()
 
     filenames = askopenfilenames(initialdir="/Documents/GitHub/kand/example_files", title="Open files", multiple=True,)
-
     dfs = []
     for filename in filenames:
         print("opening", filename)
