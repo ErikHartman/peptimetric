@@ -1,6 +1,7 @@
 from Bio import SeqIO
 import requests
 from io import StringIO
+import re
 from Bio import AlignIO, pairwise2
 import pandas as pd
 
@@ -33,13 +34,13 @@ class Protein:
         return len(self.df.index)
 
     def get_id(self):
-        return self.accession.split('|')[1]
+        if '|' in self.accession:
+            return self.accession.split('|')[1]
+        else:
+            return self.accession
 
     def get_trivial_name(self):
-        substring = ':sp'
-        trivial_name = self.accession.split('|')[2]
-        if substring in trivial_name:
-            trivial_name = trivial_name.replace(substring, '')
+        trivial_name = re.split(' |\|', self.get_fasta())
         return trivial_name
 
     def print(self):
