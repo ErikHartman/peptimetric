@@ -176,9 +176,23 @@ def create_protein_graphic(protein_list):
     plt.show()
 
 def create_peptide_graphic(peptide_list):
-    fasta = dict(enumerate(peptide_list.protein.get_fasta()))
+    fasta = peptide_list.protein.get_fasta()
+    fasta_dict = {"index": [],"counter": [], "intensity":[]}
+    for i in range(len(fasta)):
+        fasta_dict["index"].append(i)
+        fasta_dict["counter"].append(0)
+        fasta_dict["intensity"].append(0)
+    for peptide in peptide_list:
+        start = peptide.get_start()
+        end = peptide.get_end()
+        intensity = peptide.get_area()
+        p = list(range(start, end))
+        for i in p:
+            print(fasta_dict["index"][i])
+            fasta_dict["counter"][i] += 1
+            fasta_dict["intensity"][i] += intensity
 
-
+    return fasta_dict
 def group_on_alphabet(protein_list):
     protein_list.sort(key= lambda x: x.get_trivial_name())
     return protein_list
