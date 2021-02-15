@@ -1,19 +1,29 @@
 from methods import *
-import re
+import numpy as np
+from pyteomics import mass, parser
+# Try at emPAI
 
-def get_fasta(seq):
-    link = "http://www.uniprot.org/uniprot/" + seq + ".fasta"
-    data = requests.get(link).text
-    fasta_iterator = SeqIO.parse(StringIO(data), "fasta")
-
-    for seq in fasta_iterator:
-        sequence = seq.format('fasta')
-
-    return sequence
-
-def get_trivial_name(seq):
-    trivial_name = re.split(' |\|', get_fasta(seq))[2]
-    return trivial_name
+# 1. Get mass range of observed peptides
+# 2. Calculate predicted RT (or just get RT?)
+# 3. Determine RT range
+# 4. Sort the MW and RT of in silico digested tryptic peptides cleave('GGRGAGSAAWSAAVRYLTMMSSLYQT', expasy_rules['trypsin'])
+# 5. Count nr of observable peptides in RT range
 
 
-print(get_trivial_name('P02649'))
+def empai(protein, base):
+    n_observed = protein.get_nbr_of_peptides()
+    rt = []
+    for seq in protein.df['Peptide']:
+        rt.append(calculate_rt(seq))
+    rt_min, rt_max = min(rt), max(rt)
+
+    all_observable_peptides = parser.cleave(protein.get_fasta())
+    observable=[]
+    for peptide in all_observable_peptides:
+        if mass.calculate_mass(peptide) < rt_max & mass.calculate_mass(peptide) > rt_min:
+            observable.append(peptide)
+    pai = n_observed/len(observable)
+    return np.power(pai, base)-1
+
+
+

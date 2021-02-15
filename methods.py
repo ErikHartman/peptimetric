@@ -3,7 +3,7 @@ import tkinter as tk
 import matplotlib.pyplot as plt
 from tkinter.filedialog import askopenfilenames
 from matplotlib_venn import venn2, venn3
-
+from pyteomics import electrochem, achrom
 
 
 def read_files():
@@ -191,3 +191,9 @@ def create_venn(df):
     plt.show()
 
 
+def calculate_rt(seq):
+    return achrom.calculate_RT(seq, achrom.RCs_guo_ph7_0)
+
+
+def calculate_pi(seq):
+    return electrochem.pI(seq, 7)
