@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 from tkinter.filedialog import askopenfilenames
 from matplotlib_venn import venn2
 from pyteomics import electrochem, achrom
+import mplcursors
+from collections import Counter
 
 
 def read_files():
@@ -170,7 +172,11 @@ def create_protein_graphic(protein_list):
             col.append(medium)
 
     plt.bar(trivial_name, height, color=col)
+    mplcursors.cursor(hover=True)
     plt.show()
+
+def create_peptide_graphic(peptide_list):
+    fasta = dict(enumerate(peptide_list.protein.get_fasta()))
 
 
 def group_on_alphabet(protein_list):

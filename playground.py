@@ -27,3 +27,5 @@ def empai(protein, base):
     return np.power(pai, base)-1
 
 
+
+
