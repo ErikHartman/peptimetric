@@ -1,4 +1,5 @@
 from classes import *
+import pandas as pd
 
 
 def create_protein_list(df):

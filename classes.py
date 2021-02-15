@@ -2,8 +2,6 @@ from Bio import SeqIO
 import requests
 from io import StringIO
 import re
-from Bio import AlignIO, pairwise2
-import pandas as pd
 
 
 class Protein:
@@ -18,10 +16,6 @@ class Protein:
 
     # ADD COMPARE_METHODS
 
-    def get_area_sum(self):
-        area_columns = self.df.loc[:, self.df.columns.str.startswith('Area')]
-        return area_columns.sum()
-
     def get_area_mean(self):
         area_columns = self.df.loc[:, self.df.columns.str.startswith('Area')]
         return area_columns.mean()
@@ -33,7 +27,7 @@ class Protein:
     def get_nbr_of_peptides(self):  # Needs to work with many groups
         return len(self.df.index)
 
-    def get_id(self):
+    def get_id(self):  # This should just return self.accession. The id should be fixed before grouping
         if '|' in self.accession:
             return self.accession.split('|')[1]
         else:

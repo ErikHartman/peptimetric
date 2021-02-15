@@ -12,7 +12,7 @@ def get_fasta(seq):
     return sequence
 
 def get_trivial_name(seq):
-    trivial_name = re.split(' |\|', get_fasta(seq))
+    trivial_name = re.split(' |\|', get_fasta(seq))[2]
     return trivial_name
 
 
