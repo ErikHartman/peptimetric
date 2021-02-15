@@ -20,13 +20,3 @@ def create_peptide_list(protein_list, accession):
 
     return peptide_list
 
-
-def create_dataframe(protein_list):
-    accession=[]
-    area=[]
-    for protein in protein_list:
-        accession.append(protein.accession_id)
-        area.append(protein.area_mean())
-    df = pd.DataFrame(list(zip(accession, area)), columns=['Accession', 'Area'])
-    return df
-

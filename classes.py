@@ -24,7 +24,7 @@ class Protein:
             rt.append(calculate_rt(seq))
         rt_min, rt_max = min(rt), max(rt)
 
-        all_observable_peptides = parser.cleave(self.get_fasta())
+        all_observable_peptides = parser.cleave(self.get_fasta(), rule=['trypsin'])
         observable = []
         for peptide in all_observable_peptides:
             if mass.calculate_mass(peptide) < rt_max & mass.calculate_mass(peptide) > rt_min:
