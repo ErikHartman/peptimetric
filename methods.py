@@ -14,7 +14,10 @@ def read_files():
     dfs = []
     for filename in filenames:
         print("opening", filename)
-        dfs.append(pd.read_excel(filename))
+        df = pd.read_excel(filename)
+        if '|' in df['Accession']:
+            df['Accession'] = df['Accession'].apply(lambda x: x.split('|')[1])
+        dfs.append(df)
         print(dfs[-1])
     return dfs
 

@@ -2,7 +2,9 @@ from Bio import SeqIO
 import requests
 from io import StringIO
 import re
-
+from methods import *
+from pyteomics import mass, parser
+import numpy as np
 
 
 class Protein:
@@ -15,7 +17,21 @@ class Protein:
         area_columns = self.df.loc[:, self.df.columns.str.startswith('Area')]
         return area_columns.sum()
 
-    # ADD COMPARE_METHODS
+    def empai(self, base):
+        n_observed = self.get_nbr_of_peptides()
+        rt = []
+        for seq in self.df['Peptide']:
+            rt.append(calculate_rt(seq))
+        rt_min, rt_max = min(rt), max(rt)
+
+        all_observable_peptides = parser.cleave(self.get_fasta())
+        observable = []
+        for peptide in all_observable_peptides:
+            if mass.calculate_mass(peptide) < rt_max & mass.calculate_mass(peptide) > rt_min:
+                observable.append(peptide)
+
+        pai = n_observed / len(observable)
+        return np.power(pai, base) - 1
 
     def get_area_mean(self):
         area_columns = self.df.loc[:, self.df.columns.str.startswith('Area')]
@@ -29,13 +45,10 @@ class Protein:
         return len(self.df.index)
 
     def get_id(self):  # This should just return self.accession. The id should be fixed before grouping
-        if '|' in self.accession:
-            return self.accession.split('|')[1]
-        else:
-            return self.accession
+        return self.accession
 
     def get_trivial_name(self):
-        trivial_name = re.split(' |\|', self.get_fasta())
+        trivial_name = re.split(' |\|', self.get_fasta())[2]
         return trivial_name
 
     def print(self):

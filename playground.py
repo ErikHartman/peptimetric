@@ -22,6 +22,7 @@ def empai(protein, base):
     for peptide in all_observable_peptides:
         if mass.calculate_mass(peptide) < rt_max & mass.calculate_mass(peptide) > rt_min:
             observable.append(peptide)
+    
     pai = n_observed/len(observable)
     return np.power(pai, base)-1
 
