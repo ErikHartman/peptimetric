@@ -2,6 +2,7 @@ from Bio import SeqIO
 import requests
 from io import StringIO
 import re
+from pyteomics import electrochem, achrom
 
 
 class Protein:
@@ -86,3 +87,9 @@ class Peptide:
             if area != 0:
                 i += 1
         return i == 1
+
+    def get_pi(self):
+        return electrochem.pI(self.sequence, 7)
+
+    def get_calculated_rt(self):
+        return achrom.calculate_RT(self.sequence, achrom.RCs_guo_ph7_0)
