@@ -1,9 +1,11 @@
 from methods import *
+from lists import *
 import numpy as np
 from pyteomics import mass, parser
 import requests
 from io import StringIO
 from Bio import SeqIO
+
 # Try at emPAI
 
 # 1. Get mass range of observed peptides
@@ -29,43 +31,10 @@ def empai(protein, base):
     pai = n_observed/len(observable)
     return np.power(pai, base)-1
 
-def get_fasta(s):
-    link = "http://www.uniprot.org/uniprot/" + s+ ".fasta"
-    data = requests.get(link).text
-    fasta_iterator = SeqIO.parse(StringIO(data), "fasta")
-    for seq in fasta_iterator:
-        sequence = seq.format('fasta').split('\n')
-        sequence = sequence[1:len(sequence)-1]
-        sequence = str(''.join(sequence))
 
-        return sequence
-
-fasta = get_fasta('P02649')
-
-fasta_dict = {"index": [],"counter": [], "intensity":[]}
-
-for i in range(len(fasta)):
-    fasta_dict["index"].append(i)
-    fasta_dict["counter"].append(0)
-    fasta_dict["intensity"].append(0)
-
-
-peptide = list(range(10,15))
-peptide_intensity=1000
-
-print(peptide)
-for i in peptide:
-    print(fasta_dict["index"][i])
-    fasta_dict["counter"][i]+=1
-    fasta_dict["intensity"][i]+=peptide_intensity
-
-peptide=list(range(8,12))
-peptide_intensity=2000
-for i in peptide:
-    print(fasta_dict["index"][i])
-    fasta_dict["counter"][i]+=1
-    fasta_dict["intensity"][i]+=peptide_intensity
-print(fasta_dict['counter'])
-print(fasta_dict["intensity"])
-
-
+g1 = concatenate_dataframes(read_files())
+g2 = concatenate_dataframes(read_files())
+master = g1.merge(g2, on=['Peptide', 'Accession'], suffixes=['_g1', '_g2'])
+mater = master.dropna(subset=['Accession'])
+protein_list = create_protein_list(master)
+create_protein_graphic(protein_list)

@@ -5,7 +5,6 @@ from tkinter.filedialog import askopenfilenames
 from matplotlib_venn import venn2
 from pyteomics import electrochem, achrom
 import mplcursors
-from collections import Counter
 
 
 def read_files():
@@ -16,8 +15,13 @@ def read_files():
     for filename in filenames:
         print("opening", filename)
         df = pd.read_excel(filename)
-        if '|' in df['Accession']:
-            df['Accession'] = df['Accession'].apply(lambda x: x.split('|')[1])
+        accessions = []
+        for index, row in df.iterrows():
+            if '|' in str(row['Accession']):
+                accessions.append(row['Accession'].split('|')[1])
+            else:
+                accessions.append(row['Accession'])
+        df['Accession'] = accessions
         dfs.append(df)
         print(dfs[-1])
     return dfs
@@ -141,24 +145,20 @@ def create_venn(df):
 
 
 def create_protein_graphic(protein_list):
-    grouping = input('Choose grouping method (1-3): ')
-    if grouping == 1:
-        protein_list = protein_list.group()
-    elif grouping == 2:
-        protein_list = protein_list.group()
-    else:
-        protein_list = protein_list.group()
+    protein_list = group_on_alphabet(protein_list)
 
     nbr_of_peptides = []
-    height = []
+    pos_height = []
+    neg_height = []
     trivial_name = []
     for protein in protein_list:
         nbr_of_peptides.append(protein.get_nbr_of_peptides())
-        height.append(protein.get_area_mean()) # make flexible
+        pos_height.append(protein.get_area_mean()[0])
+        neg_height.append(-protein.get_area_mean()[1])
         trivial_name.append(protein.get_trivial_name())
 
-    dark = "#53c653"
-    medium = "#8cd98c"
+    dark = "#015201"
+    medium = "#53c653"
     light = "#d9f2d9"
     col = []
     max_nbr_of_peptides = max(nbr_of_peptides)
@@ -171,13 +171,16 @@ def create_protein_graphic(protein_list):
         else:
             col.append(medium)
 
-    plt.bar(trivial_name, height, color=col)
+    plt.bar(trivial_name, pos_height, color=col)
+    plt.bar(trivial_name, neg_height, color=col)
+    plt.xticks('')
     mplcursors.cursor(hover=True)
     plt.show()
 
+
 def create_peptide_graphic(peptide_list):
     fasta = peptide_list.protein.get_fasta()
-    fasta_dict = {"index": [],"counter": [], "intensity":[]}
+    fasta_dict = {"index": [], "counter": [], "intensity1": [], "intensity2": []}
     for i in range(len(fasta)):
         fasta_dict["index"].append(i)
         fasta_dict["counter"].append(0)
@@ -185,14 +188,18 @@ def create_peptide_graphic(peptide_list):
     for peptide in peptide_list:
         start = peptide.get_start()
         end = peptide.get_end()
-        intensity = peptide.get_area()
+        intensity1 = peptide.get_area()[0]
+        intensity2 = peptide.get_area()[1]
         p = list(range(start, end))
         for i in p:
             print(fasta_dict["index"][i])
             fasta_dict["counter"][i] += 1
-            fasta_dict["intensity"][i] += intensity
+            fasta_dict["intensity1"][i] += intensity1
+            fasta_dict["intensity2"][i] += intensity2
 
     return fasta_dict
+
+
 def group_on_alphabet(protein_list):
     protein_list.sort(key= lambda x: x.get_trivial_name())
     return protein_list

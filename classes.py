@@ -45,11 +45,16 @@ class Protein:
         return len(self.df.index)
 
     def get_id(self):  # This should just return self.accession. The id should be fixed before grouping
-        return self.accession
+        return str(self.accession)
 
     def get_trivial_name(self):
-        trivial_name = re.split(' |\|', self.get_fasta())[2]
-        return trivial_name
+        link = "http://www.uniprot.org/uniprot/" + self.get_id() + ".fasta"
+        data = requests.get(link).text
+        fasta_iterator = SeqIO.parse(StringIO(data), "fasta")
+        for seq in fasta_iterator:
+            trivial_name = seq.id
+            trivial_name = re.split(' |\|', trivial_name)[2]
+            return trivial_name
 
     def print(self):
         print(self.df)
@@ -58,13 +63,12 @@ class Protein:
         link = "http://www.uniprot.org/uniprot/" + self.get_id() + ".fasta"
         data = requests.get(link).text
         fasta_iterator = SeqIO.parse(StringIO(data), "fasta")
-
         for seq in fasta_iterator:
             sequence = seq.format('fasta').split('\n')
             sequence = sequence[1:len(sequence)-1]
             sequence = str(''.join(sequence))
 
-        return sequence
+            return sequence
 
     def fold_change(self, protein):
         return self.get_area_sum()/protein.get_area_sum()
@@ -92,6 +96,10 @@ class Peptide:
 
     def create_array(self):
         return list(self.get_sequence())
+
+    def get_intensity(self):
+        area_columns = self.df.loc[:, self.df.columns.str.startswith('Area')]
+        return area_columns.mean()
 
     def is_unique(self):
         area_columns = self.df.loc[:, self.df.columns.str.startswith('Area')]
