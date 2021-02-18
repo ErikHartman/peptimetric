@@ -183,8 +183,9 @@ def create_protein_graphic(protein_list):
             col_neg.append(dark)
         else:
             col_neg.append(medium)
-    label=''
+
     def make_picker(fig, wedges):
+        label=''
         def onclick(event):
             wedge = event.artist
             label = wedge.get_label()
@@ -193,6 +194,7 @@ def create_protein_graphic(protein_list):
             for w in wedge:
                 w.set_picker(True)
         fig.canvas.mpl_connect('pick_event', onclick)
+        return label
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -204,7 +206,7 @@ def create_protein_graphic(protein_list):
         w1.set_label(l)
         w2.set_label(l)
 
-    make_picker(fig, wedges)
+    label = make_picker(fig, wedges)
     plt.xticks('')
     mplcursors.cursor(hover=True)
 
@@ -294,5 +296,5 @@ def calculate_pi(seq):
 
 
 def rt_check(df):
-    df = df[(np.abs(stats.zscore(df[[col for col in df if col.startswith('RT')]])) < 3).all(axis=1)]
-    print(df)
+    return df[(np.abs(stats.zscore(df[[col for col in df if col.startswith('RT')]])) < 1.96).all(axis=1)]
+
