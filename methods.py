@@ -5,6 +5,8 @@ from tkinter.filedialog import askopenfilenames
 from matplotlib_venn import venn2
 from pyteomics import electrochem, achrom
 import mplcursors
+import numpy as np
+from scipy import stats
 
 
 def read_files():
@@ -290,9 +292,7 @@ def calculate_rt(seq):
 def calculate_pi(seq):
     return electrochem.pI(seq, 7)
 
+
 def rt_check(df):
-    rt_columns = [col for col in df if col.startswith('RT')]
-    rt_df = df[rt_columns]
+    df = df[(np.abs(stats.zscore(df[[col for col in df if col.startswith('RT')]])) < 3).all(axis=1)]
     print(df)
-    max_rt = rt_df.mean(axis=1)*1.1
-    min_rt = rt_df.mean(axis=1)*0.9
