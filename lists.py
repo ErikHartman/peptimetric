@@ -15,8 +15,9 @@ def create_peptide_list(protein_list, accession):
     peptide_list = []
     for protein in protein_list:
         if protein.get_id() == accession:
-            for index, row in protein.df.iterrows():
-                peptide_list.append(row)
+            for seq in protein.df['Peptide']:
+                p = Peptide(protein, seq)
+                peptide_list.append(p)
 
     return peptide_list
 
