@@ -226,3 +226,44 @@ def calculate_rt(seq):
 
 def calculate_pi(seq):
     return electrochem.pI(seq, 7)
+
+def create_protein_window(protein_list):
+    protein_list = group_on_alphabet(protein_list)
+    window = tk.Tk()
+    window.title("Protein Window")
+    window.geometry('500x300')
+
+    #create label
+    label = tk.Label(window, text="Proteins", fg="black")
+    label.place(relx=0.5)
+
+    #Create a search box
+    #search_bar = tk.Entry(window)
+    #search_bar.pack()
+
+    #Buttons
+    button_open = tk.Button(window, text="Open")
+    button_close = tk.Button(window, text="Close", command=window.destroy)
+    #button_search = tk.Button(window, text="Search")
+    button_open.place(relx=0.8, rely=0.9)
+    button_close.place(relx=0.1, rely=0.9)
+    #button_search.pack()
+
+    #Scrollbar
+    scrollbar = tk.Scrollbar(window)
+    scrollbar.pack(pady=40, side=tk.RIGHT, fill=tk.Y) #Does not work properly
+
+    # Create list of proteins
+    listbox = tk.Listbox(window, yscrollcommand=scrollbar.set(0.0, 1.0))
+    for protein in protein_list:
+        listbox.insert(tk.END, protein.get_trivial_name())
+    listbox.place(relwidth=0.4, relheight=0.6,x=250, y=150)
+    scrollbar.config(command=listbox.yview())
+
+    def print_protein_info(event):
+        for p in protein_list:
+            if p.get_trivial_name() == listbox.get(tk.ANCHOR):
+                print(p.accession)
+    listbox.bind('<<ListboxSelect>>', print_protein_info)
+    window.mainloop()
+
