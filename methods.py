@@ -5,6 +5,8 @@ from tkinter.filedialog import askopenfilenames
 from matplotlib_venn import venn2
 from pyteomics import electrochem, achrom
 import mplcursors
+import numpy as np
+from scipy import stats
 
 
 def read_files():
@@ -15,6 +17,7 @@ def read_files():
     for filename in filenames:
         print("opening", filename)
         df = pd.read_excel(filename)
+        df['Peptide'] = df['Peptide'].str.replace('[^a-zA-Z]', '')
         accessions = []
         for index, row in df.iterrows():
             if '|' in str(row['Accession']):
@@ -147,56 +150,120 @@ def create_venn(df):
 def create_protein_graphic(protein_list):
     protein_list = group_on_alphabet(protein_list)
 
-    nbr_of_peptides = []
+    pos_nbr_of_peptides = []
+    neg_nbr_of_peptides = []
     pos_height = []
     neg_height = []
     trivial_name = []
     for protein in protein_list:
-        nbr_of_peptides.append(protein.get_nbr_of_peptides())
+        pos_nbr_of_peptides.append(protein.get_nbr_of_peptides()[0])
         pos_height.append(protein.get_area_mean()[0])
+        neg_nbr_of_peptides.append(protein.get_nbr_of_peptides()[1])
         neg_height.append(-protein.get_area_mean()[1])
         trivial_name.append(protein.get_trivial_name())
 
     dark = "#015201"
     medium = "#53c653"
     light = "#d9f2d9"
-    col = []
-    max_nbr_of_peptides = max(nbr_of_peptides)
+    col_pos = []
+    col_neg = []
+    max_nbr_of_peptides = max(pos_nbr_of_peptides + neg_nbr_of_peptides)
 
-    for n in nbr_of_peptides:
+    for n in pos_nbr_of_peptides:
         if n < max_nbr_of_peptides / 3:
-            col.append(light)
+            col_pos.append(light)
         elif n >= 2 * max_nbr_of_peptides / 3:
-            col.append(dark)
+            col_pos.append(dark)
         else:
-            col.append(medium)
+            col_pos.append(medium)
+    for n in neg_nbr_of_peptides:
+        if n < max_nbr_of_peptides / 3:
+            col_neg.append(light)
+        elif n >= 2 * max_nbr_of_peptides / 3:
+            col_neg.append(dark)
+        else:
+            col_neg.append(medium)
 
-    plt.bar(trivial_name, pos_height, color=col)
-    plt.bar(trivial_name, neg_height, color=col)
+    def make_picker(fig, wedges):
+        label=''
+        def onclick(event):
+            wedge = event.artist
+            label = wedge.get_label()
+            print(label)
+        for wedge in wedges:
+            for w in wedge:
+                w.set_picker(True)
+        fig.canvas.mpl_connect('pick_event', onclick)
+        return label
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    wedge1 = ax.bar(trivial_name, pos_height, color=col_pos)
+    wedge2 = ax.bar(trivial_name, neg_height, color=col_pos)
+    wedges = [wedge1,wedge2]
+
+    for w1, w2, l in zip(wedge1, wedge2, trivial_name):
+        w1.set_label(l)
+        w2.set_label(l)
+
+    label = make_picker(fig, wedges)
     plt.xticks('')
     mplcursors.cursor(hover=True)
-    plt.show()
 
+    plt.show()
+    return label
 
 def create_peptide_graphic(peptide_list):
-    fasta = peptide_list.protein.get_fasta()
-    fasta_dict = {"index": [], "counter": [], "intensity1": [], "intensity2": []}
+    fasta = peptide_list[0].fasta
+    fasta_dict = {"index": [], "counter_pos": [], "counter_neg": [], "intensity_pos": [], "intensity_neg": []}
     for i in range(len(fasta)):
         fasta_dict["index"].append(i)
-        fasta_dict["counter"].append(0)
-        fasta_dict["intensity"].append(0)
+        fasta_dict["counter_pos"].append(0)
+        fasta_dict["counter_neg"].append(0)
+        fasta_dict["intensity_pos"].append(0)
+        fasta_dict["intensity_neg"].append(0)
     for peptide in peptide_list:
         start = peptide.get_start()
         end = peptide.get_end()
-        intensity1 = peptide.get_area()[0]
-        intensity2 = peptide.get_area()[1]
+        intensity_pos = peptide.get_area()[0]
+        intensity_neg = peptide.get_area()[1]
         p = list(range(start, end))
         for i in p:
-            print(fasta_dict["index"][i])
-            fasta_dict["counter"][i] += 1
-            fasta_dict["intensity1"][i] += intensity1
-            fasta_dict["intensity2"][i] += intensity2
+            fasta_dict["intensity_pos"][i] += intensity_pos
+            fasta_dict["intensity_neg"][i] += intensity_neg
+            if intensity_pos > 0:
+                fasta_dict["counter_pos"][i] += 1
+            if intensity_neg > 0:
+                fasta_dict["counter_neg"][i] += 1
 
+    dark = "#015201"
+    medium = "#53c653"
+    light = "#d9f2d9"
+    col_pos = []
+    col_neg = []
+    max_count = max(fasta_dict["counter_pos"]+fasta_dict["counter_neg"])
+    for count in fasta_dict["counter_pos"]:
+        if count > 2*max_count/3:
+            col_pos.append(dark)
+        elif count < max_count/3:
+            col_pos.append(light)
+        else:
+            col_pos.append(medium)
+    for count in fasta_dict["counter_neg"]:
+        if count > 2*max_count/3:
+            col_neg.append(dark)
+        elif count < max_count/3:
+            col_neg.append(light)
+        else:
+            col_neg.append(medium)
+
+    plt.bar(x=fasta_dict["index"], height=fasta_dict['intensity_pos'], color=col_pos,
+            edgecolor=col_pos, width=1)
+    plt.bar(x=fasta_dict["index"], height=[-value for value in fasta_dict['intensity_neg']], color=col_neg
+            , edgecolor=col_neg, width=1)
+    plt.title(peptide_list[0].protein.get_trivial_name())
+    mplcursors.cursor(hover=True)
+    plt.show()
     return fasta_dict
 
 
@@ -221,11 +288,12 @@ def create_venn(df):
 
 
 def calculate_rt(seq):
-    return achrom.calculate_RT(seq, achrom.RCs_guo_ph7_0)
+    return achrom.calculate_RT(seq, achrom.RCs_guo_ph7_0, raise_no_mod=False)
 
 
 def calculate_pi(seq):
     return electrochem.pI(seq, 7)
+
 
 def create_protein_window(protein_list):
     protein_list = group_on_alphabet(protein_list)
@@ -266,4 +334,9 @@ def create_protein_window(protein_list):
                 print(p.accession)
     listbox.bind('<<ListboxSelect>>', print_protein_info)
     window.mainloop()
+
+
+def rt_check(df):
+    return df[(np.abs(stats.zscore(df[[col for col in df if col.startswith('RT')]])) < 1.96).all(axis=1)]
+
 
