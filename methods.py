@@ -160,7 +160,7 @@ def create_protein_graphic(protein_list):
         pos_height.append(protein.get_area_mean()[0])
         neg_nbr_of_peptides.append(protein.get_nbr_of_peptides()[1])
         neg_height.append(-protein.get_area_mean()[1])
-        trivial_name.append(protein.get_trivial_name())
+        trivial_name.append(protein.trivial_name)
 
     dark = "#015201"
     medium = "#53c653"
@@ -301,27 +301,18 @@ def create_protein_window(protein_list):
     window.title("Protein Window")
     window.geometry('500x300')
 
-    #create label
     label = tk.Label(window, text="Proteins", fg="black")
     label.place(relx=0.5)
 
-    #Create a search box
-    #search_bar = tk.Entry(window)
-    #search_bar.pack()
-
-    #Buttons
     button_open = tk.Button(window, text="Open")
     button_close = tk.Button(window, text="Close", command=window.destroy)
-    #button_search = tk.Button(window, text="Search")
     button_open.place(relx=0.8, rely=0.9)
     button_close.place(relx=0.1, rely=0.9)
-    #button_search.pack()
 
-    #Scrollbar
+
     scrollbar = tk.Scrollbar(window)
-    scrollbar.pack(pady=40, side=tk.RIGHT, fill=tk.Y) #Does not work properly
+    scrollbar.pack(pady=40, side=tk.RIGHT, fill=tk.Y)
 
-    # Create list of proteins
     listbox = tk.Listbox(window, yscrollcommand=scrollbar.set(0.0, 1.0))
     for protein in protein_list:
         listbox.insert(tk.END, protein.get_trivial_name())

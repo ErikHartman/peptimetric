@@ -18,6 +18,5 @@ g1 = concatenate_dataframes(read_files())
 g2 = concatenate_dataframes(read_files())
 master = g1.merge(g2, on=['Peptide', 'Accession'], suffixes=['_g1', '_g2'])
 protein_list = create_protein_list(master)
-accession = create_protein_graphic(protein_list)
-print(accession)
+print(protein_list[1].get_fasta_seq(), '\n', protein_list[1].get_trivial_name())
 
