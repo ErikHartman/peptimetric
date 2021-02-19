@@ -12,7 +12,7 @@ from scipy import stats
 def read_files():
     root = tk.Tk()
     root.withdraw()
-    filenames = askopenfilenames(initialdir="/Documents/GitHub/kand/example_files", title="Open files", multiple=True,)
+    filenames = askopenfilenames(initialdir="/Documents/GitHub/kand/example_files", title="Open files", multiple=True, )
     dfs = []
     for filename in filenames:
         print("opening", filename)
@@ -185,11 +185,13 @@ def create_protein_graphic(protein_list):
             col_neg.append(medium)
 
     def make_picker(fig, wedges):
-        label=''
+        label = ''
+
         def onclick(event):
             wedge = event.artist
             label = wedge.get_label()
             print(label)
+
         for wedge in wedges:
             for w in wedge:
                 w.set_picker(True)
@@ -200,7 +202,7 @@ def create_protein_graphic(protein_list):
     ax = fig.add_subplot(111)
     wedge1 = ax.bar(trivial_name, pos_height, color=col_pos)
     wedge2 = ax.bar(trivial_name, neg_height, color=col_pos)
-    wedges = [wedge1,wedge2]
+    wedges = [wedge1, wedge2]
 
     for w1, w2, l in zip(wedge1, wedge2, trivial_name):
         w1.set_label(l)
@@ -213,8 +215,9 @@ def create_protein_graphic(protein_list):
     plt.show()
     return label
 
+
 def create_peptide_graphic(peptide_list):
-    fasta = peptide_list[0].fasta
+    fasta = str(peptide_list[0].fasta.seq)
     fasta_dict = {"index": [], "counter_pos": [], "counter_neg": [], "intensity_pos": [], "intensity_neg": []}
     for i in range(len(fasta)):
         fasta_dict["index"].append(i)
@@ -241,34 +244,40 @@ def create_peptide_graphic(peptide_list):
     light = "#d9f2d9"
     col_pos = []
     col_neg = []
-    max_count = max(fasta_dict["counter_pos"]+fasta_dict["counter_neg"])
+    max_count = max(fasta_dict["counter_pos"] + fasta_dict["counter_neg"])
     for count in fasta_dict["counter_pos"]:
-        if count > 2*max_count/3:
+        if count > 2 * max_count / 3:
             col_pos.append(dark)
-        elif count < max_count/3:
+        elif count < max_count / 3:
             col_pos.append(light)
         else:
             col_pos.append(medium)
     for count in fasta_dict["counter_neg"]:
-        if count > 2*max_count/3:
+        if count > 2 * max_count / 3:
             col_neg.append(dark)
-        elif count < max_count/3:
+        elif count < max_count / 3:
             col_neg.append(light)
         else:
             col_neg.append(medium)
+    fig = plt.figure(figsize=(15,5))
+    ax = fig.add_subplot(111)
+    upper = ax.bar(x=fasta_dict["index"], height=fasta_dict['intensity_pos'], color=col_pos,
+                   edgecolor=col_pos, width=1)
+    lower = ax.bar(x=fasta_dict["index"], height=[-value for value in fasta_dict['intensity_neg']], color=col_neg
+                   , edgecolor=col_neg, width=1)
+    ax.set_title(peptide_list[0].fasta.name)
+    ax.set_xlabel('Sequence')
+    ax.set_ylabel('Intensity')
+    ax.legend(color = [dark, medium, light] [2 * max_count / 3, max_count / 3, 0 ])
 
-    plt.bar(x=fasta_dict["index"], height=fasta_dict['intensity_pos'], color=col_pos,
-            edgecolor=col_pos, width=1)
-    plt.bar(x=fasta_dict["index"], height=[-value for value in fasta_dict['intensity_neg']], color=col_neg
-            , edgecolor=col_neg, width=1)
-    plt.title(peptide_list[0].protein.get_trivial_name())
     mplcursors.cursor(hover=True)
+
     plt.show()
     return fasta_dict
 
 
 def group_on_alphabet(protein_list):
-    protein_list.sort(key= lambda x: x.get_trivial_name())
+    protein_list.sort(key=lambda x: x.get_trivial_name())
     return protein_list
 
 
@@ -309,25 +318,23 @@ def create_protein_window(protein_list):
     button_open.place(relx=0.8, rely=0.9)
     button_close.place(relx=0.1, rely=0.9)
 
-
     scrollbar = tk.Scrollbar(window)
     scrollbar.pack(pady=40, side=tk.RIGHT, fill=tk.Y)
 
     listbox = tk.Listbox(window, yscrollcommand=scrollbar.set(0.0, 1.0))
     for protein in protein_list:
         listbox.insert(tk.END, protein.get_trivial_name())
-    listbox.place(relwidth=0.4, relheight=0.6,x=250, y=150)
+    listbox.place(relwidth=0.4, relheight=0.6, x=250, y=150)
     scrollbar.config(command=listbox.yview())
 
     def print_protein_info(event):
         for p in protein_list:
             if p.get_trivial_name() == listbox.get(tk.ANCHOR):
                 print(p.accession)
+
     listbox.bind('<<ListboxSelect>>', print_protein_info)
     window.mainloop()
 
 
 def rt_check(df):
     return df[(np.abs(stats.zscore(df[[col for col in df if col.startswith('RT')]])) < 1.96).all(axis=1)]
-
-

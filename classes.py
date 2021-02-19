@@ -79,7 +79,7 @@ class Peptide:
 
     def __init__(self, protein, sequence):
         self.protein = protein
-        self.fasta = self.protein.get_fasta_seq()
+        self.fasta = self.protein.fasta
         self.sequence = sequence
         self.df = protein.df[protein.df['Peptide'] == sequence]
 
@@ -87,8 +87,8 @@ class Peptide:
         return self.sequence
 
     def get_start(self):
-        for i in range(len(self.fasta)):
-            if self.sequence == self.fasta[i:i+len(self.sequence)]:
+        for i in range(len(self.fasta.seq)):
+            if self.sequence == self.fasta.seq[i:i+len(self.sequence)]:
                 return i
 
     def get_end(self):
