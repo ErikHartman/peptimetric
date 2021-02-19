@@ -309,29 +309,59 @@ def create_protein_window(protein_list):
     window.title("Protein Window")
     window.geometry('500x300')
 
-    label = tk.Label(window, text="Proteins", fg="black")
-    label.place(relx=0.5)
+    def update(data):
+        listbox.delete(0, tk.END)
 
-    button_open = tk.Button(window, text="Open")
-    button_close = tk.Button(window, text="Close", command=window.destroy)
-    button_open.place(relx=0.8, rely=0.9)
-    button_close.place(relx=0.1, rely=0.9)
+        for item in data:
+            listbox.insert(tk.END, item.get_trivial_name())
 
-    scrollbar = tk.Scrollbar(window)
-    scrollbar.pack(pady=40, side=tk.RIGHT, fill=tk.Y)
-
-    listbox = tk.Listbox(window, yscrollcommand=scrollbar.set(0.0, 1.0))
-    for protein in protein_list:
-        listbox.insert(tk.END, protein.get_trivial_name())
-    listbox.place(relwidth=0.4, relheight=0.6, x=250, y=150)
-    scrollbar.config(command=listbox.yview())
+    def fillout(event):
+        search_box.delete(0, tk.END)
+        search_box.insert(0, listbox.get(tk.ANCHOR))
 
     def print_protein_info(event):
         for p in protein_list:
             if p.get_trivial_name() == listbox.get(tk.ANCHOR):
                 print(p.accession)
 
+    def search(event):
+        data = []
+        typed = search_box.get()
+        if typed == "":
+            update(data)
+        else:
+            data = []
+            for prot in protein_list:
+                if typed.lower() in prot.get_trivial_name().lower():
+                    data.append(prot)
+        update(data)
+
+    def check_empty():
+        if search_box.get() == "":
+            update(protein_list)
+
+    label = tk.Label(window, text="Search protein", fg="black")
+    label.pack(pady=10)
+    search_box = tk.Entry(window)
+    search_box.pack(pady=10, padx=30)
+
+    button_open = tk.Button(window, text="Open")
+    button_close = tk.Button(window, text="Close", command=window.destroy)
+    button_open.place(relx=0.8, rely=0.9)
+    button_close.place(relx=0.1, rely=0.9)
+
+    p_frame = tk.Frame(window)
+    scrollbar = tk.Scrollbar(window, orient=tk.VERTICAL)
+    listbox = tk.Listbox(p_frame, yscrollcommand=scrollbar.set)
+    scrollbar.config(command=listbox.yview)
+    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+    p_frame.pack()
+    listbox.pack(pady=30)
+    update(protein_list)
     listbox.bind('<<ListboxSelect>>', print_protein_info)
+    search_box.bind("<KeyRelease>", search)
+    listbox.bind("<<ListBoxSelect>>", fillout)
+    check_empty()
     window.mainloop()
 
 
