@@ -17,7 +17,7 @@ def read_files():
     dfs = []
     for filename in filenames:
         print("opening", filename)
-        df = pd.read_excel(filename)
+        df = pd.read_excel(filename, engine='openpyxl')
         df['Peptide'] = df['Peptide'].str.replace('[^a-zA-Z]', '')
         accessions = []
         for index, row in df.iterrows():
