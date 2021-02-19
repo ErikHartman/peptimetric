@@ -1,4 +1,6 @@
 import pandas as pd
+from tqdm import tqdm
+
 from protein import Protein
 from peptide import Peptide
 
@@ -6,7 +8,7 @@ from peptide import Peptide
 def create_protein_list(df):
     p_df = df.groupby(by='Accession', as_index=False).mean()
     p_list = []
-    for accession in p_df['Accession']:
+    for accession in tqdm(p_df['Accession'], desc="Getting protein data"):
         p = Protein(df, accession)
         p_list.append(p)
     return p_list
