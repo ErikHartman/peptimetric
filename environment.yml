@@ -15,7 +15,6 @@ dependencies:
   - cycler=0.10.0
   - et_xmlfile=1.0.1
   - freetype=2.10.4
-  - icc_rt=2019.0.0
   - icu=58.2
   - idna=2.10
   - intel-openmp=2020.2
@@ -66,11 +65,7 @@ dependencies:
   - tk=8.6.10
   - tornado=6.1
   - urllib3=1.26.3
-  - vc=14.2
-  - vs2015_runtime=14.27.29016
   - wheel=0.36.2
-  - win_inet_pton=1.1.0
-  - wincertstore=0.2
   - xlrd=2.0.1
   - xz=5.2.5
   - zlib=1.2.11
