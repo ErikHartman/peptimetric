@@ -268,7 +268,6 @@ def create_peptide_graphic(peptide_list):
     ax.set_title(peptide_list[0].fasta.name)
     ax.set_xlabel('Sequence')
     ax.set_ylabel('Intensity')
-    ax.legend(color = [dark, medium, light] [2 * max_count / 3, max_count / 3, 0 ])
 
     mplcursors.cursor(hover=True)
 
