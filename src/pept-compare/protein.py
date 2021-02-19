@@ -5,6 +5,14 @@ import re
 from methods import *
 from pyteomics import parser
 import numpy as np
+from joblib import Memory
+
+memory = Memory(".cache/", verbose = False)
+
+@memory.cache
+def download_fasta(protein_id):
+    link = f"http://www.uniprot.org/uniprot/{protein_id}.fasta"
+    return requests.get(link).text
 
 
 class Protein:
@@ -61,9 +69,7 @@ class Protein:
         print(self.df)
 
     def get_fasta(self):
-        link = "http://www.uniprot.org/uniprot/" + self.get_id() + ".fasta"
-        data = requests.get(link).text
-        print('Retrieving FASTA...')
+        data = download_fasta(self.get_id())
         fasta_iterator = SeqIO.parse(StringIO(data), "fasta")
         for fasta in fasta_iterator:
             return fasta
