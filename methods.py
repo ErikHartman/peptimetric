@@ -261,14 +261,14 @@ def create_peptide_graphic(peptide_list):
             col_neg.append(medium)
     fig = plt.figure(figsize=(15,5))
     ax = fig.add_subplot(111)
-    upper = ax.bar(x=fasta_dict["index"], height=fasta_dict['intensity_pos'], color=col_pos,
+    ax.bar(x=fasta_dict["index"], height=fasta_dict['intensity_pos'], color=col_pos,
                    edgecolor=col_pos, width=1)
-    lower = ax.bar(x=fasta_dict["index"], height=[-value for value in fasta_dict['intensity_neg']], color=col_neg
+    ax.bar(x=fasta_dict["index"], height=[-value for value in fasta_dict['intensity_neg']], color=col_neg
                    , edgecolor=col_neg, width=1)
     ax.set_title(peptide_list[0].fasta.name)
     ax.set_xlabel('Sequence')
     ax.set_ylabel('Intensity')
-
+    ax.legend()
     mplcursors.cursor(hover=True)
 
     plt.show()

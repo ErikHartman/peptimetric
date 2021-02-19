@@ -55,7 +55,7 @@ class Protein:
         return str(self.accession)
 
     def get_trivial_name(self):
-        return str(self.fasta.name)
+        return str(self.fasta.name.split('|')[2])
 
     def print(self):
         print(self.df)
