@@ -7,6 +7,7 @@ from pyteomics import electrochem, achrom
 import mplcursors
 import numpy as np
 from scipy import stats
+import matplotlib.patches as mpatches
 
 
 def read_files():
@@ -168,7 +169,7 @@ def create_protein_graphic(protein_list):
     col_pos = []
     col_neg = []
     max_nbr_of_peptides = max(pos_nbr_of_peptides + neg_nbr_of_peptides)
-
+    min_nbr_of_peptides = min(pos_nbr_of_peptides + neg_nbr_of_peptides)
     for n in pos_nbr_of_peptides:
         if n < max_nbr_of_peptides / 3:
             col_pos.append(light)
@@ -211,7 +212,10 @@ def create_protein_graphic(protein_list):
     label = make_picker(fig, wedges)
     plt.xticks('')
     mplcursors.cursor(hover=True)
-
+    patches = [mpatches.Patch(color=dark, label=int(2 * max_nbr_of_peptides / 3)),
+               mpatches.Patch(color=medium, label=int(max_nbr_of_peptides / 3)),
+               mpatches.Patch(color=light, label=int(min_nbr_of_peptides))]
+    ax.legend(handles=patches)
     plt.show()
     return label
 
@@ -245,6 +249,7 @@ def create_peptide_graphic(peptide_list):
     col_pos = []
     col_neg = []
     max_count = max(fasta_dict["counter_pos"] + fasta_dict["counter_neg"])
+    min_count = min(fasta_dict["counter_pos"] + fasta_dict["counter_neg"])
     for count in fasta_dict["counter_pos"]:
         if count > 2 * max_count / 3:
             col_pos.append(dark)
@@ -259,16 +264,23 @@ def create_peptide_graphic(peptide_list):
             col_neg.append(light)
         else:
             col_neg.append(medium)
-    fig = plt.figure(figsize=(15,5))
+    fig = plt.figure(figsize=(15, 5))
     ax = fig.add_subplot(111)
     ax.bar(x=fasta_dict["index"], height=fasta_dict['intensity_pos'], color=col_pos,
-                   edgecolor=col_pos, width=1)
+           edgecolor=col_pos, width=1)
     ax.bar(x=fasta_dict["index"], height=[-value for value in fasta_dict['intensity_neg']], color=col_neg
-                   , edgecolor=col_neg, width=1)
-    ax.set_title(peptide_list[0].fasta.name)
+           , edgecolor=col_neg, width=1)
+    plt.axhline(y=0, color='#1a3d1d', linestyle='-', linewidth=0.1, alpha=0.5)
+    weight = (sum(fasta_dict['intensity_pos']) - sum(fasta_dict['intensity_neg']))/len(fasta)
+    plt.axhline(y=weight, color='r', linestyle='--', alpha=0.5)
+    ax.set_title(peptide_list[0].protein.get_trivial_name())
     ax.set_xlabel('Sequence')
     ax.set_ylabel('Intensity')
-    ax.legend()
+    plt.xticks(np.arange(0, len(fasta), step=round(len(fasta)/100)*10))
+    patches = [mpatches.Patch(color=dark, label=int(2 * max_count / 3)),
+               mpatches.Patch(color=medium, label=int(max_count / 3)),
+               mpatches.Patch(color=light, label=int(min_count))]
+    ax.legend(handles=patches)
     mplcursors.cursor(hover=True)
 
     plt.show()
