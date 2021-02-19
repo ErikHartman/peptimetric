@@ -1,5 +1,6 @@
-from classes import *
 import pandas as pd
+from protein import Protein
+from peptide import Peptide
 
 
 def create_protein_list(df):
