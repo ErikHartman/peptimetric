@@ -218,6 +218,8 @@ def create_protein_graphic(protein_list):
     set_colors()
     make_picker(fig, wedges)
     plt.xticks('')
+    weight = (sum(pos_height)+sum(neg_height))/len(protein_list)
+    plt.axhline(y=weight, color='r', linestyle='--', alpha=0.5)
     mplcursors.cursor(hover=True)
     patches = [mpatches.Patch(color=dark, label=int(2 * max_nbr_of_peptides / 3)),
                mpatches.Patch(color=medium, label=int(max_nbr_of_peptides / 3)),
@@ -227,7 +229,7 @@ def create_protein_graphic(protein_list):
 
 
 def create_peptide_graphic(peptide_list):
-    fasta = str(peptide_list[0].fasta.seq)
+    fasta = peptide_list[0].protein.get_fasta_seq()
     fasta_dict = {"index": [], "counter_pos": [], "counter_neg": [], "intensity_pos": [], "intensity_neg": []}
     for i in range(len(fasta)):
         fasta_dict["index"].append(i)
