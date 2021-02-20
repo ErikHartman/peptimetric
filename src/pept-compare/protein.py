@@ -5,6 +5,14 @@ import re
 from methods import *
 from pyteomics import parser
 import numpy as np
+from joblib import Memory
+
+memory = Memory(".cache/", verbose = False)
+
+@memory.cache
+def download_fasta(protein_id):
+    link = f"http://www.uniprot.org/uniprot/{protein_id}.fasta"
+    return requests.get(link).text
 
 
 class Protein:
@@ -61,9 +69,7 @@ class Protein:
         print(self.df)
 
     def get_fasta(self):
-        link = "http://www.uniprot.org/uniprot/" + self.get_id() + ".fasta"
-        data = requests.get(link).text
-        print('Retrieving FASTA...')
+        data = download_fasta(self.get_id())
         fasta_iterator = SeqIO.parse(StringIO(data), "fasta")
         for fasta in fasta_iterator:
             return fasta
@@ -73,50 +79,3 @@ class Protein:
 
     def fold_change(self, protein):
         return self.get_area_sum()/protein.get_area_sum()
-
-
-class Peptide:
-
-    def __init__(self, protein, sequence):
-        self.protein = protein
-        self.fasta = self.protein.fasta
-        self.sequence = sequence
-        self.df = protein.df[protein.df['Peptide'] == sequence]
-
-    def get_sequence(self):
-        return self.sequence
-
-    def get_start(self):
-        for i in range(len(self.fasta.seq)):
-            if self.sequence == self.fasta.seq[i:i+len(self.sequence)]:
-                return i
-
-    def get_end(self):
-        return self.get_start() + len(self.sequence)
-
-    def create_array(self):
-        return list(self.get_sequence())
-
-    def get_intensity(self):
-        area_columns = self.df.loc[:, self.df.columns.str.startswith('Area')]
-        return area_columns.mean()
-
-    def is_unique(self):
-        area_columns = [col for col in self.df if col.startswith('Area')]
-        i = 0
-        for area in area_columns:
-            if area != 0:
-                i += 1
-        return i == 1
-
-    def get_area(self):
-        area_columns = [col for col in self.df if col.startswith('Area')]
-        area = []
-        for a in area_columns:
-            area.append(self.df.iloc[0][a])
-
-        return area
-
-    def print(self):
-        print(self.df)
-
