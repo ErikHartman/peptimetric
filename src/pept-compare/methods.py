@@ -8,6 +8,8 @@ import mplcursors
 import numpy as np
 from scipy import stats
 import matplotlib.patches as mpatches
+from matplotlib.patches import PathPatch
+from matplotlib.textpath import TextPath
 
 
 def read_files():
@@ -163,27 +165,37 @@ def create_protein_graphic(protein_list):
         neg_height.append(-protein.get_area_mean()[1])
         trivial_name.append(protein.get_trivial_name())
 
-    dark = "#015201"
-    medium = "#53c653"
-    light = "#d9f2d9"
+    dark = "#2d662f"
+    mediumdark = "#4a854c"
+    medium = "#6cab6e"
+    mediumlight = '#90d493'
+    light = "#b7f7ba"
     col_pos = []
     col_neg = []
     max_nbr_of_peptides = max(pos_nbr_of_peptides + neg_nbr_of_peptides)
     min_nbr_of_peptides = min(pos_nbr_of_peptides + neg_nbr_of_peptides)
     for n in pos_nbr_of_peptides:
-        if n < max_nbr_of_peptides / 3:
-            col_pos.append(light)
-        elif n >= 2 * max_nbr_of_peptides / 3:
+        if n > 4 * max_nbr_of_peptides / 5:
             col_pos.append(dark)
-        else:
+        elif n >= 3 * max_nbr_of_peptides / 5:
+            col_pos.append(mediumdark)
+        elif n >= 2 * max_nbr_of_peptides / 5:
             col_pos.append(medium)
-    for n in neg_nbr_of_peptides:
-        if n < max_nbr_of_peptides / 3:
-            col_neg.append(light)
-        elif n >= 2 * max_nbr_of_peptides / 3:
-            col_neg.append(dark)
+        elif n >= max_nbr_of_peptides / 5:
+            col_pos.append(mediumlight)
         else:
+            col_pos.append(light)
+    for n in neg_nbr_of_peptides:
+        if n > 4 * max_nbr_of_peptides / 5:
+            col_neg.append(dark)
+        elif n >= 3 * max_nbr_of_peptides / 5:
+            col_neg.append(mediumdark)
+        elif n >= 2 * max_nbr_of_peptides / 5:
             col_neg.append(medium)
+        elif n >= max_nbr_of_peptides / 5:
+            col_neg.append(mediumlight)
+        else:
+            col_neg.append(light)
 
     def make_picker(fig, wedges):
         def onclick(event):
@@ -193,11 +205,11 @@ def create_protein_graphic(protein_list):
             bar.set_edgecolor('#ff150d')
             fig.canvas.draw()
             print(label)
+
         for wedge in wedges:
             for w in wedge:
                 w.set_picker(True)
         fig.canvas.mpl_connect('pick_event', onclick)
-
 
     fig = plt.figure(figsize=(15, 5))
     ax = fig.add_subplot(111)
@@ -213,18 +225,31 @@ def create_protein_graphic(protein_list):
     for w1, w2, l, pos_nbr_of_peptides, neg_nbr_of_peptides in zip(wedge1, wedge2, trivial_name,
                                                                    pos_nbr_of_peptides, neg_nbr_of_peptides):
         w1.set_label((l, pos_nbr_of_peptides))
-        w2.set_label((l,neg_nbr_of_peptides))
+        w2.set_label((l, neg_nbr_of_peptides))
 
     set_colors()
     make_picker(fig, wedges)
     plt.xticks('')
-    weight = (sum(pos_height)+sum(neg_height))/len(protein_list)
-    plt.axhline(y=weight, color='r', linestyle='--', alpha=0.5)
+    ax.set_xlabel('Protein')
+    ax.set_ylabel('Intensity')
+    weight = (sum(pos_height) + sum(neg_height)) / len(protein_list)
+    plt.axhline(y=0, color='#000000', linestyle='--', linewidth=0.5)
+    plt.axhline(y=weight, color='r', linestyle='--', linewidth=1, alpha=0.5)
     mplcursors.cursor(hover=True)
-    patches = [mpatches.Patch(color=dark, label=int(2 * max_nbr_of_peptides / 3)),
-               mpatches.Patch(color=medium, label=int(max_nbr_of_peptides / 3)),
+    patches = [mpatches.Patch(color=dark, label=int(4 * max_nbr_of_peptides / 5)),
+               mpatches.Patch(color=mediumdark, label=int(3 * max_nbr_of_peptides / 5)),
+               mpatches.Patch(color=medium, label=int(2 * max_nbr_of_peptides / 5)),
+               mpatches.Patch(color=mediumlight, label=int(max_nbr_of_peptides / 5)),
                mpatches.Patch(color=light, label=int(min_nbr_of_peptides))]
-    ax.legend(handles=patches)
+    ax.axis([0, len(protein_list), -1.1 * max(pos_height + np.abs(neg_height)),
+             1.1 * max(pos_height + np.abs(neg_height))])
+    plt.annotate(text='Group 1', xy=(0, 0), xytext=(1, 1 * max(pos_height + np.abs(neg_height))))
+    plt.annotate(text='Group 2', xy=(0, 0), xytext=(1, -1 * max(pos_height + np.abs(neg_height))))
+    if max(pos_height) >= -min(neg_height):
+        ax.legend(handles=patches, title='Nbr of peptides', loc='upper right')
+    else:
+        ax.legend(handles=patches, title='Nbr of peptides', loc='lower right')
+
     plt.show()
 
 
@@ -251,46 +276,65 @@ def create_peptide_graphic(peptide_list):
             if intensity_neg > 0:
                 fasta_dict["counter_neg"][i] += 1
 
-    dark = "#015201"
-    medium = "#53c653"
-    light = "#d9f2d9"
+    dark = "#2d662f"
+    mediumdark = "#4a854c"
+    medium = "#6cab6e"
+    mediumlight = '#90d493'
+    light = "#b7f7ba"
     col_pos = []
     col_neg = []
     max_count = max(fasta_dict["counter_pos"] + fasta_dict["counter_neg"])
     min_count = min(fasta_dict["counter_pos"] + fasta_dict["counter_neg"])
     for count in fasta_dict["counter_pos"]:
-        if count > 2 * max_count / 3:
+        if count > 4 * max_count / 5:
             col_pos.append(dark)
-        elif count < max_count / 3:
-            col_pos.append(light)
-        else:
+        elif count > 3 * max_count / 5:
+            col_pos.append(mediumdark)
+        elif count > 2 * max_count / 5:
             col_pos.append(medium)
-    for count in fasta_dict["counter_neg"]:
-        if count > 2 * max_count / 3:
-            col_neg.append(dark)
-        elif count < max_count / 3:
-            col_neg.append(light)
+        elif count > max_count / 5:
+            col_pos.append(mediumlight)
         else:
+            col_pos.append(light)
+    for count in fasta_dict["counter_neg"]:
+        if count > 4 * max_count / 5:
+            col_neg.append(dark)
+        elif count > 3 * max_count / 5:
+            col_neg.append(mediumdark)
+        elif count > 2 * max_count / 5:
             col_neg.append(medium)
+        elif count > max_count / 5:
+            col_neg.append(mediumlight)
+        else:
+            col_neg.append(light)
     fig = plt.figure(figsize=(15, 5))
     ax = fig.add_subplot(111)
     ax.bar(x=fasta_dict["index"], height=fasta_dict['intensity_pos'], color=col_pos,
            edgecolor=col_pos, width=1)
     ax.bar(x=fasta_dict["index"], height=[-value for value in fasta_dict['intensity_neg']], color=col_neg
            , edgecolor=col_neg, width=1)
-    plt.axhline(y=0, color='#1a3d1d', linestyle='-', linewidth=0.1, alpha=0.5)
-    weight = (sum(fasta_dict['intensity_pos']) - sum(fasta_dict['intensity_neg']))/len(fasta)
-    plt.axhline(y=weight, color='r', linestyle='--', alpha=0.5)
+
+    plt.axhline(y=0, color='#000000', linestyle='--', linewidth=0.5)
+    weight = (sum(fasta_dict['intensity_pos']) - sum(fasta_dict['intensity_neg'])) / len(fasta)
+    plt.axhline(y=weight, color='r', linestyle='--', linewidth=1)
     ax.set_title(peptide_list[0].protein.get_trivial_name())
     ax.set_xlabel('Sequence')
     ax.set_ylabel('Intensity')
-    plt.xticks(np.arange(0, len(fasta), step=round(len(fasta)/100)*10))
-    patches = [mpatches.Patch(color=dark, label=int(2 * max_count / 3)),
-               mpatches.Patch(color=medium, label=int(max_count / 3)),
+    ax.axis([0, len(fasta), -1.2*max(fasta_dict["intensity_neg"] + fasta_dict["intensity_pos"]),
+             1.2*max(fasta_dict["intensity_neg"] + fasta_dict["intensity_pos"])])
+    plt.xticks(np.arange(0, len(fasta), step=round(len(fasta) / 100) * 10))
+    patches = [mpatches.Patch(color=dark, label=int(4 * max_count / 5)),
+               mpatches.Patch(color=mediumdark, label=int(3 * max_count / 5)),
+               mpatches.Patch(color=medium, label=int(2 * max_count / 5)),
+               mpatches.Patch(color=mediumlight, label=int(max_count / 5)),
                mpatches.Patch(color=light, label=int(min_count))]
-    ax.legend(handles=patches)
-    mplcursors.cursor(hover=True)
+    if max(fasta_dict['intensity_pos']) >= max(fasta_dict['intensity_neg']):
+        ax.legend(handles=patches, title='Nbr of peptides overlapping', loc='upper right')
+    else:
+        ax.legend(handles=patches, title='Nbr of peptides overlapping', loc='lower right')
 
+    plt.annotate(text='Group 1', xy=(0, 0), xytext=(1, 1.1*max(fasta_dict["intensity_neg"] + fasta_dict["intensity_pos"])))
+    plt.annotate(text='Group 2', xy=(0, 0), xytext=(1, -1.1*max(fasta_dict["intensity_neg"] + fasta_dict["intensity_pos"])))
     plt.show()
     return fasta_dict
 

@@ -1,7 +1,7 @@
 from Bio import SeqIO
 import requests
 from io import StringIO
-import re
+
 from methods import *
 from pyteomics import parser
 import numpy as np
