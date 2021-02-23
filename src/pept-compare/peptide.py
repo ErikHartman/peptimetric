@@ -36,6 +36,7 @@ class Peptide:
         area_columns = [col for col in self.df if col.startswith('Area')]
         area = []
         for a in area_columns:
+            self.df[a].fillna(0, inplace=True)
             area.append(self.df.iloc[0][a])
 
         return area
