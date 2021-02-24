@@ -42,7 +42,6 @@ def concatenate_dataframes(dfs: list) -> pd.DataFrame:
     master_dataframe = pd.DataFrame()
     for df in dfs:
         master_dataframe = master_dataframe.append(df)
-
     return master_dataframe
 
 
@@ -165,11 +164,10 @@ def create_protein_graphic(protein_list):
     trivial_name = []
     for protein in protein_list:
         pos_nbr_of_peptides.append(protein.get_nbr_of_peptides()[0])
-        pos_height.append(ma.log10(protein.get_area_sum()[0])if protein.get_area_sum()[0] != 0 else 0)
+        pos_height.append(ma.log10(protein.get_area_sum()[0]) if protein.get_area_sum()[0] != 0 else 0)
         neg_nbr_of_peptides.append(protein.get_nbr_of_peptides()[1])
         neg_height.append(-ma.log10(protein.get_area_sum()[1]) if protein.get_area_sum()[1] != 0 else 0)
         trivial_name.append(protein.get_trivial_name())
-
 
     col_pos = []
     col_neg = []
@@ -248,9 +246,9 @@ def create_protein_graphic(protein_list):
                mpatches.Patch(color=mediumlight, label=int(max_nbr_of_peptides / 5)),
                mpatches.Patch(color=light, label=1)]
     ax.axis([-0.5, len(protein_list), -1.1 * max(pos_height + np.abs(neg_height)),
-             1.1 * max(pos_height + np.abs(neg_height))-0.5])
+             1.1 * max(pos_height + np.abs(neg_height)) - 0.5])
     plt.text(0.01, 0.99, 'Group 1', horizontalalignment='left', verticalalignment='top', transform=ax.transAxes)
-    plt.text(0.01, 0.01, 'Group 2', horizontalalignment='left', verticalalignment='bottom',  transform=ax.transAxes)
+    plt.text(0.01, 0.01, 'Group 2', horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes)
     if max(pos_height) >= -min(neg_height):
         ax.legend(handles=patches, title='Nbr of peptides', loc='upper right', ncol=5)
     else:
@@ -312,21 +310,21 @@ def create_peptide_graphic(peptide_list):
     ax = fig.add_subplot(111)
     ax.bar(x=fasta_dict["index"], height=fasta_dict['intensity_pos'], color=col_pos,
            edgecolor=col_pos, width=1)
-    ax.bar(x=fasta_dict["index"], height=[-value for value in fasta_dict['intensity_neg']], color=col_neg
-           , edgecolor=col_neg, width=1)
+    ax.bar(x=fasta_dict["index"], height=[-value for value in fasta_dict['intensity_neg']], color=col_neg,
+           edgecolor=col_neg, width=1)
 
     difference = []
     for i in list(range(len(fasta_dict["index"]))):
         difference.append(fasta_dict['intensity_pos'][i] - fasta_dict['intensity_neg'][i])
-    plt.plot(fasta_dict["index"],difference, color='b')
+    plt.plot(fasta_dict["index"], difference, color='b')
     plt.axhline(y=0, color='#000000', linestyle='--', linewidth=0.5)
     weight = (sum(fasta_dict['intensity_pos']) - sum(fasta_dict['intensity_neg'])) / len(fasta)
     plt.axhline(y=weight, color='r', linestyle='--', linewidth=1)
     ax.set_title(peptide_list[0].protein.get_trivial_name())
     ax.set_xlabel('Sequence')
     ax.set_ylabel('log10(Intensity)')
-    ax.axis([0, len(fasta), -1.2*max(fasta_dict["intensity_neg"] + fasta_dict["intensity_pos"]),
-             1.2*max(fasta_dict["intensity_neg"] + fasta_dict["intensity_pos"])])
+    ax.axis([0, len(fasta), -1.2 * max(fasta_dict["intensity_neg"] + fasta_dict["intensity_pos"]),
+             1.2 * max(fasta_dict["intensity_neg"] + fasta_dict["intensity_pos"])])
     plt.xticks(np.arange(0, len(fasta), step=round(len(fasta) / 100) * 10))
     patches = [mpatches.Patch(color=dark, label=int(4 * max_count / 5)),
                mpatches.Patch(color=mediumdark, label=int(3 * max_count / 5)),
@@ -346,6 +344,16 @@ def create_peptide_graphic(peptide_list):
 
 def group_on_alphabet(protein_list):
     protein_list.sort(key=lambda x: x.get_trivial_name())
+    return protein_list
+
+
+def group_on_difference(protein_list):
+    protein_list.sort(key=lambda x: x.get_area_sum()[0] - x.get_area_sum()[1])
+    return protein_list
+
+
+def group_on_max(protein_list, integer):
+    protein_list.sort(key=lambda x: x.get_area_sum()[integer])
     return protein_list
 
 

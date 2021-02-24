@@ -39,6 +39,20 @@ class Protein:
             area_mean.append(df_area[a].mean())
         return area_mean
 
+    def three_peptides(self):
+        area_columns = [col for col in self.df if col.startswith('Area')]
+        df = self.df.copy()
+        df.fillna(0, inplace=True)
+        df.sort_values(by=area_columns, ascending=[False, False], inplace=True)
+        df = df.head(3)
+        df['fold_change'] = df[area_columns[0]] / df[area_columns[1]]
+        if df['fold_change'].mean() == np.inf or df['fold_change'].mean() == np.nan:
+            return 0
+        elif df['fold_change'].mean() < 0:
+            return -1/df['fold_change'].mean()
+        else:
+            return df['fold_change'].mean()
+
     def get_nbr_of_peptides(self):
         area_columns = [col for col in self.df if col.startswith('Area')]
         nbr_of_peptides = []
