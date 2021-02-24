@@ -1,3 +1,4 @@
 .DS_Store
 __pychache__/
+src/pept-compare/__pycache__/
 .cache/
