@@ -9,6 +9,7 @@ import numpy as np
 from scipy import stats
 import matplotlib.patches as mpatches
 from numpy import ma
+from lists import *
 
 dark = "#2d662f"
 mediumdark = "#4a854c"
@@ -43,10 +44,6 @@ def concatenate_dataframes(dfs: list) -> pd.DataFrame:
     for df in dfs:
         master_dataframe = master_dataframe.append(df)
     return master_dataframe
-
-
-def choose_protein() -> str:
-    return input('Choose protein: ')
 
 
 def amino_acid_frequency(peptide_list):
@@ -154,7 +151,12 @@ def create_venn(df):
     plt.show()
 
 
-def create_protein_graphic(protein_list):
+def create_graphic(protein_list, **kwargs):
+    default_settings = {
+        'grouping': ''
+        'difference_metric'
+    }
+    default_settings.update(kwargs)
     protein_list = group_on_alphabet(protein_list)
 
     pos_nbr_of_peptides = []
@@ -162,12 +164,14 @@ def create_protein_graphic(protein_list):
     pos_height = []
     neg_height = []
     trivial_name = []
+    accession = []
     for protein in protein_list:
         pos_nbr_of_peptides.append(protein.get_nbr_of_peptides()[0])
         pos_height.append(ma.log10(protein.get_area_sum()[0]) if protein.get_area_sum()[0] != 0 else 0)
         neg_nbr_of_peptides.append(protein.get_nbr_of_peptides()[1])
         neg_height.append(-ma.log10(protein.get_area_sum()[1]) if protein.get_area_sum()[1] != 0 else 0)
         trivial_name.append(protein.get_trivial_name())
+        accession.append(protein.get_id())
 
     col_pos = []
     col_neg = []
@@ -209,7 +213,8 @@ def create_protein_graphic(protein_list):
             bar.set_edgecolor('#ff150d')
             fig.canvas.draw()
             print(label)
-
+            peptide_list = create_peptide_list(protein_list, label)
+            create_peptide_graphic(peptide_list)
         for wedge in wedges:
             for w in wedge:
                 w.set_picker(True)
@@ -226,10 +231,9 @@ def create_protein_graphic(protein_list):
             w1.set_edgecolor(col1)
             w2.set_edgecolor(col2)
 
-    for w1, w2, l, pos_nbr_of_peptides, neg_nbr_of_peptides in zip(wedge1, wedge2, trivial_name,
-                                                                   pos_nbr_of_peptides, neg_nbr_of_peptides):
-        w1.set_label((l, pos_nbr_of_peptides))
-        w2.set_label((l, neg_nbr_of_peptides))
+    for w1, w2, accession in zip(wedge1, wedge2, accession):
+        w1.set_label(accession)
+        w2.set_label(accession)
 
     set_colors()
     make_picker(fig, wedges)
@@ -316,7 +320,7 @@ def create_peptide_graphic(peptide_list):
     difference = []
     for i in list(range(len(fasta_dict["index"]))):
         difference.append(fasta_dict['intensity_pos'][i] - fasta_dict['intensity_neg'][i])
-    plt.plot(fasta_dict["index"], difference, color='b')
+    plt.plot(fasta_dict["index"], difference, color='b', linewidth=0.8)
     plt.axhline(y=0, color='#000000', linestyle='--', linewidth=0.5)
     weight = (sum(fasta_dict['intensity_pos']) - sum(fasta_dict['intensity_neg'])) / len(fasta)
     plt.axhline(y=weight, color='r', linestyle='--', linewidth=1)
