@@ -1,7 +1,6 @@
 from Bio import SeqIO
 import requests
 from io import StringIO
-
 from methods import *
 from pyteomics import parser
 import numpy as np
@@ -23,40 +22,30 @@ class Protein:
         self.fasta = self.get_fasta()
 
     def get_area_sum(self):
-        area_columns = self.df.loc[:, self.df.columns.str.startswith('Area')]
-        return area_columns.sum()
-
-    def empai(self, base):
-        n_observed = self.get_nbr_of_peptides()
-        rt = []
-        for seq in self.df['Peptide']:
-            rt.append(calculate_rt(seq))
-        rt_min, rt_max = min(rt), max(rt)
-
-        all_observable_peptides = parser.cleave(self.get_fasta(), 'trypsin',0)
-        observable = []
-        for peptide in all_observable_peptides:
-            if (calculate_rt(peptide) < rt_max) & (calculate_rt(peptide) > rt_min):
-                observable.append(peptide)
-
-        pai = [nbr / len(all_observable_peptides) for nbr in n_observed]
-
-        return (np.power(base, pai)) - 1
+        area_columns = [col for col in self.df if col.startswith('Area')]
+        area_sum = []
+        for a in area_columns:
+            df_area = self.df.copy()
+            df_area.fillna(0, inplace=True)
+            area_sum.append(df_area[a].sum())
+        return area_sum
 
     def get_area_mean(self):
-        area_columns = self.df.loc[:, self.df.columns.str.startswith('Area')]
-        return area_columns.mean()
-
-    def get_intensity_mean(self):
-        intensity_columns = self.df.loc[:, self.df.columns.str.startswith('-10lgP')]
-        return intensity_columns.mean()
+        area_columns = [col for col in self.df if col.startswith('Area')]
+        area_mean = []
+        for a in area_columns:
+            df_area = self.df.copy()
+            df_area.fillna(0, inplace=True)
+            area_mean.append(df_area[a].mean())
+        return area_mean
 
     def get_nbr_of_peptides(self):
         area_columns = [col for col in self.df if col.startswith('Area')]
         nbr_of_peptides = []
         for area in area_columns:
-            nbr_of_peptides.append((self.df[area] != 0).sum())
-
+            df_area = self.df.copy()
+            df_area.fillna(0, inplace=True)
+            nbr_of_peptides.append((df_area[area] != 0).sum())
         return nbr_of_peptides
 
     def get_id(self):
@@ -77,5 +66,20 @@ class Protein:
     def get_fasta_seq(self):
         return str(self.fasta.seq)
 
-    def fold_change(self, protein):
-        return self.get_area_sum()/protein.get_area_sum()
+    def empai(self, base):
+        n_observed = self.get_nbr_of_peptides()
+        rt = []
+        for seq in self.df['Peptide']:
+            rt.append(calculate_rt(seq))
+        rt_min, rt_max = min(rt), max(rt)
+
+        all_observable_peptides = parser.cleave(self.get_fasta(), 'trypsin', 0)
+        observable = []
+        for peptide in all_observable_peptides:
+            if (calculate_rt(peptide) < rt_max) & (calculate_rt(peptide) > rt_min):
+                observable.append(peptide)
+
+        pai = [nbr / len(all_observable_peptides) for nbr in n_observed]
+
+        return (np.power(base, pai)) - 1
+

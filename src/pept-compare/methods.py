@@ -26,7 +26,6 @@ def read_files():
     for filename in filenames:
         print("opening", filename)
         df = pd.read_excel(filename, engine='openpyxl')
-        df['Peptide'] = df['Peptide'].str.replace('[^a-zA-Z]', '')
         accessions = []
         for index, row in df.iterrows():
             if '|' in str(row['Accession']):
@@ -166,9 +165,9 @@ def create_protein_graphic(protein_list):
     trivial_name = []
     for protein in protein_list:
         pos_nbr_of_peptides.append(protein.get_nbr_of_peptides()[0])
-        pos_height.append(ma.log10(protein.get_area_mean()[0]))
+        pos_height.append(ma.log10(protein.get_area_sum()[0])if protein.get_area_sum()[0] != 0 else 0)
         neg_nbr_of_peptides.append(protein.get_nbr_of_peptides()[1])
-        neg_height.append(-ma.log10(protein.get_area_mean()[1]))
+        neg_height.append(-ma.log10(protein.get_area_sum()[1]) if protein.get_area_sum()[1] != 0 else 0)
         trivial_name.append(protein.get_trivial_name())
 
 

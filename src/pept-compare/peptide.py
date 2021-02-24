@@ -1,9 +1,13 @@
+import re
+
+
 class Peptide:
 
     def __init__(self, protein, sequence):
         self.protein = protein
         self.fasta = self.protein.fasta
-        self.sequence = sequence
+        self.mod_sequence = sequence
+        self.sequence = re.sub("[^a-zA-Z]+", "", sequence)
         self.df = protein.df[protein.df['Peptide'] == sequence]
 
     def get_sequence(self):
@@ -11,11 +15,11 @@ class Peptide:
 
     def get_start(self):
         for i in range(len(self.fasta.seq)):
-            if self.sequence == self.fasta.seq[i:i+len(self.sequence)]:
+            if self.get_sequence() == self.fasta.seq[i:i+len(self.sequence)]:
                 return i
 
     def get_end(self):
-        return self.get_start() + len(self.sequence)
+        return self.get_start() + len(self.get_sequence())
 
     def create_array(self):
         return list(self.get_sequence())
@@ -36,10 +40,21 @@ class Peptide:
         area_columns = [col for col in self.df if col.startswith('Area')]
         area = []
         for a in area_columns:
-            self.df[a].fillna(0, inplace=True)
-            area.append(self.df.iloc[0][a])
+            df_area = self.df.copy()
+            df_area.fillna(0, inplace=True)
+            area.append(df_area[a].sum())
 
         return area
+
+    def get_RT(self):
+        rt_columns = [col for col in self.df if col.startswith('RT')]
+        rt = []
+        for a in rt_columns:
+            df_rt = self.df.copy()
+            df_rt.fillna(0, inplace=True)
+            rt.append(df_rt[a].sum())
+
+        return rt
 
     def print(self):
         print(self.df)
