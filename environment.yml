@@ -1,11 +1,12 @@
 name: GUI
 channels:
   - anaconda
-  - defaults
   - conda-forge
+  - defaults
 dependencies:
   - _libgcc_mutex=0.1
   - _openmp_mutex=4.5
+  - attrs=20.3.0
   - biopython=1.78
   - blas=1.0
   - brotlipy=0.7.0
@@ -25,8 +26,10 @@ dependencies:
   - gstreamer=1.14.0
   - icu=58.2
   - idna=2.10
+  - iniconfig=1.1.1
   - intel-openmp=2020.2
   - jdcal=1.4.1
+  - joblib=1.0.1
   - jpeg=9b
   - kiwisolver=1.3.1
   - lcms2=2.11
@@ -55,21 +58,26 @@ dependencies:
   - mkl-service=2.3.0
   - mkl_fft=1.2.0
   - mkl_random=1.1.1
+  - more-itertools=8.7.0
   - ncurses=6.2
   - numpy=1.19.2
   - numpy-base=1.19.2
   - olefile=0.46
   - openpyxl=3.0.6
   - openssl=1.1.1j
+  - packaging=20.9
   - pandas=1.2.1
   - pcre=8.44
   - pillow=8.1.0
   - pip=20.3.3
+  - pluggy=0.13.1
+  - py=1.10.0
   - pycparser=2.20
   - pyopenssl=20.0.1
   - pyparsing=2.4.7
   - pyqt=5.9.2
   - pysocks=1.7.1
+  - pytest=6.2.2
   - python=3.8.5
   - python-dateutil=2.8.1
   - python_abi=3.8
@@ -83,6 +91,7 @@ dependencies:
   - six=1.15.0
   - sqlite=3.33.0
   - tk=8.6.10
+  - toml=0.10.1
   - tornado=6.1
   - tqdm=4.56.0
   - urllib3=1.26.3
@@ -94,4 +103,4 @@ dependencies:
   - pip:
     - mplcursors==0.4
     - pyteomics==4.4.1
-prefix: /home/karvla/anaconda3/envs/GUI
+prefix: /home/karvla/.conda/envs/GUI

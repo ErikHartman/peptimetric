@@ -10,6 +10,8 @@ from scipy import stats
 import matplotlib.patches as mpatches
 from numpy import ma
 from lists import *
+from typing import List
+
 
 dark = "#2d662f"
 mediumdark = "#4a854c"
@@ -19,10 +21,13 @@ light = "#b6e0c2"
 grey = "#ebf5ee"
 
 
-def read_files():
+def read_files_gui():
     root = tk.Tk()
     root.withdraw()
     filenames = askopenfilenames(initialdir="/Documents/GitHub/kand/example_files", title="Open files", multiple=True, )
+    return make_peptide_dfs(filenames)
+
+def make_peptide_dfs(filenames : List):
     dfs = []
     for filename in filenames:
         print("opening", filename)
