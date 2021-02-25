@@ -6,7 +6,7 @@ from pyteomics import parser
 import numpy as np
 from joblib import Memory
 
-memory = Memory(".cache/", verbose = False)
+memory = Memory(".cache/", verbose=False)
 
 @memory.cache
 def download_fasta(protein_id):
@@ -38,6 +38,24 @@ class Protein:
             df_area.fillna(0, inplace=True)
             area_mean.append(df_area[a].mean())
         return area_mean
+
+    def get_spectral_count_sum(self):
+        spc_columns = [col for col in self.df if col.startswith('Spectral')]
+        spc_sum = []
+        for a in spc_columns:
+            df_spc = self.df.copy()
+            df_spc.fillna(0, inplace=True)
+            spc_sum.append(df_spc[a].sum())
+        return spc_sum
+
+    def get_spectral_count_mean(self):
+        spc_columns = [col for col in self.df if col.startswith('Spectral')]
+        spc_mean = []
+        for a in spc_columns:
+            df_spc = self.df.copy()
+            df_spc.fillna(0, inplace=True)
+            spc_mean.append(df_spc[a].mean())
+        return spc_mean
 
     def three_peptides(self):
         area_columns = [col for col in self.df if col.startswith('Area')]

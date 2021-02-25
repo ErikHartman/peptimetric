@@ -1,4 +1,3 @@
-import pandas as pd
 from tqdm import tqdm
 
 from protein import Protein

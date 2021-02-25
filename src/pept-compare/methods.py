@@ -28,11 +28,13 @@ def read_files_gui():
     filenames = askopenfilenames(initialdir="/Documents/GitHub/kand/example_files", title="Open files", multiple=True, )
     return make_peptide_dfs(filenames)
 
+
 def make_peptide_dfs(filenames : List):
     dfs = []
     for filename in filenames:
         print("opening", filename)
         df = pd.read_excel(filename, engine='openpyxl')
+        df.dropna(subset=['Accession'], inplace=True)
         accessions = []
         for index, row in df.iterrows():
             if '|' in str(row['Accession']):
@@ -50,11 +52,11 @@ def concatenate_dataframes(dfs: list) -> pd.DataFrame:
     new_df_list = []
     for df in dfs:
         df = df.add_suffix(f'_s{i}')
-        df = df.rename(columns={f'Peptide_s{i}':'Peptide', f'Accession_s{i}':'Accession'})
+        df = df.rename(columns={f'Peptide_s{i}': 'Peptide', f'Accession_s{i}': 'Accession'})
         new_df_list.append(df)
         i += 1
     master_dataframe = reduce(lambda left, right: pd.merge(left, right, on=['Peptide', 'Accession'],
-                                                           how='outer', suffixes=['','']), new_df_list).fillna(0)
+                                                           how='outer', suffixes=['', '']), new_df_list).fillna(0)
     return master_dataframe
 
 
@@ -165,7 +167,7 @@ def create_venn(df):
 
 def create_graphic(protein_list, **kwargs):
     default_settings = {
-        'grouping': ''
+        'grouping'
         'difference_metric'
     }
     default_settings.update(kwargs)
@@ -177,23 +179,25 @@ def create_graphic(protein_list, **kwargs):
     accession = []
     if kwargs.get('grouping') == 'alphabetical':
         protein_list = group_on_alphabet(protein_list)
-    if kwargs.get('difference_metric') == 'area_sum':
-        for protein in protein_list:
-            pos_nbr_of_peptides.append(protein.get_nbr_of_peptides()[0])
+    elif kwargs.get('grouping') == 'difference':
+        protein_list = group_on_difference(protein_list)
+    for protein in protein_list:
+        pos_nbr_of_peptides.append(protein.get_nbr_of_peptides()[0])
+        neg_nbr_of_peptides.append(protein.get_nbr_of_peptides()[1])
+        trivial_name.append(protein.get_trivial_name())
+        accession.append(protein.get_id())
+        if kwargs.get('difference_metric') == 'area_sum':
             pos_height.append(ma.log10(protein.get_area_sum()[0]) if protein.get_area_sum()[0] != 0 else 0)
-            neg_nbr_of_peptides.append(protein.get_nbr_of_peptides()[1])
             neg_height.append(-ma.log10(protein.get_area_sum()[1]) if protein.get_area_sum()[1] != 0 else 0)
-            trivial_name.append(protein.get_trivial_name())
-            accession.append(protein.get_id())
-    if kwargs.get('difference_metric') == 'area_mean':
-        for protein in protein_list:
-            pos_nbr_of_peptides.append(protein.get_nbr_of_peptides()[0])
+        elif kwargs.get('difference_metric') == 'area_mean':
             pos_height.append(ma.log10(protein.get_area_mean()[0]) if protein.get_area_mean()[0] != 0 else 0)
-            neg_nbr_of_peptides.append(protein.get_nbr_of_peptides()[1])
             neg_height.append(-ma.log10(protein.get_area_mean()[1]) if protein.get_area_mean()[1] != 0 else 0)
-            trivial_name.append(protein.get_trivial_name())
-            accession.append(protein.get_id())
-
+        elif kwargs.get('difference_metric') == 'spectral_count_mean':
+            pos_height.append(protein.get_spectral_count_mean()[0])
+            neg_height.append(protein.get_spectral_count_mean()[1])
+        elif kwargs.get('difference_metric') == 'spectral_count_sum':
+            pos_height.append(protein.get_spectral_count_sum()[0])
+            neg_height.append(protein.get_spectral_count_sum()[1])
 
     col_pos = []
     col_neg = []
@@ -469,4 +473,4 @@ def create_protein_window(protein_list):
 
 
 def rt_check(df):
-    return df[(np.abs(stats.zscore(df[[col for col in df if col.startswith('RT')]])) < 1.96).all(axis=1)]
+    return df[(np.abs(stats.zscore(df[[col for col in df if col.startswith('RT')]])) < 3).all(axis=1)]

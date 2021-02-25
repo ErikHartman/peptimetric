@@ -46,7 +46,7 @@ class Peptide:
 
         return area
 
-    def get_RT(self):
+    def get_rt(self):
         rt_columns = [col for col in self.df if col.startswith('RT')]
         rt = []
         for a in rt_columns:
