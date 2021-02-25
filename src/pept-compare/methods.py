@@ -169,21 +169,31 @@ def create_graphic(protein_list, **kwargs):
         'difference_metric'
     }
     default_settings.update(kwargs)
-    protein_list = group_on_alphabet(protein_list)
-
     pos_nbr_of_peptides = []
     neg_nbr_of_peptides = []
     pos_height = []
     neg_height = []
     trivial_name = []
     accession = []
-    for protein in protein_list:
-        pos_nbr_of_peptides.append(protein.get_nbr_of_peptides()[0])
-        pos_height.append(ma.log10(protein.get_area_sum()[0]) if protein.get_area_sum()[0] != 0 else 0)
-        neg_nbr_of_peptides.append(protein.get_nbr_of_peptides()[1])
-        neg_height.append(-ma.log10(protein.get_area_sum()[1]) if protein.get_area_sum()[1] != 0 else 0)
-        trivial_name.append(protein.get_trivial_name())
-        accession.append(protein.get_id())
+    if kwargs.get('grouping') == 'alphabetical':
+        protein_list = group_on_alphabet(protein_list)
+    if kwargs.get('difference_metric') == 'area_sum':
+        for protein in protein_list:
+            pos_nbr_of_peptides.append(protein.get_nbr_of_peptides()[0])
+            pos_height.append(ma.log10(protein.get_area_sum()[0]) if protein.get_area_sum()[0] != 0 else 0)
+            neg_nbr_of_peptides.append(protein.get_nbr_of_peptides()[1])
+            neg_height.append(-ma.log10(protein.get_area_sum()[1]) if protein.get_area_sum()[1] != 0 else 0)
+            trivial_name.append(protein.get_trivial_name())
+            accession.append(protein.get_id())
+    if kwargs.get('difference_metric') == 'area_mean':
+        for protein in protein_list:
+            pos_nbr_of_peptides.append(protein.get_nbr_of_peptides()[0])
+            pos_height.append(ma.log10(protein.get_area_mean()[0]) if protein.get_area_mean()[0] != 0 else 0)
+            neg_nbr_of_peptides.append(protein.get_nbr_of_peptides()[1])
+            neg_height.append(-ma.log10(protein.get_area_mean()[1]) if protein.get_area_mean()[1] != 0 else 0)
+            trivial_name.append(protein.get_trivial_name())
+            accession.append(protein.get_id())
+
 
     col_pos = []
     col_neg = []
