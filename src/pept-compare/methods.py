@@ -11,6 +11,7 @@ import matplotlib.patches as mpatches
 from numpy import ma
 from lists import *
 from typing import List
+from functools import reduce
 
 
 dark = "#2d662f"
@@ -45,9 +46,15 @@ def make_peptide_dfs(filenames : List):
 
 
 def concatenate_dataframes(dfs: list) -> pd.DataFrame:
-    master_dataframe = pd.DataFrame()
+    i = 0
+    new_df_list = []
     for df in dfs:
-        master_dataframe = master_dataframe.append(df)
+        df = df.add_suffix(f'_s{i}')
+        df = df.rename(columns={f'Peptide_s{i}':'Peptide', f'Accession_s{i}':'Accession'})
+        new_df_list.append(df)
+        i += 1
+    master_dataframe = reduce(lambda left, right: pd.merge(left, right, on=['Peptide', 'Accession'],
+                                                           how='outer', suffixes=['','']), new_df_list).fillna(0)
     return master_dataframe
 
 
