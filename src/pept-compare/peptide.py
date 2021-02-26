@@ -58,4 +58,3 @@ class Peptide:
 
     def print(self):
         print(self.df)
-

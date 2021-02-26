@@ -489,3 +489,28 @@ def create_protein_window(protein_list):
 
 def rt_check(df):
     return df[(np.abs(stats.zscore(df[[col for col in df if col.startswith('RT')]])) < 3).all(axis=1)]
+
+def check_sample_p_value(df):
+    area_columns = [col for col in df if col.startswith('Area')]
+    area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
+    area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
+
+
+def apply_cut_off(protein_list, **kwargs):
+    new_protein_list = []
+    default_settings = {
+        'nbr_of_peptides':0,
+        'area':0,
+        'spectral_count':0
+    }
+    default_settings.update(kwargs)
+    nbr_pep_limit = kwargs.get('nbr_of_peptides')
+    area_limit = kwargs.get('area')
+    sc_limit = kwargs.get('spectral_count')
+    for protein in protein_list:
+        if protein.get_nbr_of_peptides() > [nbr_pep_limit]*len(protein.get_nbr_of_peptides()) \
+            and protein.get_area_sum() > [area_limit]*len(protein.get_area_sum()) and \
+                protein.get_spectral_count_sum() > [sc_limit]*len(protein.get_spectral_count_sum()):
+            new_protein_list.append(protein)
+
+    return new_protein_list

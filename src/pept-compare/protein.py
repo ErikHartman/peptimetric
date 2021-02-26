@@ -107,6 +107,7 @@ class Protein:
         else:
             return 0, 0
 
+
     def get_nbr_of_peptides(self):
         area_columns = [col for col in self.df if col.startswith('Area')]
         nbr_of_peptides = []
@@ -150,3 +151,5 @@ class Protein:
         pai = [nbr / len(all_observable_peptides) for nbr in n_observed]
 
         return (np.power(base, pai)) - 1
+
+
