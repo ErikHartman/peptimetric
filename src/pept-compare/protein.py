@@ -23,21 +23,35 @@ class Protein:
 
     def get_area_sum(self):
         area_columns = [col for col in self.df if col.startswith('Area')]
-        area_sum = []
-        for a in area_columns:
+        area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
+        area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
+        area_sum_g1 = []
+        area_sum_g2 = []
+        for a in area_columns_g1:
             df_area = self.df.copy()
             df_area.fillna(0, inplace=True)
-            area_sum.append(df_area[a].sum())
-        return area_sum
+            area_sum_g1.append(df_area[a].sum())
+        for a in area_columns_g2:
+            df_area = self.df.copy()
+            df_area.fillna(0, inplace=True)
+            area_sum_g2.append(df_area[a].sum())
+        return area_sum_g1, area_sum_g2
 
     def get_area_mean(self):
         area_columns = [col for col in self.df if col.startswith('Area')]
-        area_mean = []
-        for a in area_columns:
+        area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
+        area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
+        area_mean_g1 = []
+        area_mean_g2 = []
+        for a in area_columns_g1:
             df_area = self.df.copy()
             df_area.fillna(0, inplace=True)
-            area_mean.append(df_area[a].mean())
-        return area_mean
+            area_mean_g1.append(df_area[a].mean())
+        for a in area_columns_g2:
+            df_area = self.df.copy()
+            df_area.fillna(0, inplace=True)
+            area_mean_g2.append(df_area[a].mean())
+        return area_mean_g1, area_mean_g2
 
     def get_spectral_count_sum(self):
         spc_columns = [col for col in self.df if col.startswith('Spectral')]
