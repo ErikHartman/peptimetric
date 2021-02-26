@@ -13,6 +13,7 @@ from lists import *
 from typing import List
 from functools import reduce
 import statistics
+from matplotlib import widgets
 
 dark = "#2d662f"
 mediumdark = "#4a854c"
@@ -381,11 +382,20 @@ def create_peptide_graphic(peptide_list):
     else:
         ax.legend(handles=patches, title='Nbr of peptides overlapping', loc='lower right', ncol=5)
 
+    def onselect(xmin, xmax):
+        ax.annotate(text=fasta[int(xmin):int(xmax)], xy=(0, 0))
+
+    span = widgets.SpanSelector(ax, onselect, 'horizontal', useblit=True, rectprops=dict(alpha=0.2, facecolor=light),
+                                span_stays=True)
+
     plt.text(0.01, 0.99, 'Group 1', horizontalalignment='left', verticalalignment='top', transform=ax.transAxes)
     plt.text(0.01, 0.01, 'Group 2', horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes)
     plt.show()
     return fasta_dict
 
+
+def show_part_of_fasta(start, fasta):
+    return fasta[start:start+10]
 
 def group_on_alphabet(protein_list):
     protein_list.sort(key=lambda x: x.get_trivial_name())
@@ -499,18 +509,13 @@ def check_sample_p_value(df):
 def apply_cut_off(protein_list, **kwargs):
     new_protein_list = []
     default_settings = {
-        'nbr_of_peptides':0,
-        'area':0,
-        'spectral_count':0
+        'nbr_of_peptides': 0,
+        'area': 0,
+        'spectral_count': 0
     }
     default_settings.update(kwargs)
     nbr_pep_limit = kwargs.get('nbr_of_peptides')
     area_limit = kwargs.get('area')
     sc_limit = kwargs.get('spectral_count')
-    for protein in protein_list:
-        if protein.get_nbr_of_peptides() > [nbr_pep_limit]*len(protein.get_nbr_of_peptides()) \
-            and protein.get_area_sum() > [area_limit]*len(protein.get_area_sum()) and \
-                protein.get_spectral_count_sum() > [sc_limit]*len(protein.get_spectral_count_sum()):
-            new_protein_list.append(protein)
 
     return new_protein_list
