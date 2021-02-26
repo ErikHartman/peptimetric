@@ -5,8 +5,10 @@ from methods import *
 from pyteomics import parser
 import numpy as np
 from joblib import Memory
+import statistics
 
 memory = Memory(".cache/", verbose=False)
+
 
 @memory.cache
 def download_fasta(protein_id):
@@ -35,7 +37,7 @@ class Protein:
             df_area = self.df.copy()
             df_area.fillna(0, inplace=True)
             area_sum_g2.append(df_area[a].sum())
-        return area_sum_g1, area_sum_g2
+        return statistics.mean(area_sum_g1), statistics.mean(area_sum_g2)
 
     def get_area_mean(self):
         area_columns = [col for col in self.df if col.startswith('Area')]
@@ -51,39 +53,61 @@ class Protein:
             df_area = self.df.copy()
             df_area.fillna(0, inplace=True)
             area_mean_g2.append(df_area[a].mean())
-        return area_mean_g1, area_mean_g2
+        return statistics.mean(area_mean_g1), statistics.mean(area_mean_g2)
 
     def get_spectral_count_sum(self):
         spc_columns = [col for col in self.df if col.startswith('Spectral')]
-        spc_sum = []
-        for a in spc_columns:
+        spc_columns_g1 = [col for col in spc_columns if col.endswith('g1')]
+        spc_columns_g2 = [col for col in spc_columns if col.endswith('g2')]
+        spc_sum_g1 = []
+        spc_sum_g2 = []
+        for a in spc_columns_g1:
             df_spc = self.df.copy()
             df_spc.fillna(0, inplace=True)
-            spc_sum.append(df_spc[a].sum())
-        return spc_sum
+            spc_sum_g1.append(df_spc[a].sum())
+        for a in spc_columns_g2:
+            df_spc = self.df.copy()
+            df_spc.fillna(0, inplace=True)
+            spc_sum_g2.append(df_spc[a].sum())
+        return statistics.mean(spc_sum_g1), statistics.mean(spc_sum_g2)
 
     def get_spectral_count_mean(self):
         spc_columns = [col for col in self.df if col.startswith('Spectral')]
-        spc_mean = []
-        for a in spc_columns:
+        spc_columns_g1 = [col for col in spc_columns if col.endswith('g1')]
+        spc_columns_g2 = [col for col in spc_columns if col.endswith('g2')]
+        spc_mean_g1 = []
+        spc_mean_g2 = []
+        for a in spc_columns_g1:
             df_spc = self.df.copy()
             df_spc.fillna(0, inplace=True)
-            spc_mean.append(df_spc[a].mean())
-        return spc_mean
+            spc_mean_g1.append(df_spc[a].mean())
+        for a in spc_columns_g2:
+            df_spc = self.df.copy()
+            df_spc.fillna(0, inplace=True)
+            spc_mean_g2.append(df_spc[a].mean())
+        return statistics.mean(spc_mean_g1), statistics.mean(spc_mean_g2)
 
     def three_peptides(self):
         area_columns = [col for col in self.df if col.startswith('Area')]
+        area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
+        area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
         df = self.df.copy()
+        df = df[df[area_columns] != 0]
         df.fillna(0, inplace=True)
-        df.sort_values(by=area_columns, ascending=[False, False], inplace=True)
-        df = df.head(3)
-        df['fold_change'] = df[area_columns[0]] / df[area_columns[1]]
-        if df['fold_change'].mean() == np.inf or df['fold_change'].mean() == np.nan:
+        df['g1_mean'] = df[area_columns_g1].mean(axis=1)
+        df['g2_mean'] = df[area_columns_g2].mean(axis=1)
+        df.sort_values(by=['g1_mean', 'g2_mean'], ascending=[False, False], inplace=True)
+        df = df[['g1_mean', 'g2_mean']].head(3)
+        df['fold_change'] = df['g1_mean'] / df['g2_mean']
+        mean_fold = statistics.mean(df['fold_change'])
+        if 0 < mean_fold < 1:
+            return -1 / mean_fold
+        elif mean_fold == np.inf:
             return 0
-        elif df['fold_change'].mean() < 0:
-            return -1/df['fold_change'].mean()
+        elif mean_fold > 1:
+            return mean_fold
         else:
-            return df['fold_change'].mean()
+            return 0
 
     def get_nbr_of_peptides(self):
         area_columns = [col for col in self.df if col.startswith('Area')]
@@ -128,4 +152,3 @@ class Protein:
         pai = [nbr / len(all_observable_peptides) for nbr in n_observed]
 
         return (np.power(base, pai)) - 1
-

@@ -29,7 +29,7 @@ def read_files_gui():
     return make_peptide_dfs(filenames)
 
 
-def make_peptide_dfs(filenames : List):
+def make_peptide_dfs(filenames: List):
     dfs = []
     for filename in filenames:
         print("opening", filename)
@@ -182,22 +182,41 @@ def create_graphic(protein_list, **kwargs):
     elif kwargs.get('grouping') == 'difference':
         protein_list = group_on_difference(protein_list)
     for protein in protein_list:
-        pos_nbr_of_peptides.append(protein.get_nbr_of_peptides()[0])
-        neg_nbr_of_peptides.append(protein.get_nbr_of_peptides()[1])
-        trivial_name.append(protein.get_trivial_name())
-        accession.append(protein.get_id())
-        if kwargs.get('difference_metric') == 'area_sum':
-            pos_height.append(ma.log10(protein.get_area_sum()[0]) if protein.get_area_sum()[0] != 0 else 0)
-            neg_height.append(-ma.log10(protein.get_area_sum()[1]) if protein.get_area_sum()[1] != 0 else 0)
-        elif kwargs.get('difference_metric') == 'area_mean':
-            pos_height.append(ma.log10(protein.get_area_mean()[0]) if protein.get_area_mean()[0] != 0 else 0)
-            neg_height.append(-ma.log10(protein.get_area_mean()[1]) if protein.get_area_mean()[1] != 0 else 0)
-        elif kwargs.get('difference_metric') == 'spectral_count_mean':
-            pos_height.append(protein.get_spectral_count_mean()[0])
-            neg_height.append(protein.get_spectral_count_mean()[1])
-        elif kwargs.get('difference_metric') == 'spectral_count_sum':
-            pos_height.append(protein.get_spectral_count_sum()[0])
-            neg_height.append(protein.get_spectral_count_sum()[1])
+        if kwargs.get('difference_metric') == 'three_peptides':
+            height = protein.three_peptides()
+            if height > 0:
+                pos_height.append(height)
+                neg_height.append(0)
+                pos_nbr_of_peptides.append(protein.get_nbr_of_peptides()[0])
+                neg_nbr_of_peptides.append(protein.get_nbr_of_peptides()[1])
+                trivial_name.append(protein.get_trivial_name())
+                accession.append(protein.get_id())
+            elif height < 0:
+                neg_height.append(height)
+                pos_height.append(0)
+                pos_nbr_of_peptides.append(protein.get_nbr_of_peptides()[0])
+                neg_nbr_of_peptides.append(protein.get_nbr_of_peptides()[1])
+                trivial_name.append(protein.get_trivial_name())
+                accession.append(protein.get_id())
+
+        else:
+            pos_nbr_of_peptides.append(protein.get_nbr_of_peptides()[0])
+            neg_nbr_of_peptides.append(protein.get_nbr_of_peptides()[1])
+            trivial_name.append(protein.get_trivial_name())
+            accession.append(protein.get_id())
+            if kwargs.get('difference_metric') == 'area_sum':
+                pos_height.append(ma.log10(protein.get_area_sum()[0]) if protein.get_area_sum()[0] != 0 else 0)
+                neg_height.append(-ma.log10(protein.get_area_sum()[1]) if protein.get_area_sum()[1] != 0 else 0)
+            elif kwargs.get('difference_metric') == 'area_mean':
+                pos_height.append(ma.log10(protein.get_area_mean()[0]) if protein.get_area_mean()[0] != 0 else 0)
+                neg_height.append(-ma.log10(protein.get_area_mean()[1]) if protein.get_area_mean()[1] != 0 else 0)
+            elif kwargs.get('difference_metric') == 'spectral_count_mean':
+                pos_height.append(protein.get_spectral_count_mean()[0])
+                neg_height.append(protein.get_spectral_count_mean()[1])
+            elif kwargs.get('difference_metric') == 'spectral_count_sum':
+                pos_height.append(protein.get_spectral_count_sum()[0])
+                neg_height.append(protein.get_spectral_count_sum()[1])
+
 
     col_pos = []
     col_neg = []
@@ -241,6 +260,7 @@ def create_graphic(protein_list, **kwargs):
             print(label)
             peptide_list = create_peptide_list(protein_list, label)
             create_peptide_graphic(peptide_list)
+
         for wedge in wedges:
             for w in wedge:
                 w.set_picker(True)
@@ -275,7 +295,7 @@ def create_graphic(protein_list, **kwargs):
                mpatches.Patch(color=medium, label=int(2 * max_nbr_of_peptides / 5)),
                mpatches.Patch(color=mediumlight, label=int(max_nbr_of_peptides / 5)),
                mpatches.Patch(color=light, label=1)]
-    ax.axis([-0.5, len(protein_list), -1.1 * max(pos_height + np.abs(neg_height)),
+    ax.axis([-0.5, len(pos_height), -1.1 * max(pos_height + np.abs(neg_height)),
              1.1 * max(pos_height + np.abs(neg_height)) - 0.5])
     plt.text(0.01, 0.99, 'Group 1', horizontalalignment='left', verticalalignment='top', transform=ax.transAxes)
     plt.text(0.01, 0.01, 'Group 2', horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes)
