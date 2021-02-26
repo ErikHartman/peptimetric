@@ -381,15 +381,21 @@ def create_peptide_graphic(peptide_list):
         ax.legend(handles=patches, title='Nbr of peptides overlapping', loc='upper right', ncol=5)
     else:
         ax.legend(handles=patches, title='Nbr of peptides overlapping', loc='lower right', ncol=5)
-
+    annotation_list = []
     def onselect(xmin, xmax):
-        ax.annotate(text=fasta[int(xmin):int(xmax)], xy=(0, 0))
+        for ann in annotation_list:
+            ann.remove()
+        annotation_list[:] = []
+        annotation = plt.annotate(text=f'Region ({int(xmin)}, {int(xmax)}): ' + fasta[int(xmin):int(xmax)], fontsize=14, xy=(0.3, 0.8), xycoords='figure fraction',
+                                  bbox=dict(boxstyle="round", color=light, alpha=0.2))
+        annotation_list.append(annotation)
 
     span = widgets.SpanSelector(ax, onselect, 'horizontal', useblit=True, rectprops=dict(alpha=0.2, facecolor=light),
                                 span_stays=True)
 
     plt.text(0.01, 0.99, 'Group 1', horizontalalignment='left', verticalalignment='top', transform=ax.transAxes)
     plt.text(0.01, 0.01, 'Group 2', horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes)
+
     plt.show()
     return fasta_dict
 
