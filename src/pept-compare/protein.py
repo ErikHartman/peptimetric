@@ -98,16 +98,14 @@ class Protein:
         df['g2_mean'] = df[area_columns_g2].mean(axis=1)
         df.sort_values(by=['g1_mean', 'g2_mean'], ascending=[False, False], inplace=True)
         df = df[['g1_mean', 'g2_mean']].head(3)
-        df['fold_change'] = df['g1_mean'] / df['g2_mean']
-        mean_fold = statistics.mean(df['fold_change'])
-        if 0 < mean_fold < 1:
-            return -1 / mean_fold
-        elif mean_fold == np.inf:
-            return 0
-        elif mean_fold > 1:
-            return mean_fold
+        df['fold_change_g1'] = df['g1_mean'] / (df['g2_mean'] + df['g1_mean'])
+        df['fold_change_g2'] = df['g2_mean'] / (df['g2_mean'] + df['g1_mean'])
+        mean_fold_g1 = statistics.mean(df['fold_change_g1'])
+        mean_fold_g2 = statistics.mean(df['fold_change_g2'])
+        if 0 < mean_fold_g1 <= 1 or 0 < mean_fold_g2 <= 1:
+            return mean_fold_g1, mean_fold_g2
         else:
-            return 0
+            return 0, 0
 
     def get_nbr_of_peptides(self):
         area_columns = [col for col in self.df if col.startswith('Area')]

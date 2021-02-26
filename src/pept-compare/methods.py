@@ -12,7 +12,7 @@ from numpy import ma
 from lists import *
 from typing import List
 from functools import reduce
-
+import statistics
 
 dark = "#2d662f"
 mediumdark = "#4a854c"
@@ -183,22 +183,15 @@ def create_graphic(protein_list, **kwargs):
         protein_list = group_on_difference(protein_list)
     for protein in protein_list:
         if kwargs.get('difference_metric') == 'three_peptides':
-            height = protein.three_peptides()
-            if height > 0:
-                pos_height.append(height)
-                neg_height.append(0)
+            g1_height = protein.three_peptides()[0]
+            g2_height = protein.three_peptides()[1]
+            if g1_height > 0.0 or g2_height > 0.0:
+                pos_height.append(g1_height)
+                neg_height.append(-g2_height)
                 pos_nbr_of_peptides.append(protein.get_nbr_of_peptides()[0])
                 neg_nbr_of_peptides.append(protein.get_nbr_of_peptides()[1])
                 trivial_name.append(protein.get_trivial_name())
                 accession.append(protein.get_id())
-            elif height < 0:
-                neg_height.append(height)
-                pos_height.append(0)
-                pos_nbr_of_peptides.append(protein.get_nbr_of_peptides()[0])
-                neg_nbr_of_peptides.append(protein.get_nbr_of_peptides()[1])
-                trivial_name.append(protein.get_trivial_name())
-                accession.append(protein.get_id())
-
         else:
             pos_nbr_of_peptides.append(protein.get_nbr_of_peptides()[0])
             neg_nbr_of_peptides.append(protein.get_nbr_of_peptides()[1])
@@ -295,8 +288,10 @@ def create_graphic(protein_list, **kwargs):
                mpatches.Patch(color=medium, label=int(2 * max_nbr_of_peptides / 5)),
                mpatches.Patch(color=mediumlight, label=int(max_nbr_of_peptides / 5)),
                mpatches.Patch(color=light, label=1)]
-    ax.axis([-0.5, len(pos_height), -1.1 * max(pos_height + np.abs(neg_height)),
-             1.1 * max(pos_height + np.abs(neg_height)) - 0.5])
+    average_pos_height = statistics.mean(pos_height)
+    average_neg_height = statistics.mean(neg_height)
+    ax.axis([-0.5, len(pos_height), -1.1 * max(average_pos_height, np.abs(average_neg_height)),
+             1.1 * max(average_pos_height, np.abs(average_neg_height))])
     plt.text(0.01, 0.99, 'Group 1', horizontalalignment='left', verticalalignment='top', transform=ax.transAxes)
     plt.text(0.01, 0.01, 'Group 2', horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes)
     if max(pos_height) >= -min(neg_height):
