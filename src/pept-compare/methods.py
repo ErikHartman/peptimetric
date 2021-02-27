@@ -211,7 +211,6 @@ def create_graphic(protein_list, **kwargs):
                 pos_height.append(protein.get_spectral_count_sum()[0])
                 neg_height.append(protein.get_spectral_count_sum()[1])
 
-
     col_pos = []
     col_neg = []
     max_nbr_of_peptides = max(pos_nbr_of_peptides + neg_nbr_of_peptides)
@@ -299,7 +298,6 @@ def create_graphic(protein_list, **kwargs):
         ax.legend(handles=patches, title='Nbr of peptides', loc='upper right', ncol=5)
     else:
         ax.legend(handles=patches, title='Nbr of peptides', loc='lower right', ncol=5)
-
     plt.show()
 
 
@@ -388,16 +386,17 @@ def create_peptide_graphic(peptide_list):
         for ann in annotation_list:
             ann.remove()
         annotation_list[:] = []
-        annotation = plt.annotate(text=f'Region ({int(xmin)}, {int(xmax)}): ' + fasta[int(xmin):int(xmax)], fontsize=12, xy=(0.3, 0.8), xycoords='figure fraction',
+        annotation = plt.annotate(text=f'Region ({int(xmin)}, {int(xmax)}): ' + fasta[int(xmin):int(xmax)], fontsize=12,
+                                  xy=(0.3, 0.8), xycoords='figure fraction',
                                   bbox=dict(boxstyle="round", color=light, alpha=0.2))
         annotation_list.append(annotation)
         for peptide in peptide_list:
             if peptide.get_start() > xmin and peptide.get_end() < xmax and \
                     (peptide.get_area()[0] > 0 or peptide.get_area()[1] > 0):
-                print(peptide.get_sequence(), peptide.get_area())
+                print(f'{peptide.get_start()}-{peptide.get_end()}: {peptide.get_sequence()}, {peptide.get_area()}')
 
-    widgets.SpanSelector(ax, onselect, 'horizontal', useblit=True, rectprops=dict(alpha=0.2, facecolor=light),
-                                span_stays=True)
+    slider = widgets.SpanSelector(ax, onselect, 'horizontal', useblit=True, rectprops=dict(alpha=0.2, facecolor=light),
+                                  span_stays=True)
 
     plt.text(0.01, 0.99, 'Group 1', horizontalalignment='left', verticalalignment='top', transform=ax.transAxes)
     plt.text(0.01, 0.01, 'Group 2', horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes)
@@ -405,15 +404,10 @@ def create_peptide_graphic(peptide_list):
     for i in range(len(fasta)):
         if fasta_dict['counter_pos'][i] != 0 and fasta_dict['counter_neg'][i] != 0:
             coverage += 1
-    coverage = int(1000*coverage/len(fasta))/1000
-    plt.text(0.4, 0.01, f'Coverage: {coverage}%', horizontalalignment='center', verticalalignment='bottom',
+    coverage = int(10000 * coverage / len(fasta)) / 10000
+    plt.text(0.45, 0.01, f'Coverage: {coverage}%', horizontalalignment='center', verticalalignment='bottom',
              transform=ax.transAxes)
     plt.show()
-    return fasta_dict
-
-
-def show_part_of_fasta(start, fasta):
-    return fasta[start:start+10]
 
 
 def group_on_alphabet(protein_list):
@@ -518,6 +512,7 @@ def create_protein_window(protein_list):
 
 def rt_check(df):
     return df[(np.abs(stats.zscore(df[[col for col in df if col.startswith('RT')]])) < 3).all(axis=1)]
+
 
 def check_sample_p_value(df):
     area_columns = [col for col in df if col.startswith('Area')]

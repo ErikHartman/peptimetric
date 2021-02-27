@@ -6,6 +6,7 @@ from pyteomics import parser
 import numpy as np
 from joblib import Memory
 import statistics
+import prody
 
 memory = Memory(".cache/", verbose=False)
 
@@ -132,8 +133,9 @@ class Protein:
         for fasta in fasta_iterator:
             return fasta
 
-    def get_fasta_seq(self):
-        return str(self.fasta.seq)
+
+    def get_protein_family(self):
+        print(prody.searchPfam(self.get_id()))
 
     def empai(self, base):
         n_observed = self.get_nbr_of_peptides()
@@ -151,5 +153,4 @@ class Protein:
         pai = [nbr / len(all_observable_peptides) for nbr in n_observed]
 
         return (np.power(base, pai)) - 1
-
 

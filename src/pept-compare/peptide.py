@@ -1,6 +1,7 @@
 import re
 import statistics
 
+
 class Peptide:
 
     def __init__(self, protein, sequence):
