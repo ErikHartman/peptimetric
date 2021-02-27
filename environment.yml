@@ -1,8 +1,8 @@
 name: GUI
 channels:
   - anaconda
-  - conda-forge
   - defaults
+  - conda-forge
 dependencies:
   - _libgcc_mutex=0.1
   - _openmp_mutex=4.5
@@ -71,6 +71,7 @@ dependencies:
   - pillow=8.1.0
   - pip=20.3.3
   - pluggy=0.13.1
+  - prody=1.11
   - py=1.10.0
   - pycparser=2.20
   - pyopenssl=20.0.1
@@ -103,4 +104,4 @@ dependencies:
   - pip:
     - mplcursors==0.4
     - pyteomics==4.4.1
-prefix: /home/karvla/.conda/envs/GUI
+prefix: /home/karvla/anaconda3/envs/GUI
