@@ -17,6 +17,15 @@ def download_fasta(protein_id):
     return requests.get(link).text
 
 
+@memory.cache
+def download_protein_family(protein_id):
+    try:
+        pfam = prody.searchPfam(protein_id)
+        return pfam
+    except:
+        return None
+
+
 class Protein:
 
     def __init__(self, df, accession):
@@ -108,7 +117,6 @@ class Protein:
         else:
             return 0, 0
 
-
     def get_nbr_of_peptides(self):
         area_columns = [col for col in self.df if col.startswith('Area')]
         nbr_of_peptides = []
@@ -133,9 +141,13 @@ class Protein:
         for fasta in fasta_iterator:
             return fasta
 
-
     def get_protein_family(self):
-        print(prody.searchPfam(self.get_id()))
+        data = download_protein_family
+        if data is None:
+            return 'No protein family found'
+        else:
+            for i in data.values():
+                return i.get('id')
 
     def empai(self, base):
         n_observed = self.get_nbr_of_peptides()
@@ -153,4 +165,3 @@ class Protein:
         pai = [nbr / len(all_observable_peptides) for nbr in n_observed]
 
         return (np.power(base, pai)) - 1
-
