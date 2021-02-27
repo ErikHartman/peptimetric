@@ -15,12 +15,24 @@ from functools import reduce
 import statistics
 from matplotlib import widgets
 
-dark = "#2d662f"
-mediumdark = "#4a854c"
-medium = "#6cab6e"
-mediumlight = '#90d493'
-light = "#b6e0c2"
-grey = "#ebf5ee"
+green = {
+    'dark': "#2d662f",
+    'mediumdark': "#4a854c",
+    'medium': "#6cab6e",
+    'mediumlight': '#90d493',
+    'light': "#b6e0c2",
+    'grey': "#ebf5ee"
+}
+
+red = {
+    'dark': '#690e0e',
+    'mediumdark': '#940f0f',
+    'medium': '#c22323',
+    'mediumlight': '#e64e4e',
+    'light': '#f07575',
+    'grey': '#e3a6a6'
+
+}
 
 
 def read_files_gui():
@@ -170,8 +182,13 @@ def create_graphic(protein_list, **kwargs):
     default_settings = {
         'grouping'
         'difference_metric'
+        'color'
     }
     default_settings.update(kwargs)
+    if kwargs.get('color') == 'red':
+        color = red
+    else:
+        color = green
     pos_nbr_of_peptides = []
     neg_nbr_of_peptides = []
     pos_height = []
@@ -217,31 +234,31 @@ def create_graphic(protein_list, **kwargs):
     min_nbr_of_peptides = min(pos_nbr_of_peptides + neg_nbr_of_peptides)
     for n in pos_nbr_of_peptides:
         if n > 4 * max_nbr_of_peptides / 5:
-            col_pos.append(dark)
+            col_pos.append(color['dark'])
         elif n >= 3 * max_nbr_of_peptides / 5:
-            col_pos.append(mediumdark)
+            col_pos.append(color['mediumdark'])
         elif n >= 2 * max_nbr_of_peptides / 5:
-            col_pos.append(medium)
+            col_pos.append(color['medium'])
         elif n >= max_nbr_of_peptides / 5:
-            col_pos.append(mediumlight)
+            col_pos.append(color['mediumlight'])
         elif n == 1:
-            col_pos.append(grey)
+            col_pos.append(color['grey'])
         else:
-            col_pos.append(light)
+            col_pos.append(color['light'])
 
     for n in neg_nbr_of_peptides:
         if n > 4 * max_nbr_of_peptides / 5:
-            col_neg.append(dark)
+            col_neg.append(color['dark'])
         elif n >= 3 * max_nbr_of_peptides / 5:
-            col_neg.append(mediumdark)
+            col_neg.append(color['mediumdark'])
         elif n >= 2 * max_nbr_of_peptides / 5:
-            col_neg.append(medium)
+            col_neg.append(color['medium'])
         elif n >= max_nbr_of_peptides / 5:
-            col_neg.append(mediumlight)
+            col_neg.append(color['mediumlight'])
         elif n == 1:
-            col_neg.append(grey)
+            col_neg.append(color['grey'])
         else:
-            col_neg.append(light)
+            col_neg.append(color['light'])
 
     def make_picker(fig, wedges):
         def onclick(event):
@@ -283,11 +300,11 @@ def create_graphic(protein_list, **kwargs):
     plt.axhline(y=0, color='#000000', linestyle='--', linewidth=0.5)
     plt.axhline(y=weight, color='r', linestyle='--', linewidth=1, alpha=0.5)
     mplcursors.cursor(hover=True)
-    patches = [mpatches.Patch(color=dark, label=int(4 * max_nbr_of_peptides / 5)),
-               mpatches.Patch(color=mediumdark, label=int(3 * max_nbr_of_peptides / 5)),
-               mpatches.Patch(color=medium, label=int(2 * max_nbr_of_peptides / 5)),
-               mpatches.Patch(color=mediumlight, label=int(max_nbr_of_peptides / 5)),
-               mpatches.Patch(color=light, label=1)]
+    patches = [mpatches.Patch(color=color['dark'], label=int(4 * max_nbr_of_peptides / 5)),
+               mpatches.Patch(color=color['mediumdark'], label=int(3 * max_nbr_of_peptides / 5)),
+               mpatches.Patch(color=color['medium'], label=int(2 * max_nbr_of_peptides / 5)),
+               mpatches.Patch(color=color['mediumlight'], label=int(max_nbr_of_peptides / 5)),
+               mpatches.Patch(color=color['light'], label=1)]
     average_pos_height = statistics.mean(pos_height)
     average_neg_height = statistics.mean(neg_height)
     ax.axis([-0.5, len(pos_height), -1.1 * max(average_pos_height, np.abs(average_neg_height)),
@@ -302,6 +319,7 @@ def create_graphic(protein_list, **kwargs):
 
 
 def create_peptide_graphic(peptide_list):
+    color = green
     fasta = peptide_list[0].protein.get_fasta_seq()
     fasta_dict = {"index": [], "counter_pos": [], "counter_neg": [], "intensity_pos": [], "intensity_neg": []}
     for i in range(len(fasta)):
@@ -331,26 +349,26 @@ def create_peptide_graphic(peptide_list):
     min_count = min(fasta_dict["counter_pos"] + fasta_dict["counter_neg"])
     for count in fasta_dict["counter_pos"]:
         if count > 4 * max_count / 5:
-            col_pos.append(dark)
+            col_pos.append(color['dark'])
         elif count > 3 * max_count / 5:
-            col_pos.append(mediumdark)
+            col_pos.append(color['mediumdark'])
         elif count > 2 * max_count / 5:
-            col_pos.append(medium)
+            col_pos.append(color['medium'])
         elif count > max_count / 5:
-            col_pos.append(mediumlight)
+            col_pos.append(color['mediumlight'])
         else:
-            col_pos.append(light)
+            col_pos.append(color['light'])
     for count in fasta_dict["counter_neg"]:
         if count > 4 * max_count / 5:
-            col_neg.append(dark)
+            col_neg.append(color['dark'])
         elif count > 3 * max_count / 5:
-            col_neg.append(mediumdark)
+            col_neg.append(color['mediumdark'])
         elif count > 2 * max_count / 5:
-            col_neg.append(medium)
+            col_neg.append(color['medium'])
         elif count > max_count / 5:
-            col_neg.append(mediumlight)
+            col_neg.append(color['mediumlight'])
         else:
-            col_neg.append(light)
+            col_neg.append(color['light'])
     fig = plt.figure(figsize=(15, 5))
     ax = fig.add_subplot(111)
     ax.bar(x=fasta_dict["index"], height=fasta_dict['intensity_pos'], color=col_pos,
@@ -371,11 +389,11 @@ def create_peptide_graphic(peptide_list):
     ax.axis([0, len(fasta), -1.2 * max(fasta_dict["intensity_neg"] + fasta_dict["intensity_pos"]),
              1.2 * max(fasta_dict["intensity_neg"] + fasta_dict["intensity_pos"])])
     plt.xticks(np.arange(0, len(fasta), step=round(len(fasta) / 100) * 10))
-    patches = [mpatches.Patch(color=dark, label=int(4 * max_count / 5)),
-               mpatches.Patch(color=mediumdark, label=int(3 * max_count / 5)),
-               mpatches.Patch(color=medium, label=int(2 * max_count / 5)),
-               mpatches.Patch(color=mediumlight, label=int(max_count / 5)),
-               mpatches.Patch(color=light, label=int(min_count))]
+    patches = [mpatches.Patch(color=color['dark'], label=int(4 * max_count / 5)),
+               mpatches.Patch(color=color['mediumdark'], label=int(3 * max_count / 5)),
+               mpatches.Patch(color=color['medium'], label=int(2 * max_count / 5)),
+               mpatches.Patch(color=color['mediumlight'], label=int(max_count / 5)),
+               mpatches.Patch(color=color['light'], label=int(min_count))]
     if max(fasta_dict['intensity_pos']) >= max(fasta_dict['intensity_neg']):
         ax.legend(handles=patches, title='Nbr of peptides overlapping', loc='upper right', ncol=5)
     else:
@@ -388,15 +406,15 @@ def create_peptide_graphic(peptide_list):
         annotation_list[:] = []
         annotation = plt.annotate(text=f'Region ({int(xmin)}, {int(xmax)}): ' + fasta[int(xmin):int(xmax)], fontsize=12,
                                   xy=(0.3, 0.8), xycoords='figure fraction',
-                                  bbox=dict(boxstyle="round", color=light, alpha=0.2))
+                                  bbox=dict(boxstyle="round", color=color['light'], alpha=0.2))
         annotation_list.append(annotation)
         for peptide in peptide_list:
             if peptide.get_start() > xmin and peptide.get_end() < xmax and \
                     (peptide.get_area()[0] > 0 or peptide.get_area()[1] > 0):
                 print(f'{peptide.get_start()}-{peptide.get_end()}: {peptide.get_sequence()}, {peptide.get_area()}')
 
-    slider = widgets.SpanSelector(ax, onselect, 'horizontal', useblit=True, rectprops=dict(alpha=0.2, facecolor=light),
-                                  span_stays=True)
+    slider = widgets.SpanSelector(ax, onselect, 'horizontal', useblit=True,
+                                  rectprops=dict(alpha=0.2, facecolor=color['light']), span_stays=True)
 
     plt.text(0.01, 0.99, 'Group 1', horizontalalignment='left', verticalalignment='top', transform=ax.transAxes)
     plt.text(0.01, 0.01, 'Group 2', horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes)
@@ -533,3 +551,11 @@ def apply_cut_off(protein_list, **kwargs):
     sc_limit = kwargs.get('spectral_count')
 
     return new_protein_list
+
+def get_thresholds(lst):
+    thresholds = []
+    lst.sort()
+    for i in range(len(lst)):
+        if i % (int(len(lst) / 5)) == 0 and lst[i] != 0 and len(thresholds) <= 5:
+            thresholds.append(lst[i])
+    return thresholds

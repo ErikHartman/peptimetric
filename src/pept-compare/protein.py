@@ -142,12 +142,14 @@ class Protein:
             return fasta
 
     def get_protein_family(self):
-        data = download_protein_family
+        data = download_protein_family(self.get_id())
+        protein_families = []
         if data is None:
             return 'No protein family found'
         else:
             for i in data.values():
-                return i.get('id')
+                protein_families.append(i.get('id'))
+            return protein_families
 
     def empai(self, base):
         n_observed = self.get_nbr_of_peptides()

@@ -1,10 +1,16 @@
 from methods import *
 from lists import *
 
-g1 = concatenate_dataframes(read_files_gui())
-g2 = concatenate_dataframes(read_files_gui())
 
-master = g1.merge(g2, on=['Peptide', 'Accession'], how='outer', suffixes=['_g1', '_g2'])
-protein_list = create_protein_list(master)
-for protein in protein_list:
-    print(protein.get_protein_family())
+def get_thresholds(lst):
+    thresholds = []
+    lst.sort()
+    for i in range(len(lst)):
+        if i % (int(len(lst) / 5)) == 0 and lst[i] != 0 and len(thresholds) <= 5:
+            thresholds.append(lst[i])
+    return thresholds
+
+
+lst = [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 7, 7, 7, 77, 7, 7, 7
+       , 10, 10, 7,8,9,7,5,4,45,6,7,8]
+print(len(lst), get_thresholds(lst))
