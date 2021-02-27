@@ -1,5 +1,5 @@
 import re
-
+import statistics
 
 class Peptide:
 
@@ -24,10 +24,6 @@ class Peptide:
     def create_array(self):
         return list(self.get_sequence())
 
-    def get_intensity(self):
-        area_columns = self.df.loc[:, self.df.columns.str.startswith('Area')]
-        return area_columns.mean()
-
     def is_unique(self):
         area_columns = [col for col in self.df if col.startswith('Area')]
         i = 0
@@ -38,13 +34,35 @@ class Peptide:
 
     def get_area(self):
         area_columns = [col for col in self.df if col.startswith('Area')]
-        area = []
-        for a in area_columns:
+        area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
+        area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
+        area_mean_g1 = []
+        area_mean_g2 = []
+        for a in area_columns_g1:
             df_area = self.df.copy()
             df_area.fillna(0, inplace=True)
-            area.append(df_area[a].sum())
+            area_mean_g1.append(df_area[a].mean())
+        for a in area_columns_g2:
+            df_area = self.df.copy()
+            df_area.fillna(0, inplace=True)
+            area_mean_g2.append(df_area[a].mean())
+        return statistics.mean(area_mean_g1), statistics.mean(area_mean_g2)
 
-        return area
+    def get_spectral_count(self):
+        spc_columns = [col for col in self.df if col.startswith('Spectral')]
+        spc_columns_g1 = [col for col in spc_columns if col.endswith('g1')]
+        spc_columns_g2 = [col for col in spc_columns if col.endswith('g2')]
+        spc_mean_g1 = []
+        spc_mean_g2 = []
+        for a in spc_columns_g1:
+            df_spc = self.df.copy()
+            df_spc.fillna(0, inplace=True)
+            spc_mean_g1.append(df_spc[a].mean())
+        for a in spc_columns_g2:
+            df_spc = self.df.copy()
+            df_spc.fillna(0, inplace=True)
+            spc_mean_g2.append(df_spc[a].mean())
+        return statistics.mean(spc_mean_g1), statistics.mean(spc_mean_g2)
 
     def get_rt(self):
         rt_columns = [col for col in self.df if col.startswith('RT')]

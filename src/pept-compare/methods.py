@@ -319,12 +319,13 @@ def create_peptide_graphic(peptide_list):
         intensity_neg = peptide.get_area()[1]
         p = list(range(start, end))
         for i in p:
-            fasta_dict["intensity_pos"][i] += ma.log10(intensity_pos) if intensity_pos != 0 else 0
-            fasta_dict["intensity_neg"][i] += ma.log10(intensity_neg) if intensity_neg != 0 else 0
-            if intensity_pos > 0:
-                fasta_dict["counter_pos"][i] += 1
-            if intensity_neg > 0:
-                fasta_dict["counter_neg"][i] += 1
+            if intensity_neg > 0 or intensity_pos > 0:
+                fasta_dict["intensity_pos"][i] += ma.log10(intensity_pos) if intensity_pos != 0 else 0
+                fasta_dict["intensity_neg"][i] += ma.log10(intensity_neg) if intensity_neg != 0 else 0
+                if intensity_pos > 0:
+                    fasta_dict["counter_pos"][i] += 1
+                if intensity_neg > 0:
+                    fasta_dict["counter_neg"][i] += 1
 
     col_pos = []
     col_neg = []
@@ -382,26 +383,38 @@ def create_peptide_graphic(peptide_list):
     else:
         ax.legend(handles=patches, title='Nbr of peptides overlapping', loc='lower right', ncol=5)
     annotation_list = []
+
     def onselect(xmin, xmax):
         for ann in annotation_list:
             ann.remove()
         annotation_list[:] = []
-        annotation = plt.annotate(text=f'Region ({int(xmin)}, {int(xmax)}): ' + fasta[int(xmin):int(xmax)], fontsize=14, xy=(0.3, 0.8), xycoords='figure fraction',
+        annotation = plt.annotate(text=f'Region ({int(xmin)}, {int(xmax)}): ' + fasta[int(xmin):int(xmax)], fontsize=12, xy=(0.3, 0.8), xycoords='figure fraction',
                                   bbox=dict(boxstyle="round", color=light, alpha=0.2))
         annotation_list.append(annotation)
+        for peptide in peptide_list:
+            if peptide.get_start() > xmin and peptide.get_end() < xmax and \
+                    (peptide.get_area()[0] > 0 or peptide.get_area()[1] > 0):
+                print(peptide.get_sequence(), peptide.get_area())
 
-    span = widgets.SpanSelector(ax, onselect, 'horizontal', useblit=True, rectprops=dict(alpha=0.2, facecolor=light),
+    widgets.SpanSelector(ax, onselect, 'horizontal', useblit=True, rectprops=dict(alpha=0.2, facecolor=light),
                                 span_stays=True)
 
     plt.text(0.01, 0.99, 'Group 1', horizontalalignment='left', verticalalignment='top', transform=ax.transAxes)
     plt.text(0.01, 0.01, 'Group 2', horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes)
-
+    coverage = 0
+    for i in range(len(fasta)):
+        if fasta_dict['counter_pos'][i] != 0 and fasta_dict['counter_neg'][i] != 0:
+            coverage += 1
+    coverage = int(1000*coverage/len(fasta))/1000
+    plt.text(0.4, 0.01, f'Coverage: {coverage}%', horizontalalignment='center', verticalalignment='bottom',
+             transform=ax.transAxes)
     plt.show()
     return fasta_dict
 
 
 def show_part_of_fasta(start, fasta):
     return fasta[start:start+10]
+
 
 def group_on_alphabet(protein_list):
     protein_list.sort(key=lambda x: x.get_trivial_name())
