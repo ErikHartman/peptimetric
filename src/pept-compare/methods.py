@@ -232,14 +232,15 @@ def create_graphic(protein_list, **kwargs):
     col_neg = []
     max_nbr_of_peptides = max(pos_nbr_of_peptides + neg_nbr_of_peptides)
     min_nbr_of_peptides = min(pos_nbr_of_peptides + neg_nbr_of_peptides)
+    thresholds = get_thresholds(pos_nbr_of_peptides + neg_nbr_of_peptides)
     for n in pos_nbr_of_peptides:
-        if n > 4 * max_nbr_of_peptides / 5:
+        if n > thresholds[4]:
             col_pos.append(color['dark'])
-        elif n >= 3 * max_nbr_of_peptides / 5:
+        elif n >= thresholds[3]:
             col_pos.append(color['mediumdark'])
-        elif n >= 2 * max_nbr_of_peptides / 5:
+        elif n >= thresholds[2]:
             col_pos.append(color['medium'])
-        elif n >= max_nbr_of_peptides / 5:
+        elif n >= thresholds[1]:
             col_pos.append(color['mediumlight'])
         elif n == 1:
             col_pos.append(color['grey'])
@@ -247,13 +248,13 @@ def create_graphic(protein_list, **kwargs):
             col_pos.append(color['light'])
 
     for n in neg_nbr_of_peptides:
-        if n > 4 * max_nbr_of_peptides / 5:
+        if n > thresholds[4]:
             col_neg.append(color['dark'])
-        elif n >= 3 * max_nbr_of_peptides / 5:
+        elif n >= thresholds[3]:
             col_neg.append(color['mediumdark'])
-        elif n >= 2 * max_nbr_of_peptides / 5:
+        elif n >= thresholds[2]:
             col_neg.append(color['medium'])
-        elif n >= max_nbr_of_peptides / 5:
+        elif n >= thresholds[1]:
             col_neg.append(color['mediumlight'])
         elif n == 1:
             col_neg.append(color['grey'])
@@ -300,10 +301,10 @@ def create_graphic(protein_list, **kwargs):
     plt.axhline(y=0, color='#000000', linestyle='--', linewidth=0.5)
     plt.axhline(y=weight, color='r', linestyle='--', linewidth=1, alpha=0.5)
     mplcursors.cursor(hover=True)
-    patches = [mpatches.Patch(color=color['dark'], label=int(4 * max_nbr_of_peptides / 5)),
-               mpatches.Patch(color=color['mediumdark'], label=int(3 * max_nbr_of_peptides / 5)),
-               mpatches.Patch(color=color['medium'], label=int(2 * max_nbr_of_peptides / 5)),
-               mpatches.Patch(color=color['mediumlight'], label=int(max_nbr_of_peptides / 5)),
+    patches = [mpatches.Patch(color=color['dark'], label=thresholds[4]),
+               mpatches.Patch(color=color['mediumdark'], label=thresholds[3]),
+               mpatches.Patch(color=color['medium'], label=thresholds[2]),
+               mpatches.Patch(color=color['mediumlight'], label=thresholds[1]),
                mpatches.Patch(color=color['light'], label=1)]
     average_pos_height = statistics.mean(pos_height)
     average_neg_height = statistics.mean(neg_height)
@@ -425,6 +426,83 @@ def create_peptide_graphic(peptide_list):
     coverage = int(10000 * coverage / len(fasta)) / 10000
     plt.text(0.45, 0.01, f'Coverage: {coverage}%', horizontalalignment='center', verticalalignment='bottom',
              transform=ax.transAxes)
+    plt.show()
+
+
+def create_protein_scatter(protein_list, **kwargs):
+    default_settings = {
+        'difference_metric': 'area_sum',
+        'color': 'green'
+    }
+    default_settings.update(**kwargs)
+    color = green
+    g1_intensity = []
+    g2_intensity = []
+    trivial_name = []
+    accession = []
+    nbr_of_peptides = []
+    for protein in protein_list:
+        trivial_name.append(protein.get_trivial_name())
+        accession.append(protein.get_id())
+        nbr_of_peptides.append(sum(protein.get_nbr_of_peptides()))
+        if kwargs.get('difference_metric') == 'area_sum':
+            g1_intensity.append(ma.log10(protein.get_area_sum()[0]) if protein.get_area_sum()[0] != 0 else 0)
+            g2_intensity.append(ma.log10(protein.get_area_sum()[1]) if protein.get_area_sum()[1] != 0 else 0)
+        elif kwargs.get('difference_metric') == 'area_mean':
+            g1_intensity.append(ma.log10(protein.get_area_mean()[0]) if protein.get_area_mean()[0] != 0 else 0)
+            g2_intensity.append(ma.log10(protein.get_area_mean()[1]) if protein.get_area_mean()[1] != 0 else 0)
+        elif kwargs.get('difference_metric') == 'spectral_count_mean':
+            g1_intensity.append(protein.get_spectral_count_mean()[0])
+            g2_intensity.append(protein.get_spectral_count_mean()[1])
+        elif kwargs.get('difference_metric') == 'spectral_count_sum':
+            g1_intensity.append(protein.get_spectral_count_sum()[0])
+            g2_intensity.append(protein.get_spectral_count_sum()[1])
+
+    color_thresholds = get_thresholds(nbr_of_peptides)
+    col = []
+    size=[]
+    for n in nbr_of_peptides:
+        if n > color_thresholds[4]:
+            col.append(color['dark'])
+            size.append(color_thresholds[4])
+        elif n >= color_thresholds[3]:
+            col.append(color['mediumdark'])
+            size.append(color_thresholds[3])
+        elif n >= color_thresholds[2]:
+            col.append(color['medium'])
+            size.append(color_thresholds[2])
+        elif n >= color_thresholds[1]:
+            col.append(color['mediumlight'])
+            size.append(color_thresholds[1])
+        elif n == 1:
+            col.append(color['grey'])
+            size.append(color_thresholds[0])
+        else:
+            col.append(color['light'])
+            size.append(color_thresholds[0])
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    scatter = ax.scatter(g1_intensity, g2_intensity, color=col, alpha=0.5, picker=True, s=size)
+    ax.set_xlabel('log(intensity) of group 1')
+    ax.set_ylabel('log(intensity of group 2')
+
+    patches = [mpatches.Patch(color=color['dark'], label=color_thresholds[4]),
+               mpatches.Patch(color=color['mediumdark'], label=color_thresholds[3]),
+               mpatches.Patch(color=color['medium'], label=color_thresholds[2]),
+               mpatches.Patch(color=color['mediumlight'], label=color_thresholds[1]),
+               mpatches.Patch(color=color['light'], label=color_thresholds[0])]
+
+    ax.legend(handles=patches, title='Nbr of peptides', loc='lower right', ncol=5)
+
+    def on_pick(event):
+
+        ind = event.ind
+        for index in ind:
+            print(f'Accession: {accession[index]}, name: {trivial_name[index]}')
+        scatter._edgecolors[ind, :] = (1, 0, 0, 1)
+        fig.canvas.draw()
+
+    fig.canvas.mpl_connect('pick_event', on_pick)
     plt.show()
 
 
@@ -552,10 +630,7 @@ def apply_cut_off(protein_list, **kwargs):
 
     return new_protein_list
 
+
 def get_thresholds(lst):
-    thresholds = []
-    lst.sort()
-    for i in range(len(lst)):
-        if i % (int(len(lst) / 5)) == 0 and lst[i] != 0 and len(thresholds) <= 5:
-            thresholds.append(lst[i])
-    return thresholds
+    return [int(np.quantile(lst, .2)), int(np.quantile(lst, .4)), int(np.quantile(lst, .6)), int(np.quantile(lst, .8)),
+            int(np.quantile(lst, .9))]
