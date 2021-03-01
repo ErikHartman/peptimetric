@@ -149,6 +149,8 @@ class Protein:
         for fasta in fasta_iterator:
             return fasta
 
+    def get_fasta_seq(self):
+        return str(self.fasta)
     def get_protein_family(self):
         data = download_protein_family(self.get_id())
         protein_families = []

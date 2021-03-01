@@ -310,8 +310,8 @@ def create_graphic(protein_list, **kwargs):
                mpatches.Patch(color=color['light'], label=1)]
     average_pos_height = statistics.mean(pos_height)
     average_neg_height = statistics.mean(neg_height)
-    ax.axis([-0.5, len(pos_height), -1.1 * max(average_pos_height, np.abs(average_neg_height)),
-             1.1 * max(average_pos_height, np.abs(average_neg_height))])
+    ax.axis([-0.5, len(pos_height), -3 * max(average_pos_height, np.abs(average_neg_height)),
+             3 * max(average_pos_height, np.abs(average_neg_height))])
     plt.text(0.01, 0.99, 'Group 1', horizontalalignment='left', verticalalignment='top', transform=ax.transAxes)
     plt.text(0.01, 0.01, 'Group 2', horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes)
     if max(pos_height) >= -min(neg_height):
@@ -323,7 +323,7 @@ def create_graphic(protein_list, **kwargs):
 
 def create_peptide_graphic(peptide_list):
     color = green
-    fasta = peptide_list[0].protein.get_fasta_seq()
+    fasta = peptide_list[0].protein.fasta
     fasta_dict = {"index": [], "counter_pos": [], "counter_neg": [], "intensity_pos": [], "intensity_neg": []}
     for i in range(len(fasta)):
         fasta_dict["index"].append(i)
@@ -632,7 +632,6 @@ def apply_cut_off(protein_list, **kwargs):
     nbr_pep_limit = kwargs.get('nbr_of_peptides')
     area_limit = kwargs.get('area')
     spc_limit = kwargs.get('spectral_count')
-    print(nbr_pep_limit, area_limit, spc_limit)
     for protein in protein_list:
         df = protein.df.copy()
         df.fillna(0, inplace=True)
