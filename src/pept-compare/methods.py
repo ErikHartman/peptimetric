@@ -423,12 +423,15 @@ def create_peptide_graphic(peptide_list):
     plt.text(0.01, 0.01, 'Group 2', horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes)
     coverage = 0
     for i in range(len(fasta)):
-        if fasta_dict['counter_pos'][i] != 0 and fasta_dict['counter_neg'][i] != 0:
+        if fasta_dict['counter_pos'][i] != 0 or fasta_dict['counter_neg'][i] != 0:
             coverage += 1
     coverage = int(10000 * coverage / len(fasta)) / 10000
     plt.text(0.45, 0.01, f'Coverage: {coverage}%', horizontalalignment='center', verticalalignment='bottom',
              transform=ax.transAxes)
     plt.show()
+
+
+from matplotlib import colors
 
 
 def create_protein_scatter(protein_list, **kwargs):
@@ -443,16 +446,19 @@ def create_protein_scatter(protein_list, **kwargs):
     trivial_name = []
     accession = []
     nbr_of_peptides = []
+    pfam = []
+
     for protein in protein_list:
         trivial_name.append(protein.get_trivial_name())
         accession.append(protein.get_id())
         nbr_of_peptides.append(sum(protein.get_nbr_of_peptides()))
+        pfam.append(protein.get_protein_family())
         if kwargs.get('difference_metric') == 'area_sum':
-            g1_intensity.append(ma.log10(protein.get_area_sum()[0]) if protein.get_area_sum()[0] != 0 else 0)
-            g2_intensity.append(ma.log10(protein.get_area_sum()[1]) if protein.get_area_sum()[1] != 0 else 0)
+            g1_intensity.append(protein.get_area_sum()[0])
+            g2_intensity.append(protein.get_area_sum()[1])
         elif kwargs.get('difference_metric') == 'area_mean':
-            g1_intensity.append(ma.log10(protein.get_area_mean()[0]) if protein.get_area_mean()[0] != 0 else 0)
-            g2_intensity.append(ma.log10(protein.get_area_mean()[1]) if protein.get_area_mean()[1] != 0 else 0)
+            g1_intensity.append(protein.get_area_mean()[0])
+            g2_intensity.append(protein.get_area_mean()[1])
         elif kwargs.get('difference_metric') == 'spectral_count_mean':
             g1_intensity.append(protein.get_spectral_count_mean()[0])
             g2_intensity.append(protein.get_spectral_count_mean()[1])
@@ -482,11 +488,27 @@ def create_protein_scatter(protein_list, **kwargs):
         else:
             col.append(color['light'])
             size.append(color_thresholds[0])
+    for s in size:
+        s *= 4
+
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    scatter = ax.scatter(g1_intensity, g2_intensity, color=col, alpha=0.5, picker=True, s=size)
     ax.set_xlabel('log(intensity) of group 1')
     ax.set_ylabel('log(intensity of group 2')
+    scatter = ax.scatter(g1_intensity, g2_intensity, color=col, alpha=0.8, picker=True, s=size)
+    def connectpoints(protein_list):
+        for p1 in protein_list:
+            for p2 in protein_list:
+                if common_family(p1.get_protein_family(), p2.get_protein_family()):
+                    x1 = p1.get_area_sum()[0]
+                    x2 = p2.get_area_sum()[0]
+                    y1 = p1.get_area_sum()[1]
+                    y2 = p2.get_area_sum()[1]
+                    ax.annotate('',xy=(x1,y1),xytext=(x2,y2), arrowprops=dict(arrowstyle='-', color=red['medium'],
+                                                                              lw=1, ls='--', alpha=0.5))
+
+    connectpoints(protein_list)
+
 
     patches = [mpatches.Patch(color=color['dark'], label=color_thresholds[4]),
                mpatches.Patch(color=color['mediumdark'], label=color_thresholds[3]),
@@ -494,18 +516,44 @@ def create_protein_scatter(protein_list, **kwargs):
                mpatches.Patch(color=color['mediumlight'], label=color_thresholds[1]),
                mpatches.Patch(color=color['light'], label=color_thresholds[0])]
 
-    ax.legend(handles=patches, title='Nbr of peptides', loc='lower right', ncol=5)
+
+    indexes = []
+    annotation_list = []
+
 
     def on_pick(event):
-
+        for ann in annotation_list:
+            ann.remove()
+        annotation_list[:] = []
         ind = event.ind
+        indexes.append(ind)
+        if len(indexes) >= 2:
+            scatter._edgecolors[indexes[-2]] = colors.to_rgba_array(color['medium'], 1)
         for index in ind:
             print(f'Accession: {accession[index]}, name: {trivial_name[index]}')
+            annotation = plt.annotate(text=f'{accession[index]}, {trivial_name[index]}', fontsize=12,
+                                      xy=(0.3, 0.8), xycoords='figure fraction',
+                                      bbox=dict(boxstyle="round", color=color['light'], alpha=0.2))
+            annotation_list.append(annotation)
+            annotation = plt.annotate(text=f'{pfam[index]}', fontsize=12,
+                                      xy=(0.3, 0.7), xycoords='figure fraction',
+                                      bbox=dict(boxstyle="round", color=color['light'], alpha=0.2))
+            annotation_list.append(annotation)
         scatter._edgecolors[ind, :] = (1, 0, 0, 1)
         fig.canvas.draw()
-
+    plt.yscale('log'), plt.xscale('log')
+    lims = [1.5*np.min([ax.get_xlim(), ax.get_ylim()]),  1.5*np.max([ax.get_xlim(), ax.get_ylim()])]
+    ax.plot(lims, lims, 'k--', alpha=0.5, zorder=0)
     fig.canvas.mpl_connect('pick_event', on_pick)
     plt.show()
+
+
+def common_family(pfam1, pfam2):
+    for fam1 in pfam1:
+        for fam2 in pfam2:
+            if str(fam1) == str(fam2):
+                return True
+    return False
 
 
 def group_on_alphabet(protein_list):
@@ -650,5 +698,5 @@ def apply_cut_off(protein_list, **kwargs):
 
 
 def get_thresholds(lst):
-    return [int(np.quantile(lst, .2)), int(np.quantile(lst, .4)), int(np.quantile(lst, .6)), int(np.quantile(lst, .8)),
-            int(np.quantile(lst, .9))]
+    return [int(np.quantile(lst, .1)), int(np.quantile(lst, .3)), int(np.quantile(lst, .5)), int(np.quantile(lst, .7)),
+            int(np.quantile(lst, .8))]
