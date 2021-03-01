@@ -1,19 +1,21 @@
-import pandas as pd
+import statistics
 import tkinter as tk
-import matplotlib.pyplot as plt
+from functools import reduce
 from tkinter.filedialog import askopenfilenames
-from matplotlib_venn import venn2
-from pyteomics import electrochem, achrom
+from typing import List
+
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
 import mplcursors
 import numpy as np
-from scipy import stats
-import matplotlib.patches as mpatches
-from numpy import ma
-from lists import *
-from typing import List
-from functools import reduce
-import statistics
+import pandas as pd
 from matplotlib import widgets
+from matplotlib_venn import venn2
+from numpy import ma
+from pyteomics import electrochem, achrom
+from scipy import stats
+
+from lists import *
 
 green = {
     'dark': "#2d662f",
@@ -460,7 +462,7 @@ def create_protein_scatter(protein_list, **kwargs):
 
     color_thresholds = get_thresholds(nbr_of_peptides)
     col = []
-    size=[]
+    size = []
     for n in nbr_of_peptides:
         if n > color_thresholds[4]:
             col.append(color['dark'])
@@ -616,6 +618,9 @@ def check_sample_p_value(df):
     area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
 
 
+from protein import Protein
+
+
 def apply_cut_off(protein_list, **kwargs):
     new_protein_list = []
     default_settings = {
@@ -626,7 +631,21 @@ def apply_cut_off(protein_list, **kwargs):
     default_settings.update(kwargs)
     nbr_pep_limit = kwargs.get('nbr_of_peptides')
     area_limit = kwargs.get('area')
-    sc_limit = kwargs.get('spectral_count')
+    spc_limit = kwargs.get('spectral_count')
+    print(nbr_pep_limit, area_limit, spc_limit)
+    for protein in protein_list:
+        df = protein.df.copy()
+        df.fillna(0, inplace=True)
+        spc_columns = [col for col in df if col.startswith('Spectral')]
+        area_columns = [col for col in df if col.startswith('Area')]
+        for col in spc_columns:
+            df[col].apply(lambda x: x if x > spc_limit else 0)
+        for col in area_columns:
+            df[col].apply(lambda x: x if x > area_limit else 0)
+
+        p = Protein(df, protein.get_id())
+        if p.get_nbr_of_peptides()[0] > nbr_pep_limit and p.get_nbr_of_peptides()[1] > nbr_pep_limit:
+            new_protein_list.append(p)
 
     return new_protein_list
 

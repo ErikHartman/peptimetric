@@ -119,12 +119,20 @@ class Protein:
 
     def get_nbr_of_peptides(self):
         area_columns = [col for col in self.df if col.startswith('Area')]
-        nbr_of_peptides = []
-        for area in area_columns:
-            df_area = self.df.copy()
-            df_area.fillna(0, inplace=True)
-            nbr_of_peptides.append((df_area[area] != 0).sum())
-        return nbr_of_peptides
+        area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
+        area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
+        spc_columns = [col for col in self.df if col.startswith('Spectral')]
+        spc_columns_g1 = [col for col in spc_columns if col.endswith('g1')]
+        spc_columns_g2 = [col for col in spc_columns if col.endswith('g2')]
+        df_cols = self.df.copy()
+        df_cols.fillna(0, inplace=True)
+        df_cols['sum_g1'] = df_cols[spc_columns_g1+area_columns_g1].sum(axis=1)
+        df_cols["sum_g2"] = df_cols[spc_columns_g2 + area_columns_g2].sum(axis=1)
+        df_cols['count_g1'] = df_cols['sum_g1'].apply(lambda x: 1 if x > 0 else 0)
+        df_cols['count_g2'] = df_cols['sum_g2'].apply(lambda x: 1 if x > 0 else 0)
+        nbr_of_peptides_g1 = df_cols['count_g1'].sum(axis=0)
+        nbr_of_peptides_g2 = df_cols['count_g2'].sum(axis=0)
+        return nbr_of_peptides_g1, nbr_of_peptides_g2
 
     def get_id(self):
         return str(self.accession)
