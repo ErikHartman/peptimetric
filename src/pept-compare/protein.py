@@ -150,7 +150,7 @@ class Protein:
             return fasta
 
     def get_fasta_seq(self):
-        return str(self.fasta)
+        return str(self.fasta.seq)
 
     def get_protein_family(self):
         data = download_protein_family(self.get_id())

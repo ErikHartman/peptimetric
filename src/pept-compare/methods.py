@@ -1,9 +1,10 @@
 import statistics
 import tkinter as tk
 from functools import reduce
+import threading
 from tkinter.filedialog import askopenfilenames
 from typing import List
-
+from matplotlib import colors
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import mplcursors
@@ -321,9 +322,9 @@ def create_graphic(protein_list, **kwargs):
     plt.show()
 
 
-def create_peptide_graphic(peptide_list):
+def create_peptide_graphic(peptide_list, n):
     color = green
-    fasta = peptide_list[0].protein.fasta
+    fasta = peptide_list[0].protein.get_fasta_seq()
     fasta_dict = {"index": [], "counter_pos": [], "counter_neg": [], "intensity_pos": [], "intensity_neg": []}
     for i in range(len(fasta)):
         fasta_dict["index"].append(i)
@@ -336,8 +337,7 @@ def create_peptide_graphic(peptide_list):
         end = peptide.get_end()
         intensity_pos = peptide.get_area()[0]
         intensity_neg = peptide.get_area()[1]
-        p = list(range(start, end))
-        for i in p:
+        for i in list(range(start, end)):
             if intensity_neg > 0 or intensity_pos > 0:
                 fasta_dict["intensity_pos"][i] += ma.log10(intensity_pos) if intensity_pos != 0 else 0
                 fasta_dict["intensity_neg"][i] += ma.log10(intensity_neg) if intensity_neg != 0 else 0
@@ -372,7 +372,7 @@ def create_peptide_graphic(peptide_list):
             col_neg.append(color['mediumlight'])
         else:
             col_neg.append(color['light'])
-    fig = plt.figure(figsize=(15, 5))
+    fig = plt.figure(n, figsize=(15, 5))
     ax = fig.add_subplot(111)
     ax.bar(x=fasta_dict["index"], height=fasta_dict['intensity_pos'], color=col_pos,
            edgecolor=col_pos, width=1)
@@ -404,6 +404,7 @@ def create_peptide_graphic(peptide_list):
     annotation_list = []
 
     def onselect(xmin, xmax):
+        df_range = pd.DataFrame()
         for ann in annotation_list:
             ann.remove()
         annotation_list[:] = []
@@ -411,13 +412,18 @@ def create_peptide_graphic(peptide_list):
                                   xy=(0.3, 0.8), xycoords='figure fraction',
                                   bbox=dict(boxstyle="round", color=color['light'], alpha=0.2))
         annotation_list.append(annotation)
+        columns = ['Peptide', 'Start', 'End', 'Intensity']
+        df_range = pd.DataFrame(columns=columns)
         for peptide in peptide_list:
             if peptide.get_start() > xmin and peptide.get_end() < xmax and \
                     (peptide.get_area()[0] > 0 or peptide.get_area()[1] > 0):
-                print(f'{peptide.get_start()}-{peptide.get_end()}: {peptide.get_sequence()}, {peptide.get_area()}')
+                df_range = df_range.append({'Peptide': peptide.get_sequence(), 'Start': peptide.get_start(),
+                                            'End': peptide.get_end(), 'Intensity': peptide.get_area()}, ignore_index=True)
+        df_range.sort_values(by=['Intensity'], ascending=False, inplace=True)
+        print(df_range)
 
-    slider = widgets.SpanSelector(ax, onselect, 'horizontal', useblit=True,
-                                  rectprops=dict(alpha=0.2, facecolor=color['light']), span_stays=True)
+    span = widgets.SpanSelector(ax, onselect, 'horizontal', useblit=True,
+                                rectprops=dict(alpha=0.2, facecolor=color['light']), span_stays=True)
 
     plt.text(0.01, 0.99, 'Group 1', horizontalalignment='left', verticalalignment='top', transform=ax.transAxes)
     plt.text(0.01, 0.01, 'Group 2', horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes)
@@ -429,9 +435,6 @@ def create_peptide_graphic(peptide_list):
     plt.text(0.45, 0.01, f'Coverage: {coverage}%', horizontalalignment='center', verticalalignment='bottom',
              transform=ax.transAxes)
     plt.show()
-
-
-from matplotlib import colors
 
 
 def create_protein_scatter(protein_list, **kwargs):
@@ -466,37 +469,41 @@ def create_protein_scatter(protein_list, **kwargs):
             g1_intensity.append(protein.get_spectral_count_sum()[0])
             g2_intensity.append(protein.get_spectral_count_sum()[1])
 
-    color_thresholds = get_thresholds(nbr_of_peptides)
-    col = []
-    size = []
-    for n in nbr_of_peptides:
-        if n > color_thresholds[4]:
-            col.append(color['dark'])
-            size.append(color_thresholds[4])
-        elif n >= color_thresholds[3]:
-            col.append(color['mediumdark'])
-            size.append(color_thresholds[3])
-        elif n >= color_thresholds[2]:
-            col.append(color['medium'])
-            size.append(color_thresholds[2])
-        elif n >= color_thresholds[1]:
-            col.append(color['mediumlight'])
-            size.append(color_thresholds[1])
-        elif n == 1:
-            col.append(color['grey'])
-            size.append(color_thresholds[0])
-        else:
-            col.append(color['light'])
-            size.append(color_thresholds[0])
+    def set_color_and_size(nbr_of_peptides):
+        color_thresholds = get_thresholds(nbr_of_peptides)
+        col = []
+        size = []
+        for n in nbr_of_peptides:
+            if n > color_thresholds[4]:
+                col.append(color['dark'])
+                size.append(color_thresholds[4])
+            elif n >= color_thresholds[3]:
+                col.append(color['mediumdark'])
+                size.append(color_thresholds[3])
+            elif n >= color_thresholds[2]:
+                col.append(color['medium'])
+                size.append(color_thresholds[2])
+            elif n >= color_thresholds[1]:
+                col.append(color['mediumlight'])
+                size.append(color_thresholds[1])
+            elif n == 1:
+                col.append(color['grey'])
+                size.append(color_thresholds[0])
+            else:
+                col.append(color['light'])
+                size.append(color_thresholds[0])
+        return col, size, color_thresholds
+
+    col, size, color_thresholds = set_color_and_size(nbr_of_peptides)
     for s in size:
         s *= 4
-
-    fig = plt.figure()
+    fig = plt.figure(1)
     ax = fig.add_subplot(111)
     ax.set_xlabel('log(intensity) of group 1')
     ax.set_ylabel('log(intensity of group 2')
     scatter = ax.scatter(g1_intensity, g2_intensity, color=col, alpha=0.8, picker=True, s=size)
-    def connectpoints(protein_list):
+
+    def connect_points(protein_list):
         for p1 in protein_list:
             for p2 in protein_list:
                 if common_family(p1.get_protein_family(), p2.get_protein_family()):
@@ -504,11 +511,10 @@ def create_protein_scatter(protein_list, **kwargs):
                     x2 = p2.get_area_sum()[0]
                     y1 = p1.get_area_sum()[1]
                     y2 = p2.get_area_sum()[1]
-                    ax.annotate('',xy=(x1,y1),xytext=(x2,y2), arrowprops=dict(arrowstyle='-', color=red['medium'],
-                                                                              lw=1, ls='--', alpha=0.5))
+                    ax.annotate('', xy=(x1, y1), xytext=(x2, y2), arrowprops=dict(arrowstyle='-', color=red['medium'],
+                                                                                  lw=1, ls='--', alpha=0.5))
 
-    connectpoints(protein_list)
-
+    connect_points(protein_list)
 
     patches = [mpatches.Patch(color=color['dark'], label=color_thresholds[4]),
                mpatches.Patch(color=color['mediumdark'], label=color_thresholds[3]),
@@ -516,23 +522,31 @@ def create_protein_scatter(protein_list, **kwargs):
                mpatches.Patch(color=color['mediumlight'], label=color_thresholds[1]),
                mpatches.Patch(color=color['light'], label=color_thresholds[0])]
 
-
     indexes = []
     annotation_list = []
-
+    accessions = []
 
     def on_pick(event):
         for ann in annotation_list:
             ann.remove()
         annotation_list[:] = []
         ind = event.ind
+        accessions.append(accession[ind[0]])
+        if len(accessions) >= 2 and accessions[-1] == accessions[-2]:
+            peptide_list = create_peptide_list(protein_list, accessions[-1])
+            t = threading.Thread(target=create_peptide_graphic(peptide_list, len(accessions)))
+            t.daemon = True
+            t.start()
+            return False
         indexes.append(ind)
         if len(indexes) >= 2:
             scatter._edgecolors[indexes[-2]] = colors.to_rgba_array(color['medium'], 1)
+        pad = 0
         for index in ind:
+            pad += +0.05
             print(f'Accession: {accession[index]}, name: {trivial_name[index]}')
             annotation = plt.annotate(text=f'{accession[index]}, {trivial_name[index]}', fontsize=12,
-                                      xy=(0.3, 0.8), xycoords='figure fraction',
+                                      xy=(0.3, 0.75 + pad), xycoords='figure fraction',
                                       bbox=dict(boxstyle="round", color=color['light'], alpha=0.2))
             annotation_list.append(annotation)
             annotation = plt.annotate(text=f'{pfam[index]}', fontsize=12,
@@ -541,8 +555,9 @@ def create_protein_scatter(protein_list, **kwargs):
             annotation_list.append(annotation)
         scatter._edgecolors[ind, :] = (1, 0, 0, 1)
         fig.canvas.draw()
+
     plt.yscale('log'), plt.xscale('log')
-    lims = [1.5*np.min([ax.get_xlim(), ax.get_ylim()]),  1.5*np.max([ax.get_xlim(), ax.get_ylim()])]
+    lims = [1.5 * np.min([ax.get_xlim(), ax.get_ylim()]), 1.5 * np.max([ax.get_xlim(), ax.get_ylim()])]
     ax.plot(lims, lims, 'k--', alpha=0.5, zorder=0)
     fig.canvas.mpl_connect('pick_event', on_pick)
     plt.show()

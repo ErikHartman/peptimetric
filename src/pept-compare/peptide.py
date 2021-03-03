@@ -6,18 +6,20 @@ class Peptide:
 
     def __init__(self, protein, sequence):
         self.protein = protein
-        self.fasta = self.protein.fasta
+        self.fasta = str(self.protein.get_fasta_seq())
         self.mod_sequence = sequence
-        self.sequence = re.sub("[^a-zA-Z]+", "", sequence)
+        self.sequence = str(re.sub("[^a-zA-Z]+", "", sequence))
         self.df = protein.df[protein.df['Peptide'] == sequence]
 
     def get_sequence(self):
         return self.sequence
 
     def get_start(self):
-        for i in range(len(self.fasta.seq)):
-            if self.get_sequence() == self.fasta.seq[i:i+len(self.sequence)]:
+        for i in range(len(self.protein.fasta)):
+            if self.get_sequence() == self.fasta[i:i+len(self.get_sequence())]:
                 return i
+        if i == None:
+            print(self.get_sequence(), 'none found')
 
     def get_end(self):
         return self.get_start() + len(self.get_sequence())
