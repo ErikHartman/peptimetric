@@ -533,6 +533,7 @@ def create_protein_scatter(protein_list, **kwargs):
         ind = event.ind
         accessions.append(accession[ind[0]])
         if len(accessions) >= 2 and accessions[-1] == accessions[-2]:
+            #TODO: Fixa så att create_peptide_graphic skapar en interaktiv plot när den kallas nedan
             peptide_list = create_peptide_list(protein_list, accessions[-1])
             t = threading.Thread(target=create_peptide_graphic(peptide_list, len(accessions)))
             t.daemon = True
