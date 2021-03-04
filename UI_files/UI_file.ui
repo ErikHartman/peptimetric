@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1607</width>
-    <height>898</height>
+    <width>1936</width>
+    <height>941</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,7 +31,7 @@ QPushButton:hover{
       <x>0</x>
       <y>0</y>
       <width>301</width>
-      <height>871</height>
+      <height>931</height>
      </rect>
     </property>
     <property name="autoFillBackground">
@@ -46,134 +46,13 @@ QPushButton:hover{
     <property name="frameShadow">
      <enum>QFrame::Raised</enum>
     </property>
-    <widget class="QWidget" name="">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>60</y>
-       <width>301</width>
-       <height>151</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <property name="spacing">
-       <number>0</number>
-      </property>
-      <property name="leftMargin">
-       <number>10</number>
-      </property>
-      <property name="rightMargin">
-       <number>10</number>
-      </property>
-      <item>
-       <widget class="QPushButton" name="button_menu_1">
-        <property name="font">
-         <font>
-          <family>Calibri</family>
-          <pointsize>12</pointsize>
-         </font>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QPushButton {
-	color:rgb(0, 0, 0);
-	background-color: rgb(210, 240, 209);;
-	border: 0px solid red
-}
-QPushButton:hover{
-	color:rbg(264,264,264);
-	background-color:rgb(212, 232, 236)
-}
-</string>
-        </property>
-        <property name="text">
-         <string>Menu 1</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="button_menu_2">
-        <property name="font">
-         <font>
-          <family>Calibri</family>
-          <pointsize>12</pointsize>
-         </font>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QPushButton {
-	color:rgb(0, 0, 0);
-	background-color: rgb(210, 240, 209);;
-	border: 0px solid red
-}
-QPushButton:hover{
-	color:rbg(264,264,264);
-	background-color:rgb(212, 232, 236)
-}
-</string>
-        </property>
-        <property name="text">
-         <string>Menu 2</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="button_menu_3">
-        <property name="font">
-         <font>
-          <family>Calibri</family>
-          <pointsize>12</pointsize>
-         </font>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QPushButton {
-	color:rgb(0, 0, 0);
-	background-color: rgb(210, 240, 209);;
-	border: 0px solid red
-}
-QPushButton:hover{
-	color:rbg(264,264,264);
-	background-color:rgb(212, 232, 236)
-}
-</string>
-        </property>
-        <property name="text">
-         <string>Menu 3</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="button_menu_4">
-        <property name="font">
-         <font>
-          <family>Calibri</family>
-          <pointsize>12</pointsize>
-         </font>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QPushButton {
-	color:rgb(0, 0, 0);
-	background-color: rgb(210, 240, 209);;
-	border: 0px solid red
-}
-QPushButton:hover{
-	color:rbg(264,264,264);
-	background-color:rgb(212, 232, 236)
-}
-</string>
-        </property>
-        <property name="text">
-         <string>Menu 4</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="geometry">
       <rect>
        <x>10</x>
        <y>220</y>
        <width>281</width>
-       <height>621</height>
+       <height>671</height>
       </rect>
      </property>
      <property name="styleSheet">
@@ -246,13 +125,152 @@ QPushButton:hover{
       </widget>
      </widget>
     </widget>
+    <widget class="QWidget" name="">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>47</y>
+       <width>301</width>
+       <height>171</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QPushButton" name="button_menu_1">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>299</width>
+          <height>35</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Calibri</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+	color:rgb(0, 0, 0);
+	background-color: rgb(210, 240, 209);;
+	border: 0px solid red
+}
+QPushButton:hover{
+	color:rbg(264,264,264);
+	background-color:rgb(212, 232, 236)
+}
+</string>
+        </property>
+        <property name="text">
+         <string>Menu 1</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="button_menu_2">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>35</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Calibri</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+	color:rgb(0, 0, 0);
+	background-color: rgb(210, 240, 209);;
+	border: 0px solid red
+}
+QPushButton:hover{
+	color:rbg(264,264,264);
+	background-color:rgb(212, 232, 236)
+}
+</string>
+        </property>
+        <property name="text">
+         <string>Menu 2</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="button_menu_3">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>35</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Calibri</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+	color:rgb(0, 0, 0);
+	background-color: rgb(210, 240, 209);;
+	border: 0px solid red
+}
+QPushButton:hover{
+	color:rbg(264,264,264);
+	background-color:rgb(212, 232, 236)
+}
+</string>
+        </property>
+        <property name="text">
+         <string>Menu 3</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="button_menu_4">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>35</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Calibri</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+	color:rgb(0, 0, 0);
+	background-color: rgb(210, 240, 209);;
+	border: 0px solid red
+}
+QPushButton:hover{
+	color:rbg(264,264,264);
+	background-color:rgb(212, 232, 236)
+}
+</string>
+        </property>
+        <property name="text">
+         <string>Menu 4</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </widget>
    <widget class="QFrame" name="top_bar">
     <property name="geometry">
      <rect>
       <x>-1</x>
       <y>-1</y>
-      <width>1611</width>
+      <width>1951</width>
       <height>45</height>
      </rect>
     </property>
@@ -271,7 +289,7 @@ QPushButton:hover{
      </property>
      <property name="geometry">
       <rect>
-       <x>1230</x>
+       <x>1560</x>
        <y>10</y>
        <width>70</width>
        <height>30</height>
@@ -301,7 +319,7 @@ QPushButton:hover{
     <widget class="QPushButton" name="button_documentation">
      <property name="geometry">
       <rect>
-       <x>1310</x>
+       <x>1640</x>
        <y>10</y>
        <width>160</width>
        <height>30</height>
@@ -331,7 +349,7 @@ QPushButton:hover{
     <widget class="QPushButton" name="button_feedback">
      <property name="geometry">
       <rect>
-       <x>1480</x>
+       <x>1810</x>
        <y>10</y>
        <width>111</width>
        <height>30</height>
@@ -358,12 +376,35 @@ QPushButton:hover{
       <string>Feedback</string>
      </property>
     </widget>
+    <widget class="QPushButton" name="pushButton">
+     <property name="geometry">
+      <rect>
+       <x>100</x>
+       <y>10</y>
+       <width>101</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset theme="menu_icon.svg">
+       <normaloff>icons/menu_icon.svg</normaloff>icons/menu_icon.svg</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>45</width>
+       <height>45</height>
+      </size>
+     </property>
+    </widget>
    </widget>
    <widget class="QTableWidget" name="peptide_table">
     <property name="geometry">
      <rect>
-      <x>1250</x>
-      <y>530</y>
+      <x>1230</x>
+      <y>580</y>
       <width>320</width>
       <height>300</height>
      </rect>
@@ -374,8 +415,8 @@ QPushButton:hover{
      <rect>
       <x>380</x>
       <y>120</y>
-      <width>850</width>
-      <height>350</height>
+      <width>721</width>
+      <height>411</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -386,9 +427,9 @@ QPushButton:hover{
     <property name="geometry">
      <rect>
       <x>380</x>
-      <y>530</y>
-      <width>850</width>
-      <height>300</height>
+      <y>579</y>
+      <width>821</width>
+      <height>301</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -398,17 +439,17 @@ QPushButton:hover{
    <widget class="QTableWidget" name="protein_table">
     <property name="geometry">
      <rect>
-      <x>1250</x>
+      <x>1129</x>
       <y>120</y>
-      <width>320</width>
-      <height>300</height>
+      <width>421</width>
+      <height>411</height>
      </rect>
     </property>
    </widget>
    <widget class="QLineEdit" name="search_bar">
     <property name="geometry">
      <rect>
-      <x>1030</x>
+      <x>900</x>
       <y>80</y>
       <width>200</width>
       <height>30</height>
@@ -421,7 +462,7 @@ QPushButton:hover{
    <widget class="QLabel" name="label_protein_info">
     <property name="geometry">
      <rect>
-      <x>1340</x>
+      <x>1270</x>
       <y>90</y>
       <width>130</width>
       <height>30</height>
@@ -451,8 +492,8 @@ border: 0px solid red
    <widget class="QLabel" name="label_peptide_table">
     <property name="geometry">
      <rect>
-      <x>1330</x>
-      <y>500</y>
+      <x>1310</x>
+      <y>550</y>
       <width>130</width>
       <height>30</height>
      </rect>
@@ -508,7 +549,7 @@ border: 0px solid red;</string>
     <property name="geometry">
      <rect>
       <x>380</x>
-      <y>500</y>
+      <y>550</y>
       <width>150</width>
       <height>30</height>
      </rect>
@@ -532,13 +573,73 @@ border: 0px solid red;</string>
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
+   <widget class="QScrollArea" name="scrollArea">
+    <property name="geometry">
+     <rect>
+      <x>1580</x>
+      <y>120</y>
+      <width>321</width>
+      <height>761</height>
+     </rect>
+    </property>
+    <property name="widgetResizable">
+     <bool>true</bool>
+    </property>
+    <widget class="QWidget" name="scrollAreaWidgetContents">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>319</width>
+       <height>759</height>
+      </rect>
+     </property>
+     <widget class="QScrollBar" name="scrollBar">
+      <property name="geometry">
+       <rect>
+        <x>300</x>
+        <y>0</y>
+        <width>21</width>
+        <height>761</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>20</y>
+        <width>291</width>
+        <height>731</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;How to use&lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;Insert files&lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;Protein scatter plot&lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;Peptide view&lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt; font-weight:600;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+      </property>
+     </widget>
+    </widget>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1607</width>
+     <width>1936</width>
      <height>26</height>
     </rect>
    </property>
@@ -575,6 +676,8 @@ border: 0px solid red;</string>
    </property>
   </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="icons/resources.qrc"/>
+ </resources>
  <connections/>
 </ui>
