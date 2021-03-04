@@ -17,6 +17,7 @@ from pyteomics import electrochem, achrom
 from scipy import stats
 
 from lists import *
+from threading import Thread
 
 green = {
     'dark': "#2d662f",
@@ -273,7 +274,7 @@ def create_graphic(protein_list, **kwargs):
             fig.canvas.draw()
             print(label)
             peptide_list = create_peptide_list(protein_list, label)
-            create_peptide_graphic(peptide_list)
+            Thread(target=create_peptide_graphic, args=(peptide_list, )).start()
 
         for wedge in wedges:
             for w in wedge:
