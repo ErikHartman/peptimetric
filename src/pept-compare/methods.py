@@ -17,6 +17,7 @@ from pyteomics import electrochem, achrom
 from scipy import stats
 
 from lists import *
+from threading import Thread
 
 green = {
     'dark': "#2d662f",
@@ -273,7 +274,7 @@ def create_graphic(protein_list, **kwargs):
             fig.canvas.draw()
             print(label)
             peptide_list = create_peptide_list(protein_list, label)
-            create_peptide_graphic(peptide_list)
+            Thread(target=create_peptide_graphic, args=(peptide_list, )).start()
 
         for wedge in wedges:
             for w in wedge:
@@ -533,6 +534,7 @@ def create_protein_scatter(protein_list, **kwargs):
         ind = event.ind
         accessions.append(accession[ind[0]])
         if len(accessions) >= 2 and accessions[-1] == accessions[-2]:
+            #TODO: Fixa så att create_peptide_graphic skapar en interaktiv plot när den kallas nedan
             peptide_list = create_peptide_list(protein_list, accessions[-1])
             t = threading.Thread(target=create_peptide_graphic(peptide_list, len(accessions)))
             t.daemon = True
