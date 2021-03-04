@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'UI_file.ui'
+# Form implementation generated from reading ui file 'ui_file.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -28,28 +29,28 @@ class Ui_MainWindow(object):
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.button_menu1 = QtWidgets.QPushButton(self.widget)
-        self.button_menu1.setStyleSheet("QPushButton:hover{\n"
-"    background-color:rgb(253, 255, 247)\n"
-"}")
-        self.button_menu1.setObjectName("button_menu1")
-        self.verticalLayout.addWidget(self.button_menu1)
+        self.button_menu_1 = QtWidgets.QPushButton(self.widget)
+        self.button_menu_1.setStyleSheet("QPushButton:hover{\n"
+                                         "    background-color:rgb(253, 255, 247)\n"
+                                         "}")
+        self.button_menu_1.setObjectName("button_menu_1")
+        self.verticalLayout.addWidget(self.button_menu_1)
         self.button_menu_2 = QtWidgets.QPushButton(self.widget)
         self.button_menu_2.setStyleSheet("QPushButton:hover{\n"
-"    background-color:rgb(253, 255, 247)\n"
-"}")
+                                         "    background-color:rgb(253, 255, 247)\n"
+                                         "}")
         self.button_menu_2.setObjectName("button_menu_2")
         self.verticalLayout.addWidget(self.button_menu_2)
         self.button_menu_3 = QtWidgets.QPushButton(self.widget)
         self.button_menu_3.setStyleSheet("QPushButton:hover{\n"
-"    background-color:rgb(253, 255, 247)\n"
-"}")
+                                         "    background-color:rgb(253, 255, 247)\n"
+                                         "}")
         self.button_menu_3.setObjectName("button_menu_3")
         self.verticalLayout.addWidget(self.button_menu_3)
         self.button_menu_4 = QtWidgets.QPushButton(self.widget)
         self.button_menu_4.setStyleSheet("QPushButton:hover{\n"
-"    background-color:rgb(253, 255, 247)\n"
-"}")
+                                         "    background-color:rgb(253, 255, 247)\n"
+                                         "}")
         self.button_menu_4.setObjectName("button_menu_4")
         self.verticalLayout.addWidget(self.button_menu_4)
         self.stackedWidget = QtWidgets.QStackedWidget(self.left_menu_frame)
@@ -94,7 +95,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.button_menu1.setText(_translate("MainWindow", "Menu 1"))
+        self.button_menu_1.setText(_translate("MainWindow", "Menu 1"))
         self.button_menu_2.setText(_translate("MainWindow", "Menu 2"))
         self.button_menu_3.setText(_translate("MainWindow", "Menu 3"))
         self.button_menu_4.setText(_translate("MainWindow", "Menu 4"))
@@ -106,10 +107,10 @@ class Ui_MainWindow(object):
 
 if __name__ == "__main__":
     import sys
+
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
-
