@@ -6,28 +6,39 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1125</width>
-    <height>644</height>
+    <width>1607</width>
+    <height>898</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QPushButton {
+	color:rgb(0, 0, 0);
+	background-color:rgb(190, 190, 190);
+	border: 0px solid red
+}
+QPushButton:hover{
+	background-color:rgb(212, 232, 236)
+}
+</string>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QFrame" name="left_menu_frame">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>0</x>
       <y>0</y>
-      <width>170</width>
-      <height>610</height>
+      <width>301</width>
+      <height>871</height>
      </rect>
     </property>
     <property name="autoFillBackground">
      <bool>false</bool>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color: rgb(170, 170, 127)</string>
+     <string notr="true">background-color: rgb(226, 226, 223);</string>
     </property>
     <property name="frameShape">
      <enum>QFrame::StyledPanel</enum>
@@ -38,22 +49,41 @@
     <widget class="QWidget" name="">
      <property name="geometry">
       <rect>
-       <x>10</x>
-       <y>40</y>
-       <width>141</width>
-       <height>135</height>
+       <x>0</x>
+       <y>60</y>
+       <width>301</width>
+       <height>151</height>
       </rect>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <property name="spacing">
        <number>0</number>
       </property>
+      <property name="leftMargin">
+       <number>10</number>
+      </property>
+      <property name="rightMargin">
+       <number>10</number>
+      </property>
       <item>
        <widget class="QPushButton" name="button_menu_1">
+        <property name="font">
+         <font>
+          <family>Calibri</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
         <property name="styleSheet">
-         <string notr="true">QPushButton:hover{
-	background-color:rgb(253, 255, 247)
-}</string>
+         <string notr="true">QPushButton {
+	color:rgb(0, 0, 0);
+	background-color: rgb(210, 240, 209);;
+	border: 0px solid red
+}
+QPushButton:hover{
+	color:rbg(264,264,264);
+	background-color:rgb(212, 232, 236)
+}
+</string>
         </property>
         <property name="text">
          <string>Menu 1</string>
@@ -62,10 +92,23 @@
       </item>
       <item>
        <widget class="QPushButton" name="button_menu_2">
+        <property name="font">
+         <font>
+          <family>Calibri</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
         <property name="styleSheet">
-         <string notr="true">QPushButton:hover{
-	background-color:rgb(253, 255, 247)
-}</string>
+         <string notr="true">QPushButton {
+	color:rgb(0, 0, 0);
+	background-color: rgb(210, 240, 209);;
+	border: 0px solid red
+}
+QPushButton:hover{
+	color:rbg(264,264,264);
+	background-color:rgb(212, 232, 236)
+}
+</string>
         </property>
         <property name="text">
          <string>Menu 2</string>
@@ -74,10 +117,23 @@
       </item>
       <item>
        <widget class="QPushButton" name="button_menu_3">
+        <property name="font">
+         <font>
+          <family>Calibri</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
         <property name="styleSheet">
-         <string notr="true">QPushButton:hover{
-	background-color:rgb(253, 255, 247)
-}</string>
+         <string notr="true">QPushButton {
+	color:rgb(0, 0, 0);
+	background-color: rgb(210, 240, 209);;
+	border: 0px solid red
+}
+QPushButton:hover{
+	color:rbg(264,264,264);
+	background-color:rgb(212, 232, 236)
+}
+</string>
         </property>
         <property name="text">
          <string>Menu 3</string>
@@ -86,10 +142,23 @@
       </item>
       <item>
        <widget class="QPushButton" name="button_menu_4">
+        <property name="font">
+         <font>
+          <family>Calibri</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
         <property name="styleSheet">
-         <string notr="true">QPushButton:hover{
-	background-color:rgb(253, 255, 247)
-}</string>
+         <string notr="true">QPushButton {
+	color:rgb(0, 0, 0);
+	background-color: rgb(210, 240, 209);;
+	border: 0px solid red
+}
+QPushButton:hover{
+	color:rbg(264,264,264);
+	background-color:rgb(212, 232, 236)
+}
+</string>
         </property>
         <property name="text">
          <string>Menu 4</string>
@@ -102,17 +171,20 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>190</y>
-       <width>141</width>
-       <height>381</height>
+       <y>220</y>
+       <width>281</width>
+       <height>621</height>
       </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(220, 220, 220);</string>
      </property>
      <widget class="QWidget" name="page_1">
       <widget class="QLabel" name="label_1">
        <property name="geometry">
         <rect>
-         <x>60</x>
-         <y>150</y>
+         <x>90</x>
+         <y>300</y>
          <width>55</width>
          <height>16</height>
         </rect>
@@ -126,11 +198,17 @@
       <widget class="QLabel" name="label_2">
        <property name="geometry">
         <rect>
-         <x>40</x>
-         <y>100</y>
-         <width>61</width>
-         <height>71</height>
+         <x>80</x>
+         <y>270</y>
+         <width>131</width>
+         <height>91</height>
         </rect>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
        </property>
        <property name="text">
         <string>Page 2</string>
@@ -141,8 +219,8 @@
       <widget class="QLabel" name="label_3">
        <property name="geometry">
         <rect>
-         <x>40</x>
-         <y>160</y>
+         <x>80</x>
+         <y>310</y>
          <width>55</width>
          <height>16</height>
         </rect>
@@ -156,8 +234,8 @@
       <widget class="QLabel" name="label_4">
        <property name="geometry">
         <rect>
-         <x>40</x>
-         <y>190</y>
+         <x>80</x>
+         <y>350</y>
          <width>55</width>
          <height>16</height>
         </rect>
@@ -169,18 +247,333 @@
      </widget>
     </widget>
    </widget>
+   <widget class="QFrame" name="top_bar">
+    <property name="geometry">
+     <rect>
+      <x>-1</x>
+      <y>-1</y>
+      <width>1611</width>
+      <height>45</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(226, 226, 223);</string>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+    <widget class="QPushButton" name="button_FAQ">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>1230</x>
+       <y>10</y>
+       <width>70</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Calibri</family>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton {
+	color:rgb(0, 0, 0);
+	background-color:rgb(200, 200, 200);
+	border: 0px solid red
+}
+QPushButton:hover{
+	background-color:rgb(212, 232, 236)
+}
+</string>
+     </property>
+     <property name="text">
+      <string>FAQ</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="button_documentation">
+     <property name="geometry">
+      <rect>
+       <x>1310</x>
+       <y>10</y>
+       <width>160</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Calibri</family>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton {
+	color:rgb(0, 0, 0);
+	background-color:rgb(200, 200, 200);
+	border: 0px solid red
+}
+QPushButton:hover{
+	background-color:rgb(212, 232, 236)
+}
+</string>
+     </property>
+     <property name="text">
+      <string>Documentation</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="button_feedback">
+     <property name="geometry">
+      <rect>
+       <x>1480</x>
+       <y>10</y>
+       <width>111</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Calibri</family>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton {
+	color:rgb(0, 0, 0);
+	background-color:rgb(200, 200, 200);
+	border: 0px solid red
+}
+QPushButton:hover{
+	background-color:rgb(212, 232, 236)
+}
+</string>
+     </property>
+     <property name="text">
+      <string>Feedback</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QTableWidget" name="peptide_table">
+    <property name="geometry">
+     <rect>
+      <x>1250</x>
+      <y>530</y>
+      <width>320</width>
+      <height>300</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QWidget" name="protein_widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>380</x>
+      <y>120</y>
+      <width>850</width>
+      <height>350</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(255, 255, 255);</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="peptide_widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>380</x>
+      <y>530</y>
+      <width>850</width>
+      <height>300</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color:rgb(255, 255, 255)</string>
+    </property>
+   </widget>
+   <widget class="QTableWidget" name="protein_table">
+    <property name="geometry">
+     <rect>
+      <x>1250</x>
+      <y>120</y>
+      <width>320</width>
+      <height>300</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="search_bar">
+    <property name="geometry">
+     <rect>
+      <x>1030</x>
+      <y>80</y>
+      <width>200</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Search for proteins...</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_protein_info">
+    <property name="geometry">
+     <rect>
+      <x>1340</x>
+      <y>90</y>
+      <width>130</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Calibri</family>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color:rgb(0, 0, 0);
+background-color: rgb(210, 240, 209);;
+border: 0px solid red
+
+
+</string>
+    </property>
+    <property name="text">
+     <string>Protein info</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_peptide_table">
+    <property name="geometry">
+     <rect>
+      <x>1330</x>
+      <y>500</y>
+      <width>130</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Calibri</family>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color:rgb(0, 0, 0);
+background-color: rgb(210, 240, 209);;
+border: 0px solid red
+</string>
+    </property>
+    <property name="text">
+     <string>Peptide table</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_protein_view">
+    <property name="geometry">
+     <rect>
+      <x>380</x>
+      <y>90</y>
+      <width>150</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Calibri</family>
+      <pointsize>14</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(210, 240, 209);
+border: 0px solid red;</string>
+    </property>
+    <property name="text">
+     <string>Protein View</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_peptide_view">
+    <property name="geometry">
+     <rect>
+      <x>380</x>
+      <y>500</y>
+      <width>150</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Calibri</family>
+      <pointsize>14</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(210, 240, 209);
+border: 0px solid red;</string>
+    </property>
+    <property name="text">
+     <string>Peptide View</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1125</width>
+     <width>1607</width>
      <height>26</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuFiles">
+    <property name="title">
+     <string>Files</string>
+    </property>
+    <addaction name="actionAdd_files"/>
+    <addaction name="actionView_files"/>
+   </widget>
+   <widget class="QMenu" name="menuExport_data">
+    <property name="title">
+     <string>Export data</string>
+    </property>
+    <addaction name="actionExport_as"/>
+   </widget>
+   <addaction name="menuFiles"/>
+   <addaction name="menuExport_data"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionAdd_files">
+   <property name="text">
+    <string>Add files</string>
+   </property>
+  </action>
+  <action name="actionExport_as">
+   <property name="text">
+    <string>Export as...</string>
+   </property>
+  </action>
+  <action name="actionView_files">
+   <property name="text">
+    <string>View files</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

@@ -19,9 +19,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.ui.button_menu_3.clicked.connect(lambda: self.ui.stackedWidget.setCurrentWidget(self.ui.page_3))
         self.ui.button_menu_4.clicked.connect(lambda: self.ui.stackedWidget.setCurrentWidget(self.ui.page_4))
 
-
-
         self.show()
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
