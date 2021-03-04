@@ -18,8 +18,6 @@ class Peptide:
         for i in range(len(self.protein.fasta)):
             if self.get_sequence() == self.fasta[i:i+len(self.get_sequence())]:
                 return i
-        if i == None:
-            print(self.get_sequence(), 'none found')
 
     def get_end(self):
         return self.get_start() + len(self.get_sequence())
