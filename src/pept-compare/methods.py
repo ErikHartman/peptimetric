@@ -376,7 +376,7 @@ def create_peptide_graphic(peptide_list, n):
         for ann in annotation_list:
             ann.remove()
         annotation_list[:] = []
-        annotation = plt.annotate(text=f'Region ({int(xmin)}, {int(xmax)}): ' + fasta[int(xmin):int(xmax)], fontsize=12,
+        annotation = plt.annotate(s=f'Region ({int(xmin)}, {int(xmax)}): ' + fasta[int(xmin):int(xmax)], fontsize=12,
                                   xy=(0.3, 0.8), xycoords='figure fraction',
                                   bbox=dict(boxstyle="round", color=color['light'], alpha=0.2))
         annotation_list.append(annotation)
@@ -511,11 +511,11 @@ def create_protein_scatter(protein_list, **kwargs):
         for index in ind:
             pad += +0.05
             print(f'Accession: {accession[index]}, name: {trivial_name[index]}')
-            annotation = plt.annotate(text=f'{accession[index]}, {trivial_name[index]}', fontsize=12,
+            annotation = plt.annotate(s=f'{accession[index]}, {trivial_name[index]}', fontsize=12,
                                       xy=(0.3, 0.75 + pad), xycoords='figure fraction',
                                       bbox=dict(boxstyle="round", color=color['light'], alpha=0.2))
             annotation_list.append(annotation)
-            annotation = plt.annotate(text=f'{pfam[index]}', fontsize=12,
+            annotation = plt.annotate(s=f'{pfam[index]}', fontsize=12,
                                       xy=(0.3, 0.7), xycoords='figure fraction',
                                       bbox=dict(boxstyle="round", color=color['light'], alpha=0.2))
             annotation_list.append(annotation)

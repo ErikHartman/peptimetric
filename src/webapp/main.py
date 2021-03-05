@@ -7,13 +7,10 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
-import sys
-
-sys.path.insert(1, "/src/pept-compare")
-from methods import *
+import sys, os
 
 
-
-
-
-
+sys.path.append(r'\pept-compare')
+import methods
+for i in sys.path:
+    print(i)
