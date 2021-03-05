@@ -1,6 +1,7 @@
 from tqdm import tqdm
-from protein import Protein
+
 from peptide import Peptide
+from protein import Protein
 
 
 def create_protein_list(df):

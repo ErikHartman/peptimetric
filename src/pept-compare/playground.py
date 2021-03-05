@@ -1,5 +1,9 @@
-from methods import *
-from lists import *
+from methods import concatenate_dataframes
+from methods import create_protein_scatter
+from methods import apply_cut_off
+from lists import create_protein_list
+from methods import read_files_gui
+
 def merge_dataframes(g1, g2):
     return g1.merge(g2, on=['Peptide', 'Accession'], how='outer', suffixes=['_g1', '_g2'])
 

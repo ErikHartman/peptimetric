@@ -1,7 +1,5 @@
-
 from methods import *
 from lists import *
-
 
 g1 = concatenate_dataframes(read_files_gui())
 g2 = concatenate_dataframes(read_files_gui())
