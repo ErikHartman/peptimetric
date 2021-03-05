@@ -9,9 +9,10 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 import sys, os
 cwd = os.getcwd()
+sys.path.append('src/peptcompare')
+from peptcompare.methods import *
 
-
-print(sys.path)
+read_files_gui()
 
 
 

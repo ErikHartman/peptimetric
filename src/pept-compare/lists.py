@@ -1,5 +1,4 @@
 from tqdm import tqdm
-
 from protein import Protein
 from peptide import Peptide
 
