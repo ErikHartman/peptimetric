@@ -8,9 +8,12 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 import sys, os
+cwd = os.getcwd()
 
 
-sys.path.append(r'\pept-compare')
-import methods
-for i in sys.path:
-    print(i)
+print(sys.path)
+
+
+
+
+
