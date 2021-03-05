@@ -1,23 +1,22 @@
 import statistics
 import tkinter as tk
 from functools import reduce
-import threading
 from tkinter.filedialog import askopenfilenames
 from typing import List
-from matplotlib import colors
+
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import mplcursors
 import numpy as np
 import pandas as pd
-from matplotlib import widgets
+from matplotlib import colors, widgets
 from matplotlib_venn import venn2
 from numpy import ma
-from pyteomics import electrochem, achrom
+from pyteomics import achrom, electrochem
 from scipy import stats
 
 from lists import *
-from threading import Thread
+from protein import Protein
 
 green = {
     'dark': "#2d662f",
@@ -150,38 +149,6 @@ Normal_amino_acids = {
     'E': 6.72
 }
 
-
-def create_venn(df):
-    df['Peptide'] = df['Peptide'].str.replace('[^a-zA-Z]', '')
-    df['N-cut'] = df['Peptide'].apply(lambda x: x[0:4])
-    df['C-cut'] = df['Peptide'].apply(lambda x: x[-4::1])
-    df['First aa'] = df['Peptide'].apply(lambda x: x[0:1])
-    df['Last aa'] = df['Peptide'].apply(lambda x: x[-1::1])
-    aminoacids = amino_acid_frequency(df['Peptide'])
-    N_aminoacids = amino_acid_frequency(df['N-cut'])
-    C_aminoacids = amino_acid_frequency(df['C-cut'])
-    First_aa = amino_acid_frequency(df['First aa'])
-    Last_aa = amino_acid_frequency(df['Last aa'])
-    fig, ax = plt.subplots(3, 2, figsize=(20, 10))
-    wp = {'linewidth': 0.5, 'edgecolor': "#afabb3"}
-
-    ax[0, 0].pie(aminoacids.values(), labels=aminoacids.keys(), wedgeprops=wp)
-    ax[2, 0].pie(N_aminoacids.values(), labels=N_aminoacids.keys(), wedgeprops=wp)
-    ax[1, 0].pie(C_aminoacids.values(), labels=C_aminoacids.keys(), wedgeprops=wp)
-    ax[1, 1].pie(First_aa.values(), labels=First_aa.keys(), wedgeprops=wp)
-    ax[2, 1].pie(Last_aa.values(), labels=Last_aa.keys(), wedgeprops=wp)
-    ax[0, 1].pie(Normal_amino_acids.values(), labels=Normal_amino_acids.keys(), wedgeprops=wp)
-
-    ax[0, 0].set_title('Full sequence')
-    ax[0, 1].set_title('SwissProt all proteins')
-    ax[2, 0].set_title('N-terminal sequence')
-    ax[1, 0].set_title('C-terminal sequence')
-    ax[1, 1].set_title('First amino acid')
-    ax[2, 1].set_title('Last amino acid')
-
-    plt.show()
-
-
 def create_graphic(protein_list, **kwargs):
     default_settings = {
         'grouping'
@@ -274,7 +241,7 @@ def create_graphic(protein_list, **kwargs):
             fig.canvas.draw()
             print(label)
             peptide_list = create_peptide_list(protein_list, label)
-            Thread(target=create_peptide_graphic, args=(peptide_list, )).start()
+            create_peptide_graphic(protein_list, 2)
 
         for wedge in wedges:
             for w in wedge:
@@ -534,11 +501,8 @@ def create_protein_scatter(protein_list, **kwargs):
         ind = event.ind
         accessions.append(accession[ind[0]])
         if len(accessions) >= 2 and accessions[-1] == accessions[-2]:
-            #TODO: Fixa så att create_peptide_graphic skapar en interaktiv plot när den kallas nedan
             peptide_list = create_peptide_list(protein_list, accessions[-1])
-            t = threading.Thread(target=create_peptide_graphic(peptide_list, len(accessions)))
-            t.daemon = True
-            t.start()
+            create_peptide_graphic(peptide_list, len(accessions))
             return False
         indexes.append(ind)
         if len(indexes) >= 2:
@@ -681,9 +645,6 @@ def check_sample_p_value(df):
     area_columns = [col for col in df if col.startswith('Area')]
     area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
     area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
-
-
-from protein import Protein
 
 
 def apply_cut_off(protein_list, **kwargs):
