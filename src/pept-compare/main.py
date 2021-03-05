@@ -8,13 +8,8 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 import sys, os
-cwd = os.getcwd()
-sys.path.append('src/peptcompare')
-from peptcompare.methods import *
+cwd = "C:/Users/erikh/OneDrive/Dokument/GitHub/kand/src/peptcompare"
 
-read_files_gui()
-
-
-
+from methods import *
 
 
