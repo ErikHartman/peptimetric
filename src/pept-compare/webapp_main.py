@@ -85,6 +85,19 @@ sidebar = html.Div(
     style=SIDEBAR_STYLE,
 )
 
+search_input = html.Div([
+    html.Div([
+        dbc.Input(
+            id='search_input',
+            placeholder='Search protein...',
+            debounce=True,
+            minLength=0, maxLength=30,
+            size = '20',
+        )
+
+    ])
+])
+
 how_to_use_card = dbc.Card(
     dbc.CardBody(
         [
@@ -150,6 +163,10 @@ app.layout = dbc.Container([
     dbc.Row([
         dbc.Col(navbar, width={"size":12}, className="mb-4"),
     ]),
+    #Search input 
+    dbc.Row([
+        dbc.Col(search_input, width={"size":0, "offset":8})
+    ]),
     #Protein and how to row
     dbc.Row([
         dbc.Col(sidebar, width={'size':0}),
@@ -162,6 +179,7 @@ app.layout = dbc.Container([
         dbc.Col(peptide_fig, width={'size': 8}),
         dbc.Col(peptide_info, width={'size':2})
     ])
+    
     
 ])
 
