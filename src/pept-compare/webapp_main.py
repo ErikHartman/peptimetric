@@ -10,7 +10,7 @@ import dash_html_components as html
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 
 app = dash.Dash(external_stylesheets=[dbc.themes.SANDSTONE])
 
@@ -35,27 +35,58 @@ CONTENT_STYLE = {
     "margin-right": "2rem",
     "padding": "2rem 1rem",
 }
+
+modal = html.Div(
+    [
+        dbc.Modal(
+            [
+                dbc.ModalHeader("Files"),
+                dbc.Row([
+                    dbc.Col(dbc.ModalBody('Group 1')),
+                    dbc.Col(dbc.ModalBody('Group 2')),
+                ]),
+                dbc.Row([
+                dbc.Col(
+                    dcc.Upload(id="upload-group-1",
+                    children=html.Button('Upload Files'),
+                    className="ml-auto",
+                    ),
+                ),
+                dbc.Col(
+                    dcc.Upload(id="upload-group-2",
+                    children=html.Button('Upload Files'),
+                    className="ml-auto",
+                ),),
+                ]),
+                
+                dbc.ModalFooter(
+                    dbc.Button("Close", id="close", className="ml-auto")
+                ),
+            ],
+            id="modal",
+        ),
+    ]
+)
+
+
+@app.callback(
+    Output("modal", "is_open"),
+    [Input("open-modal", "n_clicks"), Input("close", "n_clicks")],
+    [State("modal", "is_open")],
+)
+def toggle_modal(n1, n2, is_open):
+    if n1 or n2:
+        return not is_open
+    return is_open
+
 navbar = dbc.Navbar(
     [
         dbc.NavbarBrand("Eriks och Simons kandidatarbete"),
             dbc.Nav(
             [
-                dbc.DropdownMenu(
-                    label="Files",
-                    children=[
-                        dbc.DropdownMenuItem("View files", href="/View-files"),
-                        dbc.DropdownMenuItem("Add files", href="/Add-files"),
-                    ],
-                    className="mr-1",
-                    nav=True,
-                    in_navbar=True,
-                ),
-                dbc.Button(
-                    "Export data",
-                    className="mr-1",
-                    color='info',
-                    href="/Export-data"
-                ),
+                dbc.Button("Files", id="open-modal", color='info', className="mr-1"),
+                modal,
+                dbc.Button("Export data", className="mr-1", color='info', href="/Export-data"),
                 dbc.NavLink("Documentation", href="/Documentation", active="exact"),
                 dbc.NavLink("FAQ", href="/FAQ", active="exact"),
                 dbc.NavLink("Feedback", href="/Feedback", active="exact"),
