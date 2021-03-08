@@ -1,12 +1,10 @@
 
 build:
-	conda env update --file environment.yml --prune 
+	poetry install
 
 test:
-	make build
 	pytest
 
 precommit:
-	conda env export --no-builds > environment.yml
 	make test
 
