@@ -43,9 +43,9 @@ CONTENT_STYLE = {
 }
 #---------------------------------------PAGE-ELEMENTS------------------------------------------------
 modal_file = html.Div([
-        dbc.Button("Files", id="open-modal-file", color='info', className="mr-1"),
+    dbc.Button("Files", id="open-modal-file", color='info', className="mr-1"),
         dbc.Modal([
-                dbc.ModalHeader("Files"),
+                dbc.ModalHeader("Files", className="font-weight-bold"),
                 dbc.Row([
                     dbc.Col(dbc.ModalBody('Group 1')),
                     dbc.Col(dbc.ModalBody('Group 2')),
@@ -53,14 +53,14 @@ modal_file = html.Div([
                 dbc.Row([
                 dbc.Col(
                     dcc.Upload(id="upload-group-1",
-                    children=html.Button('Upload Files'),
+                    children=dbc.Button('Upload Files'),
                     className="ml-auto",
                     ),
                 ),
                 dbc.Col(
                     dcc.Upload(id="upload-group-2",
-                    children=html.Button('Upload Files'),
-                    className="ml-auto",),
+                    children=dbc.Button('Upload Files'),
+                    className="ml-auto",)
                     ),
                 ]),
                 dbc.ModalFooter(
@@ -68,16 +68,16 @@ modal_file = html.Div([
                 ),
             ],
             id="modal-file",
-            is_open=False,
+            centered=True,
         )
 ])
 navbar = dbc.Navbar(
     [
         dbc.NavbarBrand("Eriks och Simons kandidatarbete"),
+        modal_file,
+        dbc.Button("Export data", className="mr-1", color='info', href="/Export-data"),
             dbc.Nav(
             [
-                modal_file,
-                dbc.Button("Export data", className="mr-1", color='info', href="/Export-data"),
                 dbc.NavLink("Home", href="/", active="exact"),
                 dbc.NavLink("Documentation", href="/Documentation", active="exact"),
                 dbc.NavLink("FAQ", href="/FAQ", active="exact"),
@@ -173,12 +173,11 @@ peptide_info = dash_table.DataTable(
 
 #---------------------------PAGES---------------------------------------------------------------
 main_page = dbc.Container([
-    dcc.Location(id="url"),
     dbc.Row([
         dbc.Col(navbar, width={"size":12}, className="mb-4"),
     ]),
     dbc.Row([
-        dbc.Col(search_input, width={"size":0, "offset":2}, className="mb-4"),
+        dbc.Col(search_input, width={"size":2, "offset":3}, className="mb-4"),
     ]),
     dbc.Row([
         dbc.Col(sidebar, width={'size':0}),
@@ -193,7 +192,6 @@ main_page = dbc.Container([
 ])
 
 FAQ_page = html.Div([
-    dcc.Location(id="url"),
     navbar,
     html.H1('FAQ'),
     html.Br(),
@@ -201,22 +199,19 @@ FAQ_page = html.Div([
 ])
 
 documentation_page = html.Div([
-    dcc.Location(id="url"),
     navbar,
     html.H1('Documentation'),
     html.Br(),
     dcc.Link('Go back to home', href='/')
 ])
 
-@app.callback(dash.dependencies.Output('page-content', 'children'),
-              [dash.dependencies.Input('url', 'pathname')])
+@app.callback(Output('page-content', 'children'),
+              [Input('url', 'pathname')])
 def display_page(pathname):
     if pathname == '/FAQ':
         return FAQ_page
     elif pathname == '/Documentation':
         return documentation_page
-    elif pathname == '/':
-        return main_page
     else: 
         return main_page
 
