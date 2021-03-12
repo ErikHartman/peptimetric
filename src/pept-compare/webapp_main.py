@@ -12,7 +12,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output, State
 
-app = dash.Dash(__name__,external_stylesheets=[dbc.themes.SANDSTONE])
+app = dash.Dash(__name__,external_stylesheets=[dbc.themes.SANDSTONE], suppress_callback_exceptions=True)
 
 
 app.layout = html.Div([
@@ -31,7 +31,6 @@ SIDEBAR_STYLE = {
     "top": "2rem",
     "left": 0,
     "bottom": 0,
-    "width": "12rem",
     "padding": "2rem 1rem",
     "background-color": "light",
 }
@@ -50,18 +49,25 @@ modal_file = html.Div([
                     dbc.Col(dbc.ModalBody('Group 1')),
                     dbc.Col(dbc.ModalBody('Group 2')),
                 ]),
+                
                 dbc.Row([
-                dbc.Col(
-                    dcc.Upload(id="upload-group-1",
-                    children=dbc.Button('Upload Files'),
-                    className="ml-auto",
-                    ),
-                ),
-                dbc.Col(
-                    dcc.Upload(id="upload-group-2",
-                    children=dbc.Button('Upload Files'),
-                    className="ml-auto",)
-                    ),
+                    dbc.Col([
+                    dcc.Upload(
+                    id='upload-data',
+                    children=dbc.Button('Select files', className="ml-auto"),
+                    multiple=True)
+                    ]),
+                    dbc.Col([
+                    dcc.Upload(
+                    id='upload-data',
+                    children=dbc.Button('Select files', className="ml-auto"),
+                    multiple=True),
+                    ]),
+                dbc.Row([
+                    dbc.Col([
+                        html.Div(id='output-data-upload')
+                    ])
+                ])
                 ]),
                 dbc.ModalFooter(
                     dbc.Button("Close", id="close-modal-file", className="ml-auto")
@@ -69,13 +75,57 @@ modal_file = html.Div([
             ],
             id="modal-file",
             centered=True,
-        )
-])
+        )])
+
+
+modal_other_graphics = dbc.Modal([
+                dbc.ModalHeader("Other Graphics", className="font-weight-bold"),
+
+                dbc.ModalFooter(
+                    dbc.Button("Close", id="close-modal-other-graphics", className="ml-auto")
+                ),
+            ],
+            id="modal-other-graphics",
+            centered=True,
+              )
+
+modal_view_setings = dbc.Modal([
+                dbc.ModalHeader("View Settings", className="font-weight-bold"),
+
+                dbc.ModalFooter(
+                    dbc.Button("Close", id="close-modal-view-settings", className="ml-auto")
+                ),
+            ],
+            id="modal-view-settings",
+            centered=True,
+              )
+
+modal_cutoff = dbc.Modal([
+                dbc.ModalHeader("Cutoff settings", className="font-weight-bold"),
+
+                dbc.ModalFooter(
+                    dbc.Button("Close", id="close-modal-cutoff", className="ml-auto")
+                ),
+            ],
+            id="modal-cutoff",
+            centered=True,
+              )
+
 navbar = dbc.Navbar(
     [
         dbc.NavbarBrand("Eriks och Simons kandidatarbete"),
         modal_file,
         dbc.Button("Export data", className="mr-1", color='info', href="/Export-data"),
+        dbc.DropdownMenu(label="Settings",
+            children=[
+                dbc.DropdownMenuItem("View", id="open-modal-view-settings"),
+                modal_view_setings,
+                dbc.DropdownMenuItem("Cutoffs", id="open-modal-cutoff"),
+                modal_cutoff,
+                dbc.DropdownMenuItem("Other graphics", id="open-modal-other-graphics"),
+                modal_other_graphics,
+            ]
+        ),
             dbc.Nav(
             [
                 dbc.NavLink("Home", href="/", active="exact"),
@@ -106,6 +156,7 @@ sidebar = html.Div(
     ],
     style=SIDEBAR_STYLE,
 )
+
 search_input = html.Div([
     html.Div([
         dbc.Input(
@@ -118,21 +169,25 @@ search_input = html.Div([
 
     ])
 ])
-how_to_use_card = dbc.Card(
-    dbc.CardBody(
-        [
-            html.H4("How to use", className="card-title mb-4 font-weight-bold"),
-            html.Hr(),
-            html.H6("Using PeptiDiff", className="card-subtitle"),
-            html.P(
-                "Load files ",
-                className="card-text",
-            ),
-        ]
-    ),
-    style={'height':'22rem'},
-    color='white', className="border-dark mb-4"
+how_to_use_collapse = html.Div(
+    [
+        dbc.Button(
+            "How to Use",
+            id="collapse-button",
+            className="mb-3",
+            color="info",
+        ),
+        dbc.Collapse(
+            dbc.Card([
+            dbc.CardHeader("How to use!"),
+            dbc.CardBody("This will display steps and links on how to use the app."),
+            ]),
+            id="collapse",
+            className="mb-4"
+        ),
+    ]
 )
+
 protein_fig = dbc.Card(
     dbc.CardBody(
         [
@@ -140,8 +195,8 @@ protein_fig = dbc.Card(
             html.Hr(),
         ]
     ),
-    style={'height':'22rem'},
-    color='white', className="border-dark"
+    style={'height':'34rem'},
+    color='white', className="border-dark mb-4"
 )
 peptide_fig = dbc.Card(
     dbc.CardBody(
@@ -177,13 +232,14 @@ main_page = dbc.Container([
         dbc.Col(navbar, width={"size":12}, className="mb-4"),
     ]),
     dbc.Row([
+        dbc.Col(how_to_use_collapse , width={'size':12, "offset":0}),
+    ]),
+    dbc.Row([
         dbc.Col(search_input, width={"size":2, "offset":3}, className="mb-4"),
     ]),
     dbc.Row([
-        dbc.Col(sidebar, width={'size':0}),
-        dbc.Col(protein_fig, width={'size':5}),
+        dbc.Col(protein_fig, width={'size':8}),
         dbc.Col(protein_info, width={'size':1}),
-        dbc.Col(how_to_use_card , width={'size':3, "offset":3}),
     ]),
     dbc.Row([
         dbc.Col(peptide_fig, width={'size': 8}),
@@ -205,8 +261,8 @@ documentation_page = html.Div([
     dcc.Link('Go back to home', href='/')
 ])
 
-@app.callback(Output('page-content', 'children'),
-              [Input('url', 'pathname')])
+#-----------------DEFS AND CALLBACKS--------------------------------------------------------------
+
 def display_page(pathname):
     if pathname == '/FAQ':
         return FAQ_page
@@ -215,15 +271,76 @@ def display_page(pathname):
     else: 
         return main_page
 
-@app.callback(
-    Output("modal-file", "is_open"),
-    [Input("open-modal-file", "n_clicks"), Input("close-modal-file", "n_clicks")],
-    [State("modal-file", "is_open")],
-)
+
+def toggle_collapse(n, is_open):
+    if n:
+        return not is_open
+    return is_open
+
 def toggle_modal(n1, n2, is_open):
     if n1 or n2:
         return not is_open
     return is_open
+
+def parse_data(contents, filename):
+    try:
+        if 'csv' in filename:
+            df = pd.read_csv(filename)
+        elif 'xls' in filename:
+            df = pd.read_excel(filename)
+    except Exception as e:
+        print(e)
+        return html.Div([
+            'There was an error processing this file.'
+        ])
+    print(filename)
+    return html.Div([
+        html.H5(filename)])
+    
+@app.callback(Output('output-data-upload', 'children'),
+              Input('upload-data', 'contents'),
+              State('upload-data', 'filename'),
+              State('upload-data', 'last_modified'))
+def update_output(list_of_contents, list_of_names):
+    if list_of_contents is not None:
+        children = [
+            parse_contents(c, n) for c, n in
+            zip(list_of_contents, list_of_names)]
+        return children
+
+app.callback(Output('page-content', 'children'),
+              [Input('url', 'pathname')])(display_page)
+
+app.callback(
+    Output("modal-file", "is_open"),
+    [Input("open-modal-file", "n_clicks"), Input("close-modal-file", "n_clicks")],
+    [State("modal-file", "is_open")],
+)(toggle_modal)
+
+app.callback(
+    Output("modal-other-graphics", "is_open"),
+    [Input("open-modal-other-graphics", "n_clicks"), Input("close-modal-other-graphics", "n_clicks")],
+    [State("modal-other-graphics", "is_open")],
+)(toggle_modal)
+
+app.callback(
+    Output("modal-cutoff", "is_open"),
+    [Input("open-modal-cutoff", "n_clicks"), Input("close-modal-cutoff", "n_clicks")],
+    [State("modal-cutoff", "is_open")],
+)(toggle_modal)
+
+app.callback(
+    Output("modal-view-settings", "is_open"),
+    [Input("open-modal-view-settings", "n_clicks"), Input("close-modal-view-settings", "n_clicks")],
+    [State("modal-view-settings", "is_open")],
+)(toggle_modal)
+
+app.callback(
+    Output("collapse", "is_open"),
+    [Input("collapse-button", "n_clicks")],
+    [State("collapse", "is_open")],
+)(toggle_collapse)
+
 
 
 if __name__ == '__main__':
