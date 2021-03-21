@@ -1,6 +1,8 @@
-
 import os
 import sys
+import base64
+import datetime
+import io
 
 import dash
 import dash_table
@@ -45,36 +47,26 @@ modal_file = html.Div([
     dbc.Button("Files", id="open-modal-file", color='info', className="mr-1"),
         dbc.Modal([
                 dbc.ModalHeader("Files", className="font-weight-bold"),
-                dbc.Row([
-                    dbc.Col(dbc.ModalBody('Group 1')),
-                    dbc.Col(dbc.ModalBody('Group 2')),
-                ]),
-                
-                dbc.Row([
-                    dbc.Col([
-                    dcc.Upload(
-                    id='upload-data',
-                    children=dbc.Button('Select files', className="ml-auto"),
-                    multiple=True)
+                    dbc.Row([
+                        dbc.Col(dbc.ModalBody('Group 1')),
+                        dbc.Col(dbc.ModalBody('Group 2')),
                     ]),
-                    dbc.Col([
-                    dcc.Upload(
-                    id='upload-data',
-                    children=dbc.Button('Select files', className="ml-auto"),
-                    multiple=True),
+                    dbc.Row([
+                        dbc.Col(dcc.Upload(id='upload-data-1', children=dbc.Button('Select files', className="ml-auto"), multiple=True)),
+                        dbc.Col(dcc.Upload(id='upload-data-2', children=dbc.Button('Select files', className="ml-auto"), multiple=True)),
+                        
+                    ]),    
+                    dbc.Row([
+                        dbc.Col(dbc.ModalBody(id='output-filename-1')),
+                        dbc.Col(dbc.ModalBody(id='output-filename-2'))
                     ]),
-                dbc.Row([
-                    dbc.Col([
-                        html.Div(id='output-data-upload')
-                    ])
-                ])
-                ]),
                 dbc.ModalFooter(
                     dbc.Button("Close", id="close-modal-file", className="ml-auto")
                 ),
             ],
             id="modal-file",
             centered=True,
+            scrollable=True,
         )])
 
 
@@ -271,7 +263,6 @@ def display_page(pathname):
     else: 
         return main_page
 
-
 def toggle_collapse(n, is_open):
     if n:
         return not is_open
@@ -282,31 +273,39 @@ def toggle_modal(n1, n2, is_open):
         return not is_open
     return is_open
 
-def parse_data(contents, filename):
+def parse_contents(contents, filename):
     try:
-        if 'csv' in filename:
-            df = pd.read_csv(filename)
-        elif 'xls' in filename:
-            df = pd.read_excel(filename)
+        dfs = make_peptide_dfs(filename)
+        master_df = concatenate_dataframes(dfs)
     except Exception as e:
         print(e)
-        return html.Div([
-            'There was an error processing this file.'
-        ])
-    print(filename)
-    return html.Div([
-        html.H5(filename)])
-    
-@app.callback(Output('output-data-upload', 'children'),
-              Input('upload-data', 'contents'),
-              State('upload-data', 'filename'),
-              State('upload-data', 'last_modified'))
-def update_output(list_of_contents, list_of_names):
-    if list_of_contents is not None:
-        children = [
-            parse_contents(c, n) for c, n in
-            zip(list_of_contents, list_of_names)]
-        return children
+        return html.Div(["There was an error processing this file."])
+
+    return master_df
+
+def update_file_list(contents, filename):
+    s = ""
+    if filename:
+        for f in filename:
+            s = s + (f+"\n")
+    return s
+
+def update_data_frame(contents, filename):
+    dfs = make_peptide_dfs(filename)
+    master_df = concatenate_dataframes(dfs)
+    return master_df
+
+
+app.callback(
+    Output("output-filename-1", "children"),
+    [Input("upload-data-1", "contents"), Input("upload-data-1", "filename")],
+)(update_file_list)
+
+app.callback(
+    Output("output-filename-2", "children"),
+    [Input("upload-data-2", "contents"), Input("upload-data-2", "filename")],
+)(update_file_list)
+
 
 app.callback(Output('page-content', 'children'),
               [Input('url', 'pathname')])(display_page)
