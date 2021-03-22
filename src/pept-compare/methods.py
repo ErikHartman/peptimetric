@@ -4,6 +4,9 @@ from functools import reduce
 from tkinter.filedialog import askopenfilenames
 from typing import List
 
+import plotly.graph_objects as go
+from IPython.display import display
+import plotly.express as px
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import mplcursors
@@ -17,6 +20,7 @@ from scipy import stats
 
 from lists import *
 from protein import Protein
+
 
 green = {
     'dark': "#2d662f",
@@ -75,6 +79,9 @@ def concatenate_dataframes(dfs: list) -> pd.DataFrame:
                                                            how='outer', suffixes=['', '']), new_df_list).fillna(0)
     return master_dataframe
 
+
+def merge_dataframes(g1, g2):
+    return g1.merge(g2, on=['Peptide', 'Accession'], how='outer', suffixes=['_g1', '_g2'])
 
 def amino_acid_frequency(peptide_list):
     letters = {
@@ -289,6 +296,81 @@ def create_graphic(protein_list, **kwargs):
         ax.legend(handles=patches, title='Nbr of peptides', loc='lower right', ncol=5)
     plt.show()
 
+def protein_graphic_plotly(protein_list, **kwargs):
+    default_settings = {
+        'difference_metric': 'area_sum',
+        'color': 'green'
+    }
+    default_settings.update(**kwargs)
+    color = green
+    g1_intensity = []
+    g2_intensity = []
+    trivial_name = []
+    accession = []
+    nbr_of_peptides = []
+    pfam = []
+
+    for protein in protein_list:
+        trivial_name.append(protein.get_trivial_name())
+        accession.append(protein.get_id())
+        nbr_of_peptides.append(sum(protein.get_nbr_of_peptides()))
+        pfam.append(protein.get_protein_family())
+        if kwargs.get('difference_metric') == 'area_sum':
+            g1_intensity.append(protein.get_area_sum()[0])
+            g2_intensity.append(protein.get_area_sum()[1])
+        elif kwargs.get('difference_metric') == 'area_mean':
+            g1_intensity.append(protein.get_area_mean()[0])
+            g2_intensity.append(protein.get_area_mean()[1])
+        elif kwargs.get('difference_metric') == 'spectral_count_mean':
+            g1_intensity.append(protein.get_spectral_count_mean()[0])
+            g2_intensity.append(protein.get_spectral_count_mean()[1])
+        elif kwargs.get('difference_metric') == 'spectral_count_sum':
+            g1_intensity.append(protein.get_spectral_count_sum()[0])
+            g2_intensity.append(protein.get_spectral_count_sum()[1])
+
+    def set_color_and_size(nbr_of_peptides):
+        color_thresholds = get_thresholds(nbr_of_peptides)
+        col = []
+        size = []
+        for n in nbr_of_peptides:
+            if n > color_thresholds[4]:
+                col.append(color['dark'])
+                size.append(color_thresholds[4])
+            elif n >= color_thresholds[3]:
+                col.append(color['mediumdark'])
+                size.append(color_thresholds[3])
+            elif n >= color_thresholds[2]:
+                col.append(color['medium'])
+                size.append(color_thresholds[2])
+            elif n >= color_thresholds[1]:
+                col.append(color['mediumlight'])
+                size.append(color_thresholds[1])
+            elif n == 1:
+                col.append(color['grey'])
+                size.append(color_thresholds[0])
+            else:
+                col.append(color['light'])
+                size.append(color_thresholds[0])
+        return col, size, color_thresholds
+
+
+    col, size, color_thresholds = set_color_and_size(nbr_of_peptides)
+    for s in size:
+        s *= 4
+    df_fig = pd.DataFrame(list(zip(g1_intensity,g2_intensity, nbr_of_peptides, trivial_name, pfam, col)),
+        columns=['g1_intensity','g2_intensity','nbr_of_peptides','trivial_name','pfam','col'])
+    fig = px.scatter(df_fig, x='g1_intensity', y='g2_intensity', color='nbr_of_peptides', color_continuous_scale=px.colors.sequential.algae,
+                 size='nbr_of_peptides', log_x=True, log_y=True, hover_data=['trivial_name','nbr_of_peptides','pfam'])
+    minimum = min(g1_intensity + g2_intensity)
+    maximum = max(g1_intensity + g2_intensity)
+    print(minimum, maximum)
+    fig.add_shape(type="line",x0=minimum, y0=minimum, x1=maximum, y1=maximum, line=dict(color="#919499",width=1, dash='dash'))
+    fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',})
+    fig = go.FigureWidget(fig.data, fig.layout)
+
+    display(fig)
+
+    fig.show()
 
 def create_peptide_graphic(peptide_list, n):
     color = green

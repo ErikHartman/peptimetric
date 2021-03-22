@@ -14,6 +14,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output, State
 
+from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, apply_cut_off, create_protein_list
+
 app = dash.Dash(__name__,external_stylesheets=[dbc.themes.SANDSTONE], suppress_callback_exceptions=True)
 
 
@@ -43,22 +45,23 @@ CONTENT_STYLE = {
     "padding": "2rem 1rem",
 }
 #---------------------------------------PAGE-ELEMENTS------------------------------------------------
+
 modal_file = html.Div([
     dbc.Button("Files", id="open-modal-file", color='info', className="mr-1"),
         dbc.Modal([
                 dbc.ModalHeader("Files", className="font-weight-bold"),
                     dbc.Row([
-                        dbc.Col(dbc.ModalBody('Group 1')),
-                        dbc.Col(dbc.ModalBody('Group 2')),
+                        dbc.Col(dbc.ModalBody('Group 1', className='ml-auto text-center')),
+                        dbc.Col(dbc.ModalBody('Group 2', className='ml-auto text-center')),
                     ]),
                     dbc.Row([
-                        dbc.Col(dcc.Upload(id='upload-data-1', children=dbc.Button('Select files', className="ml-auto"), multiple=True)),
-                        dbc.Col(dcc.Upload(id='upload-data-2', children=dbc.Button('Select files', className="ml-auto"), multiple=True)),
+                        dbc.Col(dcc.Upload(id='upload-data-1', children=dbc.Button('Select files'), multiple=True), className="text-center"),
+                        dbc.Col(dcc.Upload(id='upload-data-2', children=dbc.Button('Select files'), multiple=True, ), className="text-center"),
                         
                     ]),    
                     dbc.Row([
-                        dbc.Col(dbc.ModalBody(id='output-filename-1')),
-                        dbc.Col(dbc.ModalBody(id='output-filename-2'))
+                        dbc.Col(dbc.ModalBody(id='output-filename-1', className='ml-auto text-center')),
+                        dbc.Col(dbc.ModalBody(id='output-filename-2', className='ml-auto text-center')),
                     ]),
                 dbc.ModalFooter(
                     dbc.Button("Close", id="close-modal-file", className="ml-auto")
@@ -69,6 +72,19 @@ modal_file = html.Div([
             scrollable=True,
         )])
 
+modal_export_data = html.Div([
+    dbc.Button("Export Data", id="open-modal-export-data", color='info', className="mr-1"),
+    dbc.Modal([
+                dbc.ModalHeader("Export data", className="font-weight-bold"),
+
+                dbc.ModalFooter(
+                    dbc.Button("Close", id="close-modal-export-data", className="ml-auto")
+                ),
+            ],
+            id="modal-export-data",
+            centered=True,
+              )
+])
 
 modal_other_graphics = dbc.Modal([
                 dbc.ModalHeader("Other Graphics", className="font-weight-bold"),
@@ -107,7 +123,7 @@ navbar = dbc.Navbar(
     [
         dbc.NavbarBrand("Eriks och Simons kandidatarbete"),
         modal_file,
-        dbc.Button("Export data", className="mr-1", color='info', href="/Export-data"),
+        modal_export_data,
         dbc.DropdownMenu(label="Settings",
             children=[
                 dbc.DropdownMenuItem("View", id="open-modal-view-settings"),
@@ -273,36 +289,42 @@ def toggle_modal(n1, n2, is_open):
         return not is_open
     return is_open
 
-def parse_contents(contents, filename):
-    try:
-        dfs = make_peptide_dfs(filename)
-        master_df = concatenate_dataframes(dfs)
-    except Exception as e:
-        print(e)
-        return html.Div(["There was an error processing this file."])
-
-    return master_df
-
 def update_file_list(contents, filename):
     s = ""
+    i=1
     if filename:
         for f in filename:
-            s = s + (f+"\n")
+            s = s + (f"S{i}:{f}" + "\n")
+            i+=1  
     return s
 
 def update_data_frame(contents, filename):
-    dfs = make_peptide_dfs(filename)
+    decoded_list = []
+    for f, content in zip(filename, contents):
+        content_type, content_string = content.split(',')
+        decoded = base64.b64decode(content_string)
+        decoded_list.append(io.BytesIO(decoded))
+    dfs = make_peptide_dfs(decoded_list)
     master_df = concatenate_dataframes(dfs)
     return master_df
+
+def create_protein_fig(g1, g2):
+    master = merge_dataframes(g1,g2)
+    protein_list = create_protein_list(master)
+    protein_list = apply_cut_off(protein_list, nbr_of_peptides=5, area=1000000, spectral_count=4)
+    protein_fig = create_protein_scatter(protein_list, difference_metric='area_sum')
+    return protein_fig
 
 
 app.callback(
     Output("output-filename-1", "children"),
+    #Output("output-data-1", 'data'),
     [Input("upload-data-1", "contents"), Input("upload-data-1", "filename")],
 )(update_file_list)
 
 app.callback(
     Output("output-filename-2", "children"),
+    #Output("output-data-2", 'data'),
     [Input("upload-data-2", "contents"), Input("upload-data-2", "filename")],
 )(update_file_list)
 
@@ -320,6 +342,12 @@ app.callback(
     Output("modal-other-graphics", "is_open"),
     [Input("open-modal-other-graphics", "n_clicks"), Input("close-modal-other-graphics", "n_clicks")],
     [State("modal-other-graphics", "is_open")],
+)(toggle_modal)
+
+app.callback(
+    Output("modal-export-data", "is_open"),
+    [Input("open-modal-export-data", "n_clicks"), Input("close-modal-export-data", "n_clicks")],
+    [State("modal-export-data", "is_open")],
 )(toggle_modal)
 
 app.callback(

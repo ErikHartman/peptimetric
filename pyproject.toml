@@ -26,6 +26,8 @@ pyteomics = "^4.4.1"
 joblib = "^1.0.1"
 prody = "^2.0"
 openpyxl = "^3.0.6"
+ipython = "^7.21.0"
+ipywidgets = "^7.6.3"
 
 [tool.poetry.dev-dependencies]
 
