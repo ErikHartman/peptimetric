@@ -14,10 +14,9 @@ import plotly.express as px
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output, State
 
-from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, apply_cut_off, create_protein_list
+from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, apply_cut_off, create_protein_list, protein_graphic_plotly
 
 app = dash.Dash(__name__,external_stylesheets=[dbc.themes.SANDSTONE], suppress_callback_exceptions=True)
-
 
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
@@ -64,7 +63,7 @@ modal_file = html.Div([
                         dbc.Col(dbc.ModalBody(id='output-filename-2', className='ml-auto text-center')),
                     ]),
                 dbc.ModalFooter(
-                    dbc.Button("Close", id="close-modal-file", className="ml-auto")
+                    dbc.Button("Close and generate figures", id="close-modal-file", className="ml-auto")
                 ),
             ],
             id="modal-file",
@@ -196,16 +195,15 @@ how_to_use_collapse = html.Div(
     ]
 )
 
-protein_fig = dbc.Card(
-    dbc.CardBody(
-        [
-            html.H4("Protein View", className="card-title mb-4 font-weight-bold"),
-            html.Hr(),
-        ]
-    ),
-    style={'height':'34rem'},
-    color='white', className="border-dark mb-4"
-)
+protein_fig = html.Div([
+    html.Div([
+        html.H1('Protein View'),
+        ]),
+        html.Div([
+            dcc.Graph(id='protein-fig')
+            ])
+            ])
+
 peptide_fig = dbc.Card(
     dbc.CardBody(
         [
@@ -289,6 +287,7 @@ def toggle_modal(n1, n2, is_open):
         return not is_open
     return is_open
 
+df_g = []
 def update_file_list(contents, filename):
     s = ""
     i=1
@@ -296,6 +295,8 @@ def update_file_list(contents, filename):
         for f in filename:
             s = s + (f"S{i}:{f}" + "\n")
             i+=1  
+        master_df = update_data_frame(contents, filename)
+        df_g.append(master_df)
     return s
 
 def update_data_frame(contents, filename):
@@ -308,26 +309,31 @@ def update_data_frame(contents, filename):
     master_df = concatenate_dataframes(dfs)
     return master_df
 
-def create_protein_fig(g1, g2):
-    master = merge_dataframes(g1,g2)
-    protein_list = create_protein_list(master)
-    protein_list = apply_cut_off(protein_list, nbr_of_peptides=5, area=1000000, spectral_count=4)
-    protein_fig = create_protein_scatter(protein_list, difference_metric='area_sum')
-    return protein_fig
+def create_protein_fig(n):
+    if n and df_g and len(df_g) >= 2:
+        g1 = df_g[-2]
+        g2 = df_g[-1]
+        master = merge_dataframes(g1,g2)
+        protein_list = create_protein_list(master)
+        protein_list = apply_cut_off(protein_list, nbr_of_peptides=5, area=1000000, spectral_count=4)
+        protein_fig = protein_graphic_plotly(protein_list, difference_metric='area_sum')
+        return protein_fig
 
 
 app.callback(
     Output("output-filename-1", "children"),
-    #Output("output-data-1", 'data'),
     [Input("upload-data-1", "contents"), Input("upload-data-1", "filename")],
 )(update_file_list)
 
 app.callback(
     Output("output-filename-2", "children"),
-    #Output("output-data-2", 'data'),
     [Input("upload-data-2", "contents"), Input("upload-data-2", "filename")],
 )(update_file_list)
 
+app.callback(
+    Output('protein-fig', 'figure'),
+    Input('close-modal-file', 'n_clicks'),
+    )(create_protein_fig)
 
 app.callback(Output('page-content', 'children'),
               [Input('url', 'pathname')])(display_page)

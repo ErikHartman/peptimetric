@@ -10,5 +10,6 @@ if __name__  == "__main__":
     master = merge_dataframes(g1,g2)
     protein_list = create_protein_list(master)
     protein_list = apply_cut_off(protein_list, nbr_of_peptides=5, area=1000000, spectral_count=4)
-    protein_graphic_plotly(protein_list, difference_metric='area_sum')
+    fig = protein_graphic_plotly(protein_list, difference_metric='area_sum')
+    fig.show()
 

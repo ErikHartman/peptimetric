@@ -363,14 +363,11 @@ def protein_graphic_plotly(protein_list, **kwargs):
                  size='nbr_of_peptides', log_x=True, log_y=True, hover_data=['trivial_name','nbr_of_peptides','pfam'])
     minimum = min(g1_intensity + g2_intensity)
     maximum = max(g1_intensity + g2_intensity)
-    print(minimum, maximum)
+    print("Figure created")
     fig.add_shape(type="line",x0=minimum, y0=minimum, x1=maximum, y1=maximum, line=dict(color="#919499",width=1, dash='dash'))
     fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',})
     fig = go.FigureWidget(fig.data, fig.layout)
-
-    display(fig)
-
-    fig.show()
+    return fig
 
 def create_peptide_graphic(peptide_list, n):
     color = green
