@@ -371,6 +371,7 @@ def protein_graphic_plotly(protein_list, **kwargs):
 
 def create_peptide_graphic(peptide_list, n):
     color = green
+    
     fasta = peptide_list[0].protein.get_fasta_seq()
     fasta_dict = {"index": [], "counter_pos": [], "counter_neg": [], "intensity_pos": [], "intensity_neg": []}
     for i in range(len(fasta)):
@@ -483,6 +484,65 @@ def create_peptide_graphic(peptide_list, n):
              transform=ax.transAxes)
     plt.show()
 
+
+def peptide_graphic_plotly(peptide_list):
+    color = green
+    trivial_name = peptide_list[0].protein.get_trivial_name()
+    fasta = peptide_list[0].protein.get_fasta_seq()
+    fasta_dict = {"index": [], "counter_pos": [], "counter_neg": [], "intensity_pos": [], "intensity_neg": []}
+    for i in range(len(fasta)):
+        fasta_dict["index"].append(i)
+        fasta_dict["counter_pos"].append(0)
+        fasta_dict["counter_neg"].append(0)
+        fasta_dict["intensity_pos"].append(0)
+        fasta_dict["intensity_neg"].append(0)
+    for peptide in peptide_list:
+        start = peptide.get_start()
+        end = peptide.get_end()
+        intensity_pos = peptide.get_area()[0]
+        intensity_neg = peptide.get_area()[1]
+        for i in list(range(start, end)):
+            if intensity_neg > 0 or intensity_pos > 0:
+                fasta_dict["intensity_pos"][i] += ma.log10(intensity_pos) if intensity_pos != 0 else 0
+                fasta_dict["intensity_neg"][i] += ma.log10(intensity_neg) if intensity_neg != 0 else 0
+                if intensity_pos > 0:
+                    fasta_dict["counter_pos"][i] += 1
+                if intensity_neg > 0:
+                    fasta_dict["counter_neg"][i] += 1
+    col_pos = []
+    col_neg = []
+    max_count = max(fasta_dict["counter_pos"] + fasta_dict["counter_neg"])
+    min_count = min(fasta_dict["counter_pos"] + fasta_dict["counter_neg"])
+    for count in fasta_dict["counter_pos"]:
+        if count > 4 * max_count / 5:
+            col_pos.append(color['dark'])
+        elif count > 3 * max_count / 5:
+            col_pos.append(color['mediumdark'])
+        elif count > 2 * max_count / 5:
+            col_pos.append(color['medium'])
+        elif count > max_count / 5:
+            col_pos.append(color['mediumlight'])
+        else:
+            col_pos.append(color['light'])
+    for count in fasta_dict["counter_neg"]:
+        if count > 4 * max_count / 5:
+            col_neg.append(color['dark'])
+        elif count > 3 * max_count / 5:
+            col_neg.append(color['mediumdark'])
+        elif count > 2 * max_count / 5:
+            col_neg.append(color['medium'])
+        elif count > max_count / 5:
+            col_neg.append(color['mediumlight'])
+        else:
+            col_neg.append(color['light'])
+    fig = go.Figure()
+    fig.add_trace(go.Bar(x=fasta_dict["index"], y=fasta_dict["intensity_pos"], name="group 1", marker_color=col_pos,
+    width=1, marker=dict(line=dict(width=0))))
+    fig.add_trace(go.Bar(x=fasta_dict["index"], y=[-value for value in fasta_dict['intensity_neg']], name="group 2", 
+    marker_color=col_neg, width=1, marker=dict(line=dict(width=0))))
+    fig.update_layout(barmode='relative', title_text=trivial_name)
+    return fig
+    
 
 def create_protein_scatter(protein_list, **kwargs):
     default_settings = {
