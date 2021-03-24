@@ -357,10 +357,10 @@ def protein_graphic_plotly(protein_list, **kwargs):
     col, size, color_thresholds = set_color_and_size(nbr_of_peptides)
     for s in size:
         s *= 4
-    df_fig = pd.DataFrame(list(zip(g1_intensity,g2_intensity, nbr_of_peptides, trivial_name, pfam, col)),
-        columns=['g1_intensity','g2_intensity','nbr_of_peptides','trivial_name','pfam','col'])
+    df_fig = pd.DataFrame(list(zip(g1_intensity,g2_intensity, nbr_of_peptides, trivial_name, pfam, col, accession)),
+        columns=['g1_intensity','g2_intensity','nbr_of_peptides','trivial_name','pfam','col','accession'])
     fig = px.scatter(df_fig, x='g1_intensity', y='g2_intensity', color='nbr_of_peptides', color_continuous_scale=px.colors.sequential.algae,
-                 size='nbr_of_peptides', log_x=True, log_y=True, hover_data=['trivial_name','nbr_of_peptides','pfam'])
+                 size='nbr_of_peptides', log_x=True, log_y=True, hover_data=['trivial_name','nbr_of_peptides','pfam','accession'])
     minimum = min(g1_intensity + g2_intensity)
     maximum = max(g1_intensity + g2_intensity)
     print("Figure created")

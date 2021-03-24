@@ -3,7 +3,7 @@ import sys
 import base64
 import datetime
 import io
-
+import json
 import dash
 import dash_table
 import dash_bootstrap_components as dbc
@@ -14,7 +14,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output, State
 
-from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, apply_cut_off, create_protein_list, protein_graphic_plotly
+from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, apply_cut_off, create_protein_list, protein_graphic_plotly, create_peptide_list, peptide_graphic_plotly
 
 app = dash.Dash(__name__,external_stylesheets=[dbc.themes.SANDSTONE], suppress_callback_exceptions=True)
 
@@ -203,16 +203,10 @@ protein_fig = html.Div([
         ])
 
 
-peptide_fig = dbc.Card(
-    dbc.CardBody(
-        [
-            html.H4("Peptide View", className="card-title mb-4 font-weight-bold"),
-            html.Hr(),
-        ]
-    ),
-    style={'height':'17rem'},
-    color='white', className="border-dark"
-)
+peptide_fig = html.Div([
+        html.H1('Peptide View'),
+        dcc.Graph(id='peptide-fig', figure={})
+        ])
 
 columns = ['Peptide','Start','End','Intensity 1',' Intensity 2']
 protein_info = dash_table.DataTable(
@@ -305,21 +299,35 @@ def update_data_frame(contents, filename):
     master_df = concatenate_dataframes(dfs)
     return master_df
 
-def create_protein_fig(n_clicks, figure):
+protein_lists = []
+def create_protein_fig(n_clicks):
     if n_clicks:
-        print('clicked')
         if df_g and len(df_g) >= 2:
             g1 = df_g[-2]
             g2 = df_g[-1]
             master = merge_dataframes(g1,g2)
             protein_list = create_protein_list(master)
-            protein_list = apply_cut_off(protein_list, nbr_of_peptides=5, area=1000000, spectral_count=4)
-            protein_fig = protein_graphic_plotly(protein_list, difference_metric='area_sum')
+            protein_lists.append(protein_list)
+            protein_list_cutoff = apply_cut_off(protein_list, nbr_of_peptides=5, area=1000000, spectral_count=4)
+            protein_fig = protein_graphic_plotly(protein_list_cutoff, difference_metric='area_sum')
             return protein_fig
 
     else:
         return {}
 
+def create_peptide_fig(clickData):
+    if clickData:
+        protein_accession = clickData['points'][0]['customdata'][-1]
+        peptide_list = create_peptide_list(protein_lists[-1], str(protein_accession))
+        peptide_fig = peptide_graphic_plotly(peptide_list)
+        return peptide_fig
+    else:
+        return {}
+
+app.callback(
+    Output('peptide-fig', 'figure'),
+    [Input('protein-fig', 'clickData')],
+)(create_peptide_fig)
 
 app.callback(
     Output("output-filename-1", "children"),
@@ -334,7 +342,6 @@ app.callback(
 app.callback(
     Output('protein-fig', 'figure'),
     [Input("close-modal-file", "n_clicks")],
-    [State("protein-fig", "figure")],
     )(create_protein_fig)
 
 app.callback(Output('page-content', 'children'),
