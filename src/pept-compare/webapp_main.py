@@ -63,7 +63,7 @@ modal_file = html.Div([
                         dbc.Col(dbc.ModalBody(id='output-filename-2', className='ml-auto text-center')),
                     ]),
                 dbc.ModalFooter(
-                    dbc.Button("Close and generate figures", id="close-modal-file", className="ml-auto")
+                    dbc.Button("Close", id="close-modal-file", className="ml-auto")
                 ),
             ],
             id="modal-file",
@@ -172,6 +172,7 @@ search_input = html.Div([
             debounce=True,
             minLength=0, maxLength=30,
             size = '20',
+            className="ml-auto",
         )
 
     ])
@@ -196,13 +197,11 @@ how_to_use_collapse = html.Div(
 )
 
 protein_fig = html.Div([
-    html.Div([
         html.H1('Protein View'),
-        ]),
-        html.Div([
-            dcc.Graph(id='protein-fig')
-            ])
-            ])
+        search_input,
+        dcc.Graph(id='protein-fig', figure={})
+        ])
+
 
 peptide_fig = dbc.Card(
     dbc.CardBody(
@@ -239,9 +238,6 @@ main_page = dbc.Container([
     ]),
     dbc.Row([
         dbc.Col(how_to_use_collapse , width={'size':12, "offset":0}),
-    ]),
-    dbc.Row([
-        dbc.Col(search_input, width={"size":2, "offset":3}, className="mb-4"),
     ]),
     dbc.Row([
         dbc.Col(protein_fig, width={'size':8}),
@@ -309,15 +305,20 @@ def update_data_frame(contents, filename):
     master_df = concatenate_dataframes(dfs)
     return master_df
 
-def create_protein_fig(n):
-    if n and df_g and len(df_g) >= 2:
-        g1 = df_g[-2]
-        g2 = df_g[-1]
-        master = merge_dataframes(g1,g2)
-        protein_list = create_protein_list(master)
-        protein_list = apply_cut_off(protein_list, nbr_of_peptides=5, area=1000000, spectral_count=4)
-        protein_fig = protein_graphic_plotly(protein_list, difference_metric='area_sum')
-        return protein_fig
+def create_protein_fig(n_clicks, figure):
+    if n_clicks:
+        print('clicked')
+        if df_g and len(df_g) >= 2:
+            g1 = df_g[-2]
+            g2 = df_g[-1]
+            master = merge_dataframes(g1,g2)
+            protein_list = create_protein_list(master)
+            protein_list = apply_cut_off(protein_list, nbr_of_peptides=5, area=1000000, spectral_count=4)
+            protein_fig = protein_graphic_plotly(protein_list, difference_metric='area_sum')
+            return protein_fig
+
+    else:
+        return {}
 
 
 app.callback(
@@ -332,7 +333,8 @@ app.callback(
 
 app.callback(
     Output('protein-fig', 'figure'),
-    Input('close-modal-file', 'n_clicks'),
+    [Input("close-modal-file", "n_clicks")],
+    [State("protein-fig", "figure")],
     )(create_protein_fig)
 
 app.callback(Output('page-content', 'children'),
