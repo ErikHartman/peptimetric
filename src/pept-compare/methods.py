@@ -41,7 +41,6 @@ red = {
 
 }
 
-
 def read_files_gui():
     root = tk.Tk()
     root.withdraw()
@@ -353,6 +352,16 @@ def protein_graphic_plotly(protein_list, **kwargs):
                 size.append(color_thresholds[0])
         return col, size, color_thresholds
 
+    def connect_points(protein_list):
+        for p1 in protein_list:
+            for p2 in protein_list:
+                if common_family(p1.get_protein_family(), p2.get_protein_family())[0]:
+                    x0 = p1.get_area_sum()[0]
+                    x1 = p2.get_area_sum()[0]
+                    y0 = p1.get_area_sum()[1]
+                    y1 = p2.get_area_sum()[1]
+                    fig.add_shape(type="line",x0=x0, y0=y0, x1=x1, y1=y1, line=dict(color="firebrick",width=1, dash='dash'))
+                    fig.add_trace(go.Scatter(x=[x0,x1], y=[y0, y1], mode='lines', opacity=0, showlegend=False))
 
     col, size, color_thresholds = set_color_and_size(nbr_of_peptides)
     for s in size:
@@ -366,6 +375,7 @@ def protein_graphic_plotly(protein_list, **kwargs):
     print("Figure created")
     fig.add_shape(type="line",x0=minimum, y0=minimum, x1=maximum, y1=maximum, line=dict(color="#919499",width=1, dash='dash'))
     fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',})
+    connect_points(protein_list)
     fig = go.FigureWidget(fig.data, fig.layout)
     return fig
 
@@ -540,7 +550,21 @@ def peptide_graphic_plotly(peptide_list):
     width=1, marker=dict(line=dict(width=0))))
     fig.add_trace(go.Bar(x=fasta_dict["index"], y=[-value for value in fasta_dict['intensity_neg']], name="group 2", 
     marker_color=col_neg, width=1, marker=dict(line=dict(width=0))))
-    fig.update_layout(barmode='relative', title_text=trivial_name)
+    fig.update_layout(barmode='relative', title_text=trivial_name, showlegend=False)
+    fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',})
+    maximum_intensity = max(fasta_dict['intensity_pos'] + fasta_dict['intensity_neg'])
+    fig.update_yaxes(range=[-maximum_intensity, maximum_intensity])
+    fig.update_layout(yaxis=dict(title='log(Intensity)'), xaxis=dict(title='Sequence', rangeslider=dict(visible=True)))
+    weight = (sum(fasta_dict['intensity_pos']) - sum(fasta_dict['intensity_neg'])) / len(fasta)
+    difference = []
+    for i in list(range(len(fasta_dict["index"]))):
+        difference.append(fasta_dict['intensity_pos'][i] - fasta_dict['intensity_neg'][i])
+    fig.add_trace(go.Scatter(x=fasta_dict["index"], y=difference, mode='lines', line=dict(color='firebrick', width=2)))
+    fig.add_shape(type='line', x0=0, y0=weight, x1=len(fasta), y1=weight, line=dict(
+        color="LightSeaGreen",
+        width=2,
+        dash="dash",
+    ))
     return fig
     
 
@@ -669,11 +693,12 @@ def create_protein_scatter(protein_list, **kwargs):
 
 
 def common_family(pfam1, pfam2):
+    fams = []
     for fam1 in pfam1:
         for fam2 in pfam2:
             if str(fam1) == str(fam2):
-                return True
-    return False
+                fams.append(fam1)
+    return len(fams)>0, fams
 
 
 def group_on_alphabet(protein_list):
@@ -815,5 +840,5 @@ def apply_cut_off(protein_list, **kwargs):
 
 
 def get_thresholds(lst):
-    return [int(np.quantile(lst, .1)), int(np.quantile(lst, .3)), int(np.quantile(lst, .5)), int(np.quantile(lst, .7)),
+    return [int(np.quantile(lst, .4)), int(np.quantile(lst, .5)), int(np.quantile(lst, .6)), int(np.quantile(lst, .7)),
             int(np.quantile(lst, .8))]

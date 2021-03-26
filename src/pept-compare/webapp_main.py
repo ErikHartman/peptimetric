@@ -23,26 +23,6 @@ app.layout = html.Div([
     html.Div(id='page-content'),
  ])
 
-
-NAVBAR_STYLE = {
-    "left": 0,
-    "background-color": "light",
-    }
-
-SIDEBAR_STYLE = {
-    "position": "fixed",
-    "top": "2rem",
-    "left": 0,
-    "bottom": 0,
-    "padding": "2rem 1rem",
-    "background-color": "light",
-}
-
-CONTENT_STYLE = {
-    "margin-left": "18rem",
-    "margin-right": "2rem",
-    "padding": "2rem 1rem",
-}
 #---------------------------------------PAGE-ELEMENTS------------------------------------------------
 
 modal_file = html.Div([
@@ -63,7 +43,7 @@ modal_file = html.Div([
                         dbc.Col(dbc.ModalBody(id='output-filename-2', className='ml-auto text-center')),
                     ]),
                 dbc.ModalFooter(
-                    dbc.Button("Close", id="close-modal-file", className="ml-auto")
+                    dbc.Button("Generate protein graph", color = 'primary', id="close-modal-file", className="ml-auto")
                 ),
             ],
             id="modal-file",
@@ -109,7 +89,6 @@ modal_view_setings = dbc.Modal([
 
 modal_cutoff = dbc.Modal([
                 dbc.ModalHeader("Cutoff settings", className="font-weight-bold"),
-
                 dbc.ModalFooter(
                     dbc.Button("Close", id="close-modal-cutoff", className="ml-auto")
                 ),
@@ -142,7 +121,6 @@ navbar = dbc.Navbar(
             ],
             navbar=True,
             className="ml-auto",
-            style=NAVBAR_STYLE
         ),   
     ]
 )
@@ -161,7 +139,6 @@ sidebar = html.Div(
         className="mb-4"
         ),
     ],
-    style=SIDEBAR_STYLE,
 )
 
 search_protein = html.Div([
@@ -177,10 +154,8 @@ search_protein = html.Div([
             list = 'protein-list',
             className="ml-auto",
         )
-
     ]),
     html.Datalist( id = 'protein-list', children=[])
-
 ])
 how_to_use_collapse = html.Div(
     [
@@ -203,14 +178,19 @@ how_to_use_collapse = html.Div(
 
 protein_fig = html.Div([
         html.H1('Protein View'),
-        search_protein,
-        dcc.Graph(id='protein-fig', figure={})
+        dbc.Row(search_protein, justify="center"),
+        dcc.Loading(type='cube', color = '#76b382',
+            children=dcc.Graph(id='protein-fig', figure={})
+        )
+        
         ])
 
 
 peptide_fig = html.Div([
         html.H1('Peptide View'),
-        dcc.Graph(id='peptide-fig', figure={})
+        dcc.Loading(type='cube', color = '#76b382',
+            children=dcc.Graph(id='peptide-fig', figure={})
+        )
         ])
 
 columns = ['Peptide','Start','End','Intensity 1',' Intensity 2']
@@ -236,7 +216,7 @@ main_page = dbc.Container([
         dbc.Col(navbar, width={"size":12}, className="mb-4"),
     ]),
     dbc.Row([
-        dbc.Col(how_to_use_collapse , width={'size':12, "offset":0}),
+        dbc.Col(how_to_use_collapse , width={'size':12}),
     ]),
     dbc.Row([
         dbc.Col(protein_fig, width={'size':8}),
