@@ -307,42 +307,43 @@ def update_data_frame(contents, filename):
 protein_lists = []
 def create_protein_fig(n_clicks):
     triv_names = []
-    if n_clicks:
-        if df_g and len(df_g) >= 2:
-            g1 = df_g[-2]
-            g2 = df_g[-1]
-            master = merge_dataframes(g1,g2)
-            protein_list = create_protein_list(master)
-            protein_lists.append(protein_list)
-            protein_list_cutoff = apply_cut_off(protein_list, nbr_of_peptides=5, area=1000000, spectral_count=4)
-            protein_fig = protein_graphic_plotly(protein_list_cutoff, difference_metric='area_sum')
-            if len(protein_list_cutoff) > 1:
-                for protein in protein_list_cutoff:
-                    triv_names.append(html.Option(value=protein.get_trivial_name()))
-            return protein_fig, triv_names
-            
-
+    if n_clicks and df_g and len(df_g) >= 2:
+        g1 = df_g[-2]
+        g2 = df_g[-1]
+        master = merge_dataframes(g1,g2)
+        protein_list = create_protein_list(master)
+        protein_lists.append(protein_list)
+        protein_list_cutoff = apply_cut_off(protein_list, nbr_of_peptides=5, area=1000000, spectral_count=4)
+        protein_fig = protein_graphic_plotly(protein_list_cutoff, difference_metric='area_sum')
+        if len(protein_list_cutoff) > 1:
+            for protein in protein_list_cutoff:
+                triv_names.append(html.Option(value=protein.get_trivial_name()))
+        return protein_fig, triv_names
     else:
         return {}, []
 
 def create_peptide_fig(clickData, search_protein):
-    if clickData:
-        protein_accession = clickData['points'][0]['customdata'][-1]
-        peptide_list = create_peptide_list(protein_lists[-1], str(protein_accession))
-        peptide_fig = peptide_graphic_plotly(peptide_list)
-        return peptide_fig
-    elif search_protein != '' and len(protein_lists) > 0:
+    protein_accession = ''
+    search_text = ''
+    if search_protein != '' and len(protein_lists) > 0:
         for protein in protein_lists[-1]:
             if search_protein == protein.get_trivial_name():
                 protein_accession = protein.get_id()
-                peptide_list = create_peptide_list(protein_lists[-1], str(protein_accession))
-                peptide_fig = peptide_graphic_plotly(peptide_list)
-                return peptide_fig
-    else: 
-        return {}
+                search_text = ''
+    elif clickData:
+        protein_accession = clickData['points'][0]['customdata'][-1]
+        search_text=''
+
+    if protein_accession != '':
+        peptide_list = create_peptide_list(protein_lists[-1], str(protein_accession))
+        peptide_fig = peptide_graphic_plotly(peptide_list)
+        return peptide_fig, search_text
+    else:
+        return {}, search_text
 
 app.callback(
     Output('peptide-fig', 'figure'),
+    Output('search-protein', 'value'),
     Input('protein-fig', 'clickData'),
     Input('search-protein', 'value')
 )(create_peptide_fig)
