@@ -122,7 +122,8 @@ navbar = dbc.Navbar(
             navbar=True,
             className="ml-auto",
         ),   
-    ]
+    ],
+    
 )
             
 sidebar = html.Div(
@@ -139,6 +140,13 @@ sidebar = html.Div(
         className="mb-4"
         ),
     ],
+)
+
+amino_acid_pie_dropdown = dbc.DropdownMenu(label='View', color="light",
+children= [
+    dbc.DropdownMenuItem('Complete proteome', id='complete-proteome', n_clicks_timestamp=0),
+    dbc.DropdownMenuItem('Selected protein', id='selected-protein', n_clicks_timestamp=0)
+]
 )
 
 search_protein = html.Div([
@@ -177,7 +185,7 @@ how_to_use_collapse = html.Div(
 )
 
 protein_fig = html.Div([
-        html.H1('Protein View'),
+        html.H3('Protein View'),
         dbc.Row(search_protein, justify="left", className='ml-auto'),
         dcc.Loading(type='cube', color = '#76b382',
             children=dcc.Graph(id='protein-fig', figure={})
@@ -187,38 +195,49 @@ protein_fig = html.Div([
 
 
 peptide_fig = html.Div([
-        html.H1('Peptide View'),
+        html.H3('Peptide View'),
         dcc.Loading(type='cube', color = '#76b382',
             children=dcc.Graph(id='peptide-fig', figure={})
         )
         ])
 
 amino_acid_figs = html.Div([
-        html.H1('Amino Acid Profile'),
+        html.H3('Amino Acid Profile'),
+        amino_acid_pie_dropdown,
+        html.P(id='complete-or-selected'),
         dcc.Loading(type='cube', color = '#76b382',
             children=[ dbc.Row([
                 dbc.Col([
-                    html.H5('Complete amino acid sequence'),
-                    dcc.Graph(id='complete-aa-seq-fig', figure={})]),
+                    dcc.Graph(id='complete-aa-seq-fig-g1', figure={})], width={'size':3}),
                 dbc.Col([
-                    html.H5('First amino acid'),
-                    dcc.Graph(id='first-aa-fig', figure={})]),
+                    dcc.Graph(id='first-aa-fig-g1', figure={})], width={'size':3}),
                 dbc.Col([
-                    html.H5('Last amino acid'),
-                    dcc.Graph(id='last-aa-fig', figure={})]),
+                    dcc.Graph(id='last-aa-fig-g1', figure={})], width={'size':3}),
+            ]),
+            dbc.Row([
+                dbc.Col([
+                    dcc.Graph(id='complete-aa-seq-fig-g2', figure={})], width={'size':3}),
+                dbc.Col([
+                    dcc.Graph(id='first-aa-fig-g2', figure={})], width={'size':3}),
+                dbc.Col([
+                    dcc.Graph(id='last-aa-fig-g2', figure={})], width={'size':3}),
             ])]
         )
         ])
     
+table_header = [html.Thead(html.Tr([html.Th("Protein info")]))]
+row1 = html.Tr([html.Td("Number of proteins"), html.Td("0", id='number-of-proteins')])
+row2 = html.Tr([html.Td("Average number of peptides per protein"), html.Td("0",id='average-nbr-peptides-per-protein')])
+row3 = html.Tr([html.Td("Average peptide length"), html.Td("0",id='average-peptide-length')])
+table_body = [html.Tbody([row1, row2, row3])]
+
+protein_info = dbc.Table(table_header + table_body, 
+    bordered=True,
+    hover=True,
+    responsive=True,
+    striped=True,)    
+
 columns = ['Peptide','Start','End','Intensity 1',' Intensity 2']
-protein_info = dash_table.DataTable(
-        id='protein_info',
-        columns=[{"name": str(i), "id": str(i)} for i in columns],
-        style_header={
-        'fontWeight': 'bold',
-        'backgroundColor':'primary',
-    },
-    )
 peptide_info = dash_table.DataTable(
         id='peptide_info',
         columns=[{"name": str(i), "id": str(i)} for i in columns],
@@ -237,7 +256,7 @@ main_page = dbc.Container([
     ]),
     dbc.Row([
         dbc.Col(protein_fig, width={'size':8}),
-        dbc.Col(protein_info, width={'size':1}),
+        dbc.Col(protein_info, width={'size':4}),
     ]),
     dbc.Row([
         dbc.Col(peptide_fig, width={'size': 8}),
@@ -245,7 +264,7 @@ main_page = dbc.Container([
     ]),
 
     dbc.Row([
-        dbc.Col(amino_acid_figs, width={'size': 8}),
+        dbc.Col(amino_acid_figs),
     ])      
 ], fluid=True)
 
@@ -319,10 +338,11 @@ def create_protein_fig(n_clicks):
         if len(protein_list_cutoff) > 1:
             for protein in protein_list_cutoff:
                 triv_names.append(html.Option(value=protein.get_trivial_name()))
-        return protein_fig, triv_names
+        return protein_fig, triv_names 
     else:
         return {}, []
 
+peptide_lists=[]
 def create_peptide_fig(clickData, search_protein):
     protein_accession = ''
     search_text = ''
@@ -337,20 +357,40 @@ def create_peptide_fig(clickData, search_protein):
 
     if protein_accession != '':
         peptide_list = create_peptide_list(protein_lists[-1], str(protein_accession))
-        complete_seq_fig, first_aa_fig, last_aa_fig = amino_acid_piecharts(peptide_list)
+        peptide_lists.append(peptide_list)
         peptide_fig = peptide_graphic_plotly(peptide_list)
-        return peptide_fig, search_text, complete_seq_fig, first_aa_fig, last_aa_fig
+        return peptide_fig, search_text
     else:
-        return {}, search_text, {},{},{}
+        return {}, search_text
+
+def amino_acid_dropdown(n_clicks_complete_proteome, n_clicks_selected_protein):
+    if n_clicks_complete_proteome > n_clicks_selected_protein and len(protein_lists)>0:
+        complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2 = amino_acid_piecharts(protein_lists[-1], peptide_or_protein_list = 'protein_list')
+        return complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2, 'Complete proteome'
+    if n_clicks_selected_protein > n_clicks_complete_proteome and len(protein_lists)>0:
+        complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2 = amino_acid_piecharts(peptide_lists[-1], peptide_or_protein_list = 'peptide_list')
+        return complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2, 'Selected Protein'
+    else:
+        return  {},{},{}, {},{},{}, ''
+
+
+app.callback(
+    Output('complete-aa-seq-fig-g1', 'figure'),
+    Output('first-aa-fig-g1', 'figure'),
+    Output('last-aa-fig-g1', 'figure'),
+    Output('complete-aa-seq-fig-g2', 'figure'),
+    Output('first-aa-fig-g2', 'figure'),
+    Output('last-aa-fig-g2', 'figure'),
+    Output('complete-or-selected', 'children'),
+    Input('complete-proteome', 'n_clicks_timestamp'),
+    Input('selected-protein','n_clicks_timestamp')
+)(amino_acid_dropdown)
 
 app.callback(
     Output('peptide-fig', 'figure'),
     Output('search-protein', 'value'),
-    Output('complete-aa-seq-fig', 'figure'),
-    Output('first-aa-fig', 'figure'),
-    Output('last-aa-fig', 'figure'),
     Input('protein-fig', 'clickData'),
-    Input('search-protein', 'value')
+    Input('search-protein', 'value'),
 )(create_peptide_fig)
 
 app.callback(

@@ -82,7 +82,11 @@ def concatenate_dataframes(dfs: list) -> pd.DataFrame:
 def merge_dataframes(g1, g2):
     return g1.merge(g2, on=['Peptide', 'Accession'], how='outer', suffixes=['_g1', '_g2'])
 
-def amino_acid_frequency(peptide_list):
+def amino_acid_frequency(p_list, **kwargs):
+    default_settings = {
+        'peptide_or_protein_list'
+    }
+    default_settings.update(kwargs)
     def create_aa_dict():
         aa_dict = {
             'A': 0,
@@ -107,30 +111,68 @@ def amino_acid_frequency(peptide_list):
             'E': 0
         }
         return aa_dict
-    complete_seq = create_aa_dict()
-    first_aa = create_aa_dict()
-    last_aa = create_aa_dict()
-    for peptide in peptide_list:
-        first_aa[peptide.get_sequence()[0]] += 1
-        last_aa[peptide.get_sequence()[-1]] += 1
-        for letter in peptide.get_sequence():
-            complete_seq[letter] += 1
-            
-    return complete_seq, first_aa, last_aa
+    complete_seq_g1 = create_aa_dict()
+    first_aa_g1 = create_aa_dict()
+    last_aa_g1 = create_aa_dict()
+    complete_seq_g2 = create_aa_dict()
+    first_aa_g2 = create_aa_dict()
+    last_aa_g2 = create_aa_dict()
+    if kwargs.get('peptide_or_protein_list') == 'peptide_list':
+        for peptide in p_list:
+            first_aa_g1[peptide.get_sequence()[0]] += 1 ### CHANGE TO METRIC
+            last_aa_g1[peptide.get_sequence()[-1]] += 1
+            first_aa_g2[peptide.get_sequence()[0]] += 1
+            last_aa_g2[peptide.get_sequence()[-1]] += 1
+            for letter in peptide.get_sequence():
+                complete_seq_g1[letter] += 1
+                complete_seq_g2[letter] += 1
+    elif kwargs.get('peptide_or_protein_list') == 'protein_list':
+        for protein in p_list:
+            peptide_list = create_peptide_list(p_list, protein.get_id())
+            for peptide in peptide_list:
+                first_aa_g1[peptide.get_sequence()[0]] += 1 ### CHANGE TO METRIC
+                last_aa_g1[peptide.get_sequence()[-1]] += 1
+                first_aa_g2[peptide.get_sequence()[0]] += 1
+                last_aa_g2[peptide.get_sequence()[-1]] += 1
+                for letter in peptide.get_sequence():
+                    complete_seq_g1[letter] += 1
+                    complete_seq_g2[letter] += 1
+    return complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2    
 
 def amino_acid_piecharts(p_list, **kwargs):
     default_settings = {
         'peptide_or_protein_list'
     }
     default_settings.update(kwargs)
-    complete_seq, first_aa, last_aa = amino_acid_frequency(p_list)
-    complete_seq_fig = go.Figure(data=[go.Pie(labels=list(complete_seq.keys()), values=list(complete_seq.values())
-    , textinfo='label')])
-    first_aa_fig = go.Figure(data=[go.Pie(labels=list(first_aa.keys()), values=list(first_aa.values())
-    , textinfo='label')])
-    last_aa_fig = go.Figure(data=[go.Pie(labels=list(last_aa.keys()), values=list(last_aa.values())
-    , textinfo='label')])
-    return complete_seq_fig, first_aa_fig, last_aa_fig
+    if kwargs.get('peptide_or_protein_list') == 'peptide_list':
+        complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2 = amino_acid_frequency(p_list, peptide_or_protein_list = 'peptide_list')
+    elif kwargs.get('peptide_or_protein_list') == 'protein_list':
+        complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2 = amino_acid_frequency(p_list, peptide_or_protein_list = 'protein_list')
+    complete_seq_fig_g1 = go.Figure(data=[go.Pie(labels=list(complete_seq_g1.keys()), values=list(complete_seq_g1.values())
+        , textinfo='label')])
+    first_aa_fig_g1 = go.Figure(data=[go.Pie(labels=list(first_aa_g1.keys()), values=list(first_aa_g1.values())
+        , textinfo='label')])
+    last_aa_fig_g1 = go.Figure(data=[go.Pie(labels=list(last_aa_g1.keys()), values=list(last_aa_g1.values())
+        , textinfo='label')])
+    complete_seq_fig_g2 = go.Figure(data=[go.Pie(labels=list(complete_seq_g2.keys()), values=list(complete_seq_g2.values())
+        , textinfo='label')])
+    first_aa_fig_g2 = go.Figure(data=[go.Pie(labels=list(first_aa_g2.keys()), values=list(first_aa_g2.values())
+        , textinfo='label')])
+    last_aa_fig_g2 = go.Figure(data=[go.Pie(labels=list(last_aa_g2.keys()), values=list(last_aa_g2.values())
+        , textinfo='label')])
+    complete_seq_fig_g1.update(layout_title_text='Complete amino acid sequence',
+            layout_showlegend=False)
+    last_aa_fig_g1.update(layout_title_text='Last amino acid',
+            layout_showlegend=False)
+    first_aa_fig_g1.update(layout_title_text='First amino acid',
+            layout_showlegend=False)
+    complete_seq_fig_g2.update(layout_title_text='Complete amino acid sequence',
+            layout_showlegend=False)
+    last_aa_fig_g2.update(layout_title_text='Last amino acid',
+            layout_showlegend=False)
+    first_aa_fig_g2.update(layout_title_text='First amino acid',
+            layout_showlegend=False)
+    return complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2
 
 def group_amino_acids(peptide_list):
     grouped = []
@@ -377,10 +419,10 @@ def protein_graphic_plotly(protein_list, **kwargs):
         for p1 in protein_list:
             for p2 in protein_list:
                 if common_family(p1.get_protein_family(), p2.get_protein_family())[0]:
-                    x0 = p1.get_area_sum()[0]
-                    x1 = p2.get_area_sum()[0]
-                    y0 = p1.get_area_sum()[1]
-                    y1 = p2.get_area_sum()[1]
+                    x0 = p1.get_area_sum()[1]
+                    x1 = p2.get_area_sum()[1]
+                    y0 = p1.get_area_sum()[0]
+                    y1 = p2.get_area_sum()[0]
                     fig.add_shape(type="line",x0=x0, y0=y0, x1=x1, y1=y1, line=dict(color="firebrick",width=1, dash='dash'))
 
     col, size, color_thresholds = set_color_and_size(nbr_of_peptides)
@@ -388,7 +430,7 @@ def protein_graphic_plotly(protein_list, **kwargs):
         s *= 4
     df_fig = pd.DataFrame(list(zip(g1_intensity,g2_intensity, nbr_of_peptides, trivial_name, pfam, col, accession)),
         columns=['g1_intensity','g2_intensity','nbr_of_peptides','trivial_name','pfam','col','accession'])
-    fig = px.scatter(df_fig, x='g1_intensity', y='g2_intensity', color='nbr_of_peptides', color_continuous_scale=px.colors.sequential.algae,
+    fig = px.scatter(df_fig, x='g2_intensity', y='g1_intensity', color='nbr_of_peptides', color_continuous_scale=px.colors.sequential.algae,
                  size='nbr_of_peptides', log_x=True, log_y=True, hover_data=['trivial_name','nbr_of_peptides','pfam','accession'])
     minimum = min(g1_intensity + g2_intensity)
     maximum = max(g1_intensity + g2_intensity)
