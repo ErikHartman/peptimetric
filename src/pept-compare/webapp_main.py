@@ -15,12 +15,12 @@ import plotly.graph_objects as go
 from dash.dependencies import Input, Output, State
 
 from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, apply_cut_off, create_protein_list, protein_graphic_plotly, create_peptide_list, peptide_graphic_plotly
-
+from methods import amino_acid_piecharts
 app = dash.Dash(__name__,external_stylesheets=[dbc.themes.SANDSTONE], suppress_callback_exceptions=True)
 
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
-    html.Div(id='page-content'),
+    dbc.Container(id='page-content', fluid=True, className='vh-100'),
  ])
 
 #---------------------------------------PAGE-ELEMENTS------------------------------------------------
@@ -178,7 +178,7 @@ how_to_use_collapse = html.Div(
 
 protein_fig = html.Div([
         html.H1('Protein View'),
-        dbc.Row(search_protein, justify="center"),
+        dbc.Row(search_protein, justify="left", className='ml-auto'),
         dcc.Loading(type='cube', color = '#76b382',
             children=dcc.Graph(id='protein-fig', figure={})
         )
@@ -193,6 +193,23 @@ peptide_fig = html.Div([
         )
         ])
 
+amino_acid_figs = html.Div([
+        html.H1('Amino Acid Profile'),
+        dcc.Loading(type='cube', color = '#76b382',
+            children=[ dbc.Row([
+                dbc.Col([
+                    html.H5('Complete amino acid sequence'),
+                    dcc.Graph(id='complete-aa-seq-fig', figure={})]),
+                dbc.Col([
+                    html.H5('First amino acid'),
+                    dcc.Graph(id='first-aa-fig', figure={})]),
+                dbc.Col([
+                    html.H5('Last amino acid'),
+                    dcc.Graph(id='last-aa-fig', figure={})]),
+            ])]
+        )
+        ])
+    
 columns = ['Peptide','Start','End','Intensity 1',' Intensity 2']
 protein_info = dash_table.DataTable(
         id='protein_info',
@@ -213,7 +230,7 @@ peptide_info = dash_table.DataTable(
 #---------------------------PAGES---------------------------------------------------------------
 main_page = dbc.Container([
     dbc.Row([
-        dbc.Col(navbar, width={"size":12}, className="mb-4"),
+        dbc.Col(navbar, width={"size":12}, className="mb-4")
     ]),
     dbc.Row([
         dbc.Col(how_to_use_collapse , width={'size':12}),
@@ -225,8 +242,12 @@ main_page = dbc.Container([
     dbc.Row([
         dbc.Col(peptide_fig, width={'size': 8}),
         dbc.Col(peptide_info, width={'size':2})
-    ])   
-])
+    ]),
+
+    dbc.Row([
+        dbc.Col(amino_acid_figs, width={'size': 8}),
+    ])      
+], fluid=True)
 
 FAQ_page = html.Div([
     navbar,
@@ -316,14 +337,18 @@ def create_peptide_fig(clickData, search_protein):
 
     if protein_accession != '':
         peptide_list = create_peptide_list(protein_lists[-1], str(protein_accession))
+        complete_seq_fig, first_aa_fig, last_aa_fig = amino_acid_piecharts(peptide_list)
         peptide_fig = peptide_graphic_plotly(peptide_list)
-        return peptide_fig, search_text
+        return peptide_fig, search_text, complete_seq_fig, first_aa_fig, last_aa_fig
     else:
-        return {}, search_text
+        return {}, search_text, {},{},{}
 
 app.callback(
     Output('peptide-fig', 'figure'),
     Output('search-protein', 'value'),
+    Output('complete-aa-seq-fig', 'figure'),
+    Output('first-aa-fig', 'figure'),
+    Output('last-aa-fig', 'figure'),
     Input('protein-fig', 'clickData'),
     Input('search-protein', 'value')
 )(create_peptide_fig)

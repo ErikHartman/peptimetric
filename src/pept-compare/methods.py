@@ -83,33 +83,54 @@ def merge_dataframes(g1, g2):
     return g1.merge(g2, on=['Peptide', 'Accession'], how='outer', suffixes=['_g1', '_g2'])
 
 def amino_acid_frequency(peptide_list):
-    letters = {
-        'A': 0,
-        'G': 0,
-        'V': 0,
-        'L': 0,
-        'I': 0,
-        'P': 0,
-        'F': 0,
-        'W': 0,
-        'M': 0,
-        'S': 0,
-        'T': 0,
-        'C': 0,
-        'Y': 0,
-        'N': 0,
-        'Q': 0,
-        'K': 0,
-        'R': 0,
-        'H': 0,
-        'D': 0,
-        'E': 0
-    }
-    for sequence in peptide_list:
-        for letter in sequence:
-            letters[letter] += 1
-    return letters
+    def create_aa_dict():
+        aa_dict = {
+            'A': 0,
+            'G': 0,
+            'V': 0,
+            'L': 0,
+            'I': 0,
+            'P': 0,
+            'F': 0,
+            'W': 0,
+            'M': 0,
+            'S': 0,
+            'T': 0,
+            'C': 0,
+            'Y': 0,
+            'N': 0,
+            'Q': 0,
+            'K': 0,
+            'R': 0,
+            'H': 0,
+            'D': 0,
+            'E': 0
+        }
+        return aa_dict
+    complete_seq = create_aa_dict()
+    first_aa = create_aa_dict()
+    last_aa = create_aa_dict()
+    for peptide in peptide_list:
+        first_aa[peptide.get_sequence()[0]] += 1
+        last_aa[peptide.get_sequence()[-1]] += 1
+        for letter in peptide.get_sequence():
+            complete_seq[letter] += 1
+            
+    return complete_seq, first_aa, last_aa
 
+def amino_acid_piecharts(p_list, **kwargs):
+    default_settings = {
+        'peptide_or_protein_list'
+    }
+    default_settings.update(kwargs)
+    complete_seq, first_aa, last_aa = amino_acid_frequency(p_list)
+    complete_seq_fig = go.Figure(data=[go.Pie(labels=list(complete_seq.keys()), values=list(complete_seq.values())
+    , textinfo='label')])
+    first_aa_fig = go.Figure(data=[go.Pie(labels=list(first_aa.keys()), values=list(first_aa.values())
+    , textinfo='label')])
+    last_aa_fig = go.Figure(data=[go.Pie(labels=list(last_aa.keys()), values=list(last_aa.values())
+    , textinfo='label')])
+    return complete_seq_fig, first_aa_fig, last_aa_fig
 
 def group_amino_acids(peptide_list):
     grouped = []
@@ -361,7 +382,6 @@ def protein_graphic_plotly(protein_list, **kwargs):
                     y0 = p1.get_area_sum()[1]
                     y1 = p2.get_area_sum()[1]
                     fig.add_shape(type="line",x0=x0, y0=y0, x1=x1, y1=y1, line=dict(color="firebrick",width=1, dash='dash'))
-                    fig.add_trace(go.Scatter(x=[x0,x1], y=[y0, y1], mode='lines', opacity=0, showlegend=False))
 
     col, size, color_thresholds = set_color_and_size(nbr_of_peptides)
     for s in size:
@@ -559,9 +579,9 @@ def peptide_graphic_plotly(peptide_list):
     difference = []
     for i in list(range(len(fasta_dict["index"]))):
         difference.append(fasta_dict['intensity_pos'][i] - fasta_dict['intensity_neg'][i])
-    fig.add_trace(go.Scatter(x=fasta_dict["index"], y=difference, mode='lines', line=dict(color='firebrick', width=2)))
+    fig.add_trace(go.Scatter(x=fasta_dict["index"], y=difference, mode='lines', line=dict(color='firebrick', width=2), opacity=0.5))
     fig.add_shape(type='line', x0=0, y0=weight, x1=len(fasta), y1=weight, line=dict(
-        color="LightSeaGreen",
+        color="#182773",
         width=2,
         dash="dash",
     ))
@@ -840,5 +860,5 @@ def apply_cut_off(protein_list, **kwargs):
 
 
 def get_thresholds(lst):
-    return [int(np.quantile(lst, .4)), int(np.quantile(lst, .5)), int(np.quantile(lst, .6)), int(np.quantile(lst, .7)),
-            int(np.quantile(lst, .8))]
+    return [int(np.quantile(lst, .35)), int(np.quantile(lst, .40)), int(np.quantile(lst, .45)), int(np.quantile(lst, .50)),
+            int(np.quantile(lst, .55))]
