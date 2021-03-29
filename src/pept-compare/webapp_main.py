@@ -237,10 +237,10 @@ protein_info = dbc.Table(table_header + table_body,
     responsive=True,
     striped=True,)    
 
-columns = ['Peptide','Start','End','Intensity 1',' Intensity 2']
+peptide_columns = ['Sequence','Start','End','Intensity 1',' Intensity 2']
 peptide_info = dash_table.DataTable(
-        id='peptide_info',
-        columns=[{"name": str(i), "id": str(i)} for i in columns],
+        id='peptide-info',
+        columns=[{"name": str(i), "id": str(i)} for i in peptide_columns],
         style_header={
         'fontWeight': 'bold'
     },
@@ -359,9 +359,15 @@ def create_peptide_fig(clickData, search_protein):
         peptide_list = create_peptide_list(protein_lists[-1], str(protein_accession))
         peptide_lists.append(peptide_list)
         peptide_fig = peptide_graphic_plotly(peptide_list)
-        return peptide_fig, search_text
+        df_peptide_info = pd.DataFrame(peptide_info, peptide_columns)
+        for peptide in peptide_list:
+            df_peptide_info = df_peptide_info.append({'Peptide': peptide.get_sequence(), 'Start': peptide.get_start(),'End': peptide.get_end(), 'Intensity': peptide.get_area()},ignore_index=True)
+        df_peptide_info.sort_values(by=['Intensity'], ascending=False, inplace=True)
+        dt = df_peptide_info.to_dict('rows')
+        return peptide_fig, search_text, dt
     else:
-        return {}, search_text
+        return {}, search_text, []
+
 
 def amino_acid_dropdown(n_clicks_complete_proteome, n_clicks_selected_protein):
     if n_clicks_complete_proteome > n_clicks_selected_protein and len(protein_lists)>0:
@@ -389,6 +395,7 @@ app.callback(
 app.callback(
     Output('peptide-fig', 'figure'),
     Output('search-protein', 'value'),
+    Output('peptide-info', 'data'),
     Input('protein-fig', 'clickData'),
     Input('search-protein', 'value'),
 )(create_peptide_fig)
