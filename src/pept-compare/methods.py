@@ -367,6 +367,8 @@ def protein_graphic_plotly(protein_list, **kwargs):
     color = green
     g1_intensity = []
     g2_intensity = []
+    g1_stdev = []
+    g2_stdev = []
     trivial_name = []
     accession = []
     nbr_of_peptides = []
@@ -379,7 +381,9 @@ def protein_graphic_plotly(protein_list, **kwargs):
         pfam.append(protein.get_protein_family())
         if kwargs.get('difference_metric') == 'area_sum':
             g1_intensity.append(protein.get_area_sum()[0])
-            g2_intensity.append(protein.get_area_sum()[1])
+            g1_stdev.append(protein.get_area_sum()[1])
+            g2_intensity.append(protein.get_area_sum()[2])
+            g2_stdev.append(protein.get_area_sum()[3])
         elif kwargs.get('difference_metric') == 'area_mean':
             g1_intensity.append(protein.get_area_mean()[0])
             g2_intensity.append(protein.get_area_mean()[1])
@@ -415,31 +419,22 @@ def protein_graphic_plotly(protein_list, **kwargs):
                 size.append(color_thresholds[0])
         return col, size, color_thresholds
 
-    def connect_points(protein_list):
-        for p1 in protein_list:
-            for p2 in protein_list:
-                if common_family(p1.get_protein_family(), p2.get_protein_family())[0]:
-                    x0 = p1.get_area_sum()[1]
-                    x1 = p2.get_area_sum()[1]
-                    y0 = p1.get_area_sum()[0]
-                    y1 = p2.get_area_sum()[0]
-                    fig.add_shape(type="line",x0=x0, y0=y0, x1=x1, y1=y1, line=dict(color="firebrick",width=1, dash='dash'))
-
     col, size, color_thresholds = set_color_and_size(nbr_of_peptides)
     for s in size:
         s *= 4
-    df_fig = pd.DataFrame(list(zip(g1_intensity,g2_intensity, nbr_of_peptides, trivial_name, pfam, col, accession)),
-        columns=['g1_intensity','g2_intensity','nbr_of_peptides','trivial_name','pfam','col','accession'])
-    fig = px.scatter(df_fig, x='g2_intensity', y='g1_intensity', color='nbr_of_peptides', color_continuous_scale=px.colors.sequential.algae,
-                 size='nbr_of_peptides', log_x=True, log_y=True, hover_data=['trivial_name','nbr_of_peptides','pfam','accession'])
+    df_fig = pd.DataFrame(list(zip(g1_intensity,g2_intensity, nbr_of_peptides, trivial_name, pfam, col, accession, g1_stdev, g2_stdev)),
+        columns=['g1_intensity','g2_intensity','nbr_of_peptides','trivial_name','pfam','col','accession', 'g1_stdev', 'g2_stdev'])
+    print(df_fig)
+    fig = px.scatter(df_fig, x='g2_intensity', y='g1_intensity', 
+        color='nbr_of_peptides', color_continuous_scale=px.colors.diverging.PiYG,
+        size='nbr_of_peptides', log_x=True, log_y=True, hover_data=['trivial_name','nbr_of_peptides','pfam','accession'])
     minimum = min(g1_intensity + g2_intensity)
     maximum = max(g1_intensity + g2_intensity)
     print("Figure created")
     fig.add_shape(type="line",x0=minimum, y0=minimum, x1=maximum, y1=maximum, line=dict(color="#919499",width=1, dash='dash'))
     fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',})
-    connect_points(protein_list)
     fig = go.FigureWidget(fig.data, fig.layout)
-    return fig
+    return fig, df_fig
 
 def create_peptide_graphic(peptide_list, n):
     color = green

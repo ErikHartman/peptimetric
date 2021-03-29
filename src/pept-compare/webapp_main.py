@@ -15,7 +15,7 @@ import plotly.graph_objects as go
 from dash.dependencies import Input, Output, State
 
 from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, apply_cut_off, create_protein_list, protein_graphic_plotly, create_peptide_list, peptide_graphic_plotly
-from methods import amino_acid_piecharts
+from methods import amino_acid_piecharts, common_family
 app = dash.Dash(__name__,external_stylesheets=[dbc.themes.SANDSTONE], suppress_callback_exceptions=True)
 
 app.layout = html.Div([
@@ -43,7 +43,7 @@ modal_file = html.Div([
                         dbc.Col(dbc.ModalBody(id='output-filename-2', className='ml-auto text-center')),
                     ]),
                 dbc.ModalFooter(
-                    dbc.Button("Generate protein graph", color = 'primary', id="close-modal-file", className="ml-auto")
+                    dbc.Button("Generate protein graph", color = 'primary', id="close-modal-file", className="ml-auto", n_clicks_timestamp=0)
                 ),
             ],
             id="modal-file",
@@ -186,7 +186,11 @@ how_to_use_collapse = html.Div(
 
 protein_fig = html.Div([
         html.H3('Protein View'),
-        dbc.Row(search_protein, justify="left", className='ml-auto'),
+        dbc.Row([
+            dbc.Col(search_protein),
+            dbc.Col(dbc.Button('Show protein families', id='show-pfam', className='ml-auto', n_clicks_timestamp=0)),
+            dbc.Col(dbc.Button('Show error bars', id='show-protein-error-bars', className='ml-auo', n_clicks_timestamp=0)),
+        ]),
         dcc.Loading(type='cube', color = '#76b382',
             children=dcc.Graph(id='protein-fig', figure={})
         )
@@ -196,6 +200,10 @@ protein_fig = html.Div([
 
 peptide_fig = html.Div([
         html.H3('Peptide View'),
+        dbc.Row([
+            dbc.Col(dbc.Button('Show weight', id='show-peptide-weight', className='ml-auto')),
+            dbc.Col(dbc.Button('Show difference trace', id='show-difference-trace', className='ml-auo')),
+        ]),
         dcc.Loading(type='cube', color = '#76b382',
             children=dcc.Graph(id='peptide-fig', figure={})
         )
@@ -321,20 +329,26 @@ def update_data_frame(contents, filename):
     return master_df
 
 protein_lists = []
-def create_protein_fig(n_clicks):
+def create_protein_fig(n_clicks, n_clicks_pfam, n_clicks_stdev):
     triv_names = []
-    if n_clicks and df_g and len(df_g) >= 2:
+    protein_fig = {}
+    protein_list = []
+    protein_df = pd.DataFrame()
+    if n_clicks:
         g1 = df_g[-2]
         g2 = df_g[-1]
         master = merge_dataframes(g1,g2)
         protein_list = create_protein_list(master)
         protein_lists.append(protein_list)
         protein_list_cutoff = apply_cut_off(protein_list, nbr_of_peptides=5, area=1000000, spectral_count=4)
-        protein_fig = protein_graphic_plotly(protein_list_cutoff, difference_metric='area_sum')
+        protein_fig, protein_df = protein_graphic_plotly(protein_list_cutoff, difference_metric='area_sum')
         if len(protein_list_cutoff) > 1:
             for protein in protein_list_cutoff:
                 triv_names.append(html.Option(value=protein.get_trivial_name()))
-        return protein_fig, triv_names 
+    if n_clicks > n_clicks_pfam and n_clicks > n_clicks_stdev and df_g and len(df_g) >= 2:
+        return protein_fig, triv_names
+    elif n_clicks_pfam or n_clicks_stdev and len(df_g) >= 2:
+        return show_pfam_or_stdev(n_clicks_pfam, n_clicks_stdev, protein_list, protein_fig, protein_df) , triv_names
     else:
         return {}, []
 
@@ -367,13 +381,15 @@ def create_peptide_fig(clickData, search_protein):
             columns=[{"name": str(i), "id": str(i)} for i in df_peptide_info.columns],
             sort_action='native',
             fixed_rows={'headers': True},
+            filter_action='native',
             style_data_conditional = [{
                 'if' : {'row_index':'odd'},
                 'backgroundColor' : 'rgb(182, 224, 194)'
             }
             ],
             style_header={
-        'fontWeight': 'bold'
+                'textAlign':'center',
+                'fontWeight': 'bold',
             },
             style_cell={
                 'textAlign':'left',
@@ -396,6 +412,25 @@ def amino_acid_dropdown(n_clicks_complete_proteome, n_clicks_selected_protein):
         return complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2, 'Selected Protein'
     else:
         return  {},{},{}, {},{},{}, ''
+
+
+def show_pfam_or_stdev(n_clicks_pfam, n_clicks_stdev, protein_list, fig, df):
+    if n_clicks_pfam > n_clicks_stdev:
+        for p1 in protein_list:
+            for p2 in protein_list:
+                if common_family(p1.get_protein_family(), p2.get_protein_family())[0]:
+                    x0 = p1.get_area_sum()[2]
+                    x1 = p2.get_area_sum()[2]
+                    y0 = p1.get_area_sum()[0]
+                    y1 = p2.get_area_sum()[0]
+                    fig.add_shape(type="line",x0=x0, y0=y0, x1=x1, y1=y1, line=dict(color="firebrick",width=1, dash='dash'))
+        return fig
+    elif n_clicks_stdev and len(protein_list) > 2:
+        fig.update_traces(error_x= dict(array=df['g2_stdev'].array, thickness=1), error_y=dict(array=df['g1_stdev'].array, thickness=1))
+        return fig
+    else:
+        return {}
+
 
 
 app.callback(
@@ -431,7 +466,9 @@ app.callback(
 app.callback(
     Output('protein-fig', 'figure'),
     Output('protein-list', 'children'),
-    [Input("close-modal-file", "n_clicks")],
+    [Input("close-modal-file", "n_clicks_timestamp"),
+    Input('show-pfam', 'n_clicks_timestamp'),
+    Input('show-protein-error-bars','n_clicks_timestamp')],
     )(create_protein_fig)
 
 app.callback(Output('page-content', 'children'),
