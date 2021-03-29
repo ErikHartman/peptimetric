@@ -240,7 +240,7 @@ protein_info = dbc.Table(table_header + table_body,
 
 
 peptide_info = html.Div(
-   id='peptide-info'),
+   id='peptide-info-table'),
 
 #---------------------------PAGES---------------------------------------------------------------
 main_page = dbc.Container([
@@ -256,7 +256,7 @@ main_page = dbc.Container([
     ]),
     dbc.Row([
         dbc.Col(peptide_fig, width={'size': 8}),
-        dbc.Col(peptide_info, width={'size':2})
+        dbc.Col(peptide_info, width={'size':4})
     ]),
 
     dbc.Row([
@@ -358,15 +358,29 @@ def create_peptide_fig(clickData, search_protein):
         peptide_info_columns = ['Peptide','Start','End','Intensity_g1','Intensity_g2']
         df_peptide_info = pd.DataFrame(columns=peptide_info_columns)
         for peptide in peptide_list:
-            df_peptide_info = df_peptide_info.append({'Peptide': str(peptide.get_sequence()), 'Start': peptide.get_start(),'End': peptide.get_end(), 'Intensity_g1': peptide.get_area()[0], 'Intensity_g2':peptide.get_area()[1]}, ignore_index=True)
+            df_peptide_info = df_peptide_info.append({'Peptide': str(peptide.get_sequence()), 'Start': peptide.get_start(),'End': peptide.get_end(), 'Intensity_g1': "{:.2e}".format(peptide.get_area()[0]), 
+            'Intensity_g2': "{:.2e}".format(peptide.get_area()[1])}, ignore_index=True)
         print(df_peptide_info)
-        df_peptide_info.sort_values(by=['Intensity_g1', 'Intensity_g2'], ascending=False, inplace=True)[0:10]
+        df_peptide_info.sort_values(by=['Intensity_g1', 'Intensity_g2'], ascending=False, inplace=True)
         datatable = dash_table.DataTable(
             data = df_peptide_info.to_dict('rows'),
             columns=[{"name": str(i), "id": str(i)} for i in df_peptide_info.columns],
+            sort_action='native',
+            fixed_rows={'headers': True},
+            style_data_conditional = [{
+                'if' : {'row_index':'odd'},
+                'backgroundColor' : 'rgb(182, 224, 194)'
+            }
+            ],
             style_header={
         'fontWeight': 'bold'
-            }
+            },
+            style_cell={
+                'textAlign':'left',
+                'padding':'5px',
+                'maxWidth': 95,
+            },
+            style_table={'height': '400px', 'width':'100%', 'overflowY': 'auto'}
     )   
         return peptide_fig, search_text, html.Div([datatable])
     else:
@@ -399,7 +413,7 @@ app.callback(
 app.callback(
     Output('peptide-fig', 'figure'),
     Output('search-protein', 'value'),
-    Output('peptide-info', 'children'),
+    Output('peptide-info-table', 'children'),
     Input('protein-fig', 'clickData'),
     Input('search-protein', 'value'),
 )(create_peptide_fig)
