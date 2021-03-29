@@ -227,8 +227,8 @@ amino_acid_figs = html.Div([
     
 table_header = [html.Thead(html.Tr([html.Th("Protein info")]))]
 row1 = html.Tr([html.Td("Number of proteins"), html.Td("0", id='number-of-proteins')])
-row2 = html.Tr([html.Td("Average number of peptides per protein"), html.Td("0",id='average-nbr-peptides-per-protein')])
-row3 = html.Tr([html.Td("Average peptide length"), html.Td("0",id='average-peptide-length')])
+row2 = html.Tr([html.Td("Average number of peptides per protein"), html.Td("0", id='average-nbr-peptides-per-protein')])
+row3 = html.Tr([html.Td("Average peptide length"), html.Td("0", id='average-peptide-length')])
 table_body = [html.Tbody([row1, row2, row3])]
 
 protein_info = dbc.Table(table_header + table_body, 
@@ -237,14 +237,10 @@ protein_info = dbc.Table(table_header + table_body,
     responsive=True,
     striped=True,)    
 
-peptide_columns = ['Sequence','Start','End','Intensity 1',' Intensity 2']
-peptide_info = dash_table.DataTable(
-        id='peptide-info',
-        columns=[{"name": str(i), "id": str(i)} for i in peptide_columns],
-        style_header={
-        'fontWeight': 'bold'
-    },
-    ),
+
+
+peptide_info = html.Div(
+   id='peptide-info'),
 
 #---------------------------PAGES---------------------------------------------------------------
 main_page = dbc.Container([
@@ -359,12 +355,20 @@ def create_peptide_fig(clickData, search_protein):
         peptide_list = create_peptide_list(protein_lists[-1], str(protein_accession))
         peptide_lists.append(peptide_list)
         peptide_fig = peptide_graphic_plotly(peptide_list)
-        df_peptide_info = pd.DataFrame(peptide_info, peptide_columns)
+        peptide_info_columns = ['Peptide','Start','End','Intensity_g1','Intensity_g2']
+        df_peptide_info = pd.DataFrame(columns=peptide_info_columns)
         for peptide in peptide_list:
-            df_peptide_info = df_peptide_info.append({'Peptide': peptide.get_sequence(), 'Start': peptide.get_start(),'End': peptide.get_end(), 'Intensity': peptide.get_area()},ignore_index=True)
-        df_peptide_info.sort_values(by=['Intensity'], ascending=False, inplace=True)
-        dt = df_peptide_info.to_dict('rows')
-        return peptide_fig, search_text, dt
+            df_peptide_info = df_peptide_info.append({'Peptide': str(peptide.get_sequence()), 'Start': peptide.get_start(),'End': peptide.get_end(), 'Intensity_g1': peptide.get_area()[0], 'Intensity_g2':peptide.get_area()[1]}, ignore_index=True)
+        print(df_peptide_info)
+        df_peptide_info.sort_values(by=['Intensity_g1', 'Intensity_g2'], ascending=False, inplace=True)[0:10]
+        datatable = dash_table.DataTable(
+            data = df_peptide_info.to_dict('rows'),
+            columns=[{"name": str(i), "id": str(i)} for i in df_peptide_info.columns],
+            style_header={
+        'fontWeight': 'bold'
+            }
+    )   
+        return peptide_fig, search_text, html.Div([datatable])
     else:
         return {}, search_text, []
 
@@ -395,7 +399,7 @@ app.callback(
 app.callback(
     Output('peptide-fig', 'figure'),
     Output('search-protein', 'value'),
-    Output('peptide-info', 'data'),
+    Output('peptide-info', 'children'),
     Input('protein-fig', 'clickData'),
     Input('search-protein', 'value'),
 )(create_peptide_fig)
