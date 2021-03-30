@@ -187,10 +187,18 @@ how_to_use_collapse = html.Div(
 protein_fig = html.Div([
         html.H3('Protein View'),
         dbc.Row([
-            dbc.Col(search_protein),
-            dbc.Col(dbc.Button('Show protein families', id='show-pfam', className='ml-auto', n_clicks_timestamp=0)),
-            dbc.Col(dbc.Button('Show error bars', id='show-protein-error-bars', className='ml-auo', n_clicks_timestamp=0)),
-        ]),
+            dbc.Col(search_protein, width={'size':3}),
+            dbc.Col(dbc.Checklist(
+                className='ml-auto',
+                id='protein-checklist',
+                switch=True,
+                inline=True,
+                options=[
+                    {'label': 'Show standard deviation', 'value': 'show-stdev'},
+                    {'label': 'Show protein families', 'value': 'show-pfam'}
+                    ],
+                )                 
+        )]),
         dcc.Loading(type='cube', color = '#76b382',
             children=dcc.Graph(id='protein-fig', figure={})
         )
@@ -201,8 +209,17 @@ protein_fig = html.Div([
 peptide_fig = html.Div([
         html.H3('Peptide View'),
         dbc.Row([
-            dbc.Col(dbc.Button('Show weight', id='show-peptide-weight', className='ml-auto')),
-            dbc.Col(dbc.Button('Show difference trace', id='show-difference-trace', className='ml-auo')),
+            dbc.Col(
+            dbc.Checklist(
+                switch=True,
+                inline=True,
+                className='ml-auto',
+                id='peptide-checklist',
+                options=[
+                    {'label': 'Show weight', 'value': 'show-weight'},
+                    {'label': 'Show difference trace', 'value': 'show-difference-trace'}
+                    ],
+                ))                 
         ]),
         dcc.Loading(type='cube', color = '#76b382',
             children=dcc.Graph(id='peptide-fig', figure={})
@@ -329,11 +346,10 @@ def update_data_frame(contents, filename):
     return master_df
 
 protein_lists = []
-def create_protein_fig(n_clicks, n_clicks_pfam, n_clicks_stdev):
+def create_protein_fig(n_clicks, checkbox_values):
     triv_names = []
     protein_fig = {}
     protein_list = []
-    protein_df = pd.DataFrame()
     if n_clicks:
         g1 = df_g[-2]
         g2 = df_g[-1]
@@ -341,19 +357,25 @@ def create_protein_fig(n_clicks, n_clicks_pfam, n_clicks_stdev):
         protein_list = create_protein_list(master)
         protein_lists.append(protein_list)
         protein_list_cutoff = apply_cut_off(protein_list, nbr_of_peptides=5, area=1000000, spectral_count=4)
-        protein_fig, protein_df = protein_graphic_plotly(protein_list_cutoff, difference_metric='area_sum')
         if len(protein_list_cutoff) > 1:
             for protein in protein_list_cutoff:
                 triv_names.append(html.Option(value=protein.get_trivial_name()))
-    if n_clicks > n_clicks_pfam and n_clicks > n_clicks_stdev and df_g and len(df_g) >= 2:
+    if len(df_g) >= 2:
+        if checkbox_values and 'show-stdev' in checkbox_values and 'show-pfam' in checkbox_values:
+            protein_fig = protein_graphic_plotly(protein_list_cutoff, difference_metric='area_sum', show_pfam='show', show_stdev = 'show')
+        elif checkbox_values and 'show-stdev' in checkbox_values:
+            protein_fig = protein_graphic_plotly(protein_list_cutoff, difference_metric='area_sum', show_stdev = 'show')
+        elif checkbox_values and 'show-pfam' in checkbox_values:
+            protein_fig = protein_graphic_plotly(protein_list_cutoff, difference_metric='area_sum', show_pfam = 'show')
+        else:
+            protein_fig = protein_graphic_plotly(protein_list_cutoff, difference_metric='area_sum')
         return protein_fig, triv_names
-    elif n_clicks_pfam or n_clicks_stdev and len(df_g) >= 2:
-        return show_pfam_or_stdev(n_clicks_pfam, n_clicks_stdev, protein_list, protein_fig, protein_df) , triv_names
+    
     else:
         return {}, []
 
 peptide_lists=[]
-def create_peptide_fig(clickData, search_protein):
+def create_peptide_fig(clickData, search_protein, checkbox_values):
     protein_accession = ''
     search_text = ''
     if search_protein != '' and len(protein_lists) > 0:
@@ -414,25 +436,6 @@ def amino_acid_dropdown(n_clicks_complete_proteome, n_clicks_selected_protein):
         return  {},{},{}, {},{},{}, ''
 
 
-def show_pfam_or_stdev(n_clicks_pfam, n_clicks_stdev, protein_list, fig, df):
-    if n_clicks_pfam > n_clicks_stdev:
-        for p1 in protein_list:
-            for p2 in protein_list:
-                if common_family(p1.get_protein_family(), p2.get_protein_family())[0]:
-                    x0 = p1.get_area_sum()[2]
-                    x1 = p2.get_area_sum()[2]
-                    y0 = p1.get_area_sum()[0]
-                    y1 = p2.get_area_sum()[0]
-                    fig.add_shape(type="line",x0=x0, y0=y0, x1=x1, y1=y1, line=dict(color="firebrick",width=1, dash='dash'))
-        return fig
-    elif n_clicks_stdev and len(protein_list) > 2:
-        fig.update_traces(error_x= dict(array=df['g2_stdev'].array, thickness=1), error_y=dict(array=df['g1_stdev'].array, thickness=1))
-        return fig
-    else:
-        return {}
-
-
-
 app.callback(
     Output('complete-aa-seq-fig-g1', 'figure'),
     Output('first-aa-fig-g1', 'figure'),
@@ -442,7 +445,7 @@ app.callback(
     Output('last-aa-fig-g2', 'figure'),
     Output('complete-or-selected', 'children'),
     Input('complete-proteome', 'n_clicks_timestamp'),
-    Input('selected-protein','n_clicks_timestamp')
+    Input('selected-protein','n_clicks_timestamp'),
 )(amino_acid_dropdown)
 
 app.callback(
@@ -451,6 +454,7 @@ app.callback(
     Output('peptide-info-table', 'children'),
     Input('protein-fig', 'clickData'),
     Input('search-protein', 'value'),
+    Input('peptide-checklist','value'),
 )(create_peptide_fig)
 
 app.callback(
@@ -467,8 +471,7 @@ app.callback(
     Output('protein-fig', 'figure'),
     Output('protein-list', 'children'),
     [Input("close-modal-file", "n_clicks_timestamp"),
-    Input('show-pfam', 'n_clicks_timestamp'),
-    Input('show-protein-error-bars','n_clicks_timestamp')],
+    Input('protein-checklist','value')],
     )(create_protein_fig)
 
 app.callback(Output('page-content', 'children'),

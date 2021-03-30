@@ -361,7 +361,10 @@ def create_graphic(protein_list, **kwargs):
 def protein_graphic_plotly(protein_list, **kwargs):
     default_settings = {
         'difference_metric': 'area_sum',
-        'color': 'green'
+        'color': 'green',
+        'show_stdev':'',
+        'show_pfam':''
+
     }
     default_settings.update(**kwargs)
     color = green
@@ -422,6 +425,7 @@ def protein_graphic_plotly(protein_list, **kwargs):
     col, size, color_thresholds = set_color_and_size(nbr_of_peptides)
     for s in size:
         s *= 4
+    
     df_fig = pd.DataFrame(list(zip(g1_intensity,g2_intensity, nbr_of_peptides, trivial_name, pfam, col, accession, g1_stdev, g2_stdev)),
         columns=['g1_intensity','g2_intensity','nbr_of_peptides','trivial_name','pfam','col','accession', 'g1_stdev', 'g2_stdev'])
     print(df_fig)
@@ -433,8 +437,19 @@ def protein_graphic_plotly(protein_list, **kwargs):
     print("Figure created")
     fig.add_shape(type="line",x0=minimum, y0=minimum, x1=maximum, y1=maximum, line=dict(color="#919499",width=1, dash='dash'))
     fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',})
+    if kwargs.get('show_stdev') == 'show':
+        fig.update_traces(error_x= dict(array=df_fig['g2_stdev'].array, thickness=1), error_y=dict(array=df_fig['g1_stdev'].array, thickness=1))
+    if kwargs.get('show_pfam') == 'show':
+        for p1 in protein_list:
+            for p2 in protein_list:
+                if common_family(p1.get_protein_family(), p2.get_protein_family())[0]:
+                    x0 = p1.get_area_sum()[2]
+                    x1 = p2.get_area_sum()[2]
+                    y0 = p1.get_area_sum()[0]
+                    y1 = p2.get_area_sum()[0]
+                    fig.add_shape(type="line",x0=x0, y0=y0, x1=x1, y1=y1, line=dict(color="firebrick",width=1, dash='dash'))
     fig = go.FigureWidget(fig.data, fig.layout)
-    return fig, df_fig
+    return fig
 
 def create_peptide_graphic(peptide_list, n):
     color = green
@@ -552,8 +567,16 @@ def create_peptide_graphic(peptide_list, n):
     plt.show()
 
 
-def peptide_graphic_plotly(peptide_list):
-    color = green
+def peptide_graphic_plotly(peptide_list, **kwargs):
+    default_settings = {
+        'color':'green',
+        'difference_metric':'area_sum',
+        'show_difference':'',
+        'show_weight':'',
+    }
+    kwargs.update(default_settings)
+    if kwargs.get('color') == 'green':
+        color = green
     trivial_name = peptide_list[0].protein.get_trivial_name()
     fasta = peptide_list[0].protein.get_fasta_seq()
     fasta_dict = {"index": [], "counter_pos": [], "counter_neg": [], "intensity_pos": [], "intensity_neg": []}
@@ -612,16 +635,19 @@ def peptide_graphic_plotly(peptide_list):
     maximum_intensity = max(fasta_dict['intensity_pos'] + fasta_dict['intensity_neg'])
     fig.update_yaxes(range=[-maximum_intensity, maximum_intensity])
     fig.update_layout(yaxis=dict(title='log(Intensity)'), xaxis=dict(title='Sequence', rangeslider=dict(visible=True)))
-    weight = (sum(fasta_dict['intensity_pos']) - sum(fasta_dict['intensity_neg'])) / len(fasta)
-    difference = []
-    for i in list(range(len(fasta_dict["index"]))):
-        difference.append(fasta_dict['intensity_pos'][i] - fasta_dict['intensity_neg'][i])
-    fig.add_trace(go.Scatter(x=fasta_dict["index"], y=difference, mode='lines', line=dict(color='firebrick', width=2), opacity=0.5))
-    fig.add_shape(type='line', x0=0, y0=weight, x1=len(fasta), y1=weight, line=dict(
+    if kwargs.get('show_weight') == 'show':
+        weight = (sum(fasta_dict['intensity_pos']) - sum(fasta_dict['intensity_neg'])) / len(fasta)
+        fig.add_shape(type='line', x0=0, y0=weight, x1=len(fasta), y1=weight, line=dict(
         color="#182773",
         width=2,
         dash="dash",
     ))
+    if kwargs.get('show_difference') == 'show':
+        difference = []
+        for i in list(range(len(fasta_dict["index"]))):
+            difference.append(fasta_dict['intensity_pos'][i] - fasta_dict['intensity_neg'][i])
+        fig.add_trace(go.Scatter(x=fasta_dict["index"], y=difference, mode='lines', line=dict(color='firebrick', width=2), opacity=0.5))
+    
     return fig
     
 
