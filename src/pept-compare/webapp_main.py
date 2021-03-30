@@ -390,7 +390,14 @@ def create_peptide_fig(clickData, search_protein, checkbox_values):
     if protein_accession != '':
         peptide_list = create_peptide_list(protein_lists[-1], str(protein_accession))
         peptide_lists.append(peptide_list)
-        peptide_fig = peptide_graphic_plotly(peptide_list)
+        if checkbox_values and 'show-difference-trace' in checkbox_values and 'show-weight' in checkbox_values:
+            peptide_fig = peptide_graphic_plotly(peptide_list, show_difference='show', show_weight ='show')
+        elif checkbox_values and 'show-difference-trace' in checkbox_values:
+            peptide_fig = peptide_graphic_plotly(peptide_list, show_difference='show')
+        elif checkbox_values and 'show-weight' in checkbox_values:
+            peptide_fig = peptide_graphic_plotly(peptide_list, show_weight='show')
+        else:
+            peptide_fig = peptide_graphic_plotly(peptide_list)
         peptide_info_columns = ['Peptide','Start','End','Intensity_g1','Intensity_g2']
         df_peptide_info = pd.DataFrame(columns=peptide_info_columns)
         for peptide in peptide_list:

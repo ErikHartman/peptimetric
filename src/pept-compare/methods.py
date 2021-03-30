@@ -574,7 +574,8 @@ def peptide_graphic_plotly(peptide_list, **kwargs):
         'show_difference':'',
         'show_weight':'',
     }
-    kwargs.update(default_settings)
+    default_settings.update(**kwargs)
+    color=green
     if kwargs.get('color') == 'green':
         color = green
     trivial_name = peptide_list[0].protein.get_trivial_name()

@@ -13,5 +13,5 @@ if __name__  == "__main__":
     #fig = protein_graphic_plotly(protein_list, difference_metric='area_sum')
     
     peptide_list = create_peptide_list(protein_list, "P69905")
-    fig = peptide_graphic_plotly(peptide_list)
+    fig = peptide_graphic_plotly(peptide_list, show_difference='show')
     fig.show()
