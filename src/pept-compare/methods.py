@@ -41,6 +41,29 @@ red = {
 
 }
 
+Normal_amino_acids = {
+    'A': 8.25,
+    'G': 7.08,
+    'V': 6.86,
+    'L': 9.65,
+    'I': 5.92,
+    'P': 4.73,
+    'F': 3.68,
+    'W': 1.09,
+    'M': 2.41,
+    'S': 6.63,
+    'T': 5.35,
+    'C': 1.38,
+    'Y': 2.92,
+    'N': 4.06,
+    'Q': 3.93,
+    'K': 5.81,
+    'R': 5.53,
+    'H': 2.27,
+    'D': 5.46,
+    'E': 6.72
+}
+
 def read_files_gui():
     root = tk.Tk()
     root.withdraw()
@@ -140,6 +163,29 @@ def amino_acid_frequency(p_list, **kwargs):
     return complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2    
 
 def amino_acid_piecharts(p_list, **kwargs):
+    color=green
+    color_dict = [
+            color['light'],
+            color['light'],
+            color['light'],
+            color['light'],
+            color['light'],
+            color['light'],
+            color['light'],
+            color['light'],
+            color['light'],
+            color['medium'],
+            color['medium'],
+            color['medium'],
+            color['medium'],
+            color['medium'],
+            color['medium'],
+            color['mediumdark'],
+            color['mediumdark'],
+            color['mediumdark'],
+            color['dark'],
+            color['dark'],
+    ]
     default_settings = {
         'peptide_or_protein_list'
     }
@@ -149,17 +195,17 @@ def amino_acid_piecharts(p_list, **kwargs):
     elif kwargs.get('peptide_or_protein_list') == 'protein_list':
         complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2 = amino_acid_frequency(p_list, peptide_or_protein_list = 'protein_list')
     complete_seq_fig_g1 = go.Figure(data=[go.Pie(labels=list(complete_seq_g1.keys()), values=list(complete_seq_g1.values())
-        , textinfo='label')])
+        , textinfo='label', marker_colors=color_dict)])
     first_aa_fig_g1 = go.Figure(data=[go.Pie(labels=list(first_aa_g1.keys()), values=list(first_aa_g1.values())
-        , textinfo='label')])
+        , textinfo='label', marker_colors=color_dict)])
     last_aa_fig_g1 = go.Figure(data=[go.Pie(labels=list(last_aa_g1.keys()), values=list(last_aa_g1.values())
-        , textinfo='label')])
+        , textinfo='label', marker_colors=color_dict)])
     complete_seq_fig_g2 = go.Figure(data=[go.Pie(labels=list(complete_seq_g2.keys()), values=list(complete_seq_g2.values())
-        , textinfo='label')])
+        , textinfo='label', marker_colors=color_dict)])
     first_aa_fig_g2 = go.Figure(data=[go.Pie(labels=list(first_aa_g2.keys()), values=list(first_aa_g2.values())
-        , textinfo='label')])
+        , textinfo='label', marker_colors=color_dict)])
     last_aa_fig_g2 = go.Figure(data=[go.Pie(labels=list(last_aa_g2.keys()), values=list(last_aa_g2.values())
-        , textinfo='label')])
+        , textinfo='label', marker_colors=color_dict)])
     complete_seq_fig_g1.update(layout_title_text='Complete amino acid sequence',
             layout_showlegend=False)
     last_aa_fig_g1.update(layout_title_text='Last amino acid',
@@ -195,28 +241,7 @@ def group_amino_acids(peptide_list):
     return grouped
 
 
-Normal_amino_acids = {
-    'A': 8.25,
-    'G': 7.08,
-    'V': 6.86,
-    'L': 9.65,
-    'I': 5.92,
-    'P': 4.73,
-    'F': 3.68,
-    'W': 1.09,
-    'M': 2.41,
-    'S': 6.63,
-    'T': 5.35,
-    'C': 1.38,
-    'Y': 2.92,
-    'N': 4.06,
-    'Q': 3.93,
-    'K': 5.81,
-    'R': 5.53,
-    'H': 2.27,
-    'D': 5.46,
-    'E': 6.72
-}
+
 
 def create_graphic(protein_list, **kwargs):
     default_settings = {
@@ -430,13 +455,13 @@ def protein_graphic_plotly(protein_list, **kwargs):
         columns=['g1_intensity','g2_intensity','nbr_of_peptides','trivial_name','pfam','col','accession', 'g1_stdev', 'g2_stdev'])
     print(df_fig)
     fig = px.scatter(df_fig, x='g2_intensity', y='g1_intensity', 
-        color='nbr_of_peptides', color_continuous_scale=px.colors.diverging.PiYG,
+        color='nbr_of_peptides', color_continuous_scale=px.colors.diverging.PiYG, 
         size='nbr_of_peptides', log_x=True, log_y=True, hover_data=['trivial_name','nbr_of_peptides','pfam','accession'])
     minimum = min(g1_intensity + g2_intensity)
     maximum = max(g1_intensity + g2_intensity)
     print("Figure created")
     fig.add_shape(type="line",x0=minimum, y0=minimum, x1=maximum, y1=maximum, line=dict(color="#919499",width=1, dash='dash'))
-    fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',})
+    fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}, coloraxis_colorbar=dict(title='Number of peptides'))
     if kwargs.get('show_stdev') == 'show':
         fig.update_traces(error_x= dict(array=df_fig['g2_stdev'].array, thickness=1), error_y=dict(array=df_fig['g1_stdev'].array, thickness=1))
     if kwargs.get('show_pfam') == 'show':
@@ -627,10 +652,9 @@ def peptide_graphic_plotly(peptide_list, **kwargs):
         else:
             col_neg.append(color['light'])
     fig = go.Figure()
-    fig.add_trace(go.Bar(x=fasta_dict["index"], y=fasta_dict["intensity_pos"], name="group 1", marker_color=col_pos,
-    width=1, marker=dict(line=dict(width=0))))
-    fig.add_trace(go.Bar(x=fasta_dict["index"], y=[-value for value in fasta_dict['intensity_neg']], name="group 2", 
-    marker_color=col_neg, width=1, marker=dict(line=dict(width=0))))
+    fig.add_trace(go.Bar(x=fasta_dict["index"], y=fasta_dict["intensity_pos"], name="group 1", 
+    width=1, marker=dict(line=dict(width=0), color=col_pos)))
+    fig.add_trace(go.Bar(x=fasta_dict["index"], y=[-value for value in fasta_dict['intensity_neg']], name="group 2", width=1, marker=dict(line=dict(width=0), color=col_neg)))
     fig.update_layout(barmode='relative', title_text=trivial_name, showlegend=False)
     fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',})
     maximum_intensity = max(fasta_dict['intensity_pos'] + fasta_dict['intensity_neg'])

@@ -250,22 +250,13 @@ amino_acid_figs = html.Div([
         )
         ])
     
-table_header = [html.Thead(html.Tr([html.Th("Protein info")]))]
-row1 = html.Tr([html.Td("Number of proteins"), html.Td("0", id='number-of-proteins')])
-row2 = html.Tr([html.Td("Average number of peptides per protein"), html.Td("0", id='average-nbr-peptides-per-protein')])
-row3 = html.Tr([html.Td("Average peptide length"), html.Td("0", id='average-peptide-length')])
-table_body = [html.Tbody([row1, row2, row3])]
 
-protein_info = dbc.Table(table_header + table_body, 
-    bordered=True,
-    hover=True,
-    responsive=True,
-    striped=True,)    
+
+protein_info = html.Div(id = 'protein-info-table', className='ml-auto'), 
 
 
 
-peptide_info = html.Div(
-   id='peptide-info-table'),
+peptide_info = html.Div(id='peptide-info-table', className='ml-auto'),
 
 #---------------------------PAGES---------------------------------------------------------------
 main_page = dbc.Container([
@@ -357,6 +348,34 @@ def create_protein_fig(n_clicks, checkbox_values):
         protein_list = create_protein_list(master)
         protein_lists.append(protein_list)
         protein_list_cutoff = apply_cut_off(protein_list, nbr_of_peptides=5, area=1000000, spectral_count=4)
+        protein_info_columns = ['Protein','UniProt id','Number of peptides','Intensity_g1','Intensity_g2', 'Protein family']
+        df_protein_info = pd.DataFrame(columns=protein_info_columns)
+        for protein in protein_list:
+            df_protein_info = df_protein_info.append({'Protein': str(protein.get_trivial_name()), 'UniProt id': protein.get_id(),'Number of peptides': protein.get_nbr_of_peptides(), 
+            'Intensity_g1': "{:.2e}".format(protein.get_area_sum()[0]), 'Intensity_g2': "{:.2e}".format(protein.get_area_sum()[2]), 'Protein family':protein.get_protein_family()},  ignore_index=True)
+        df_protein_info.sort_values(by=['Intensity_g1', 'Intensity_g2'], ascending=False, inplace=True)
+        datatable = dash_table.DataTable(
+            data = df_protein_info.to_dict('rows'),
+            columns=[{"name": str(i), "id": str(i)} for i in df_protein_info.columns],
+            sort_action='native',
+            fixed_rows={'headers': True},
+            filter_action='native',
+            style_data_conditional = [{
+                'if' : {'row_index':'odd'},
+                'backgroundColor' : 'rgb(182, 224, 194)'
+            }
+            ],
+            style_header={
+                'textAlign':'center',
+                'fontWeight': 'bold',
+            },
+            style_cell={
+                'textAlign':'left',
+                'padding':'5px',
+                'maxWidth': 95,
+            },
+            style_table={'height': '400px', 'width':'100%', 'overflowY': 'auto'}
+    )   
         if len(protein_list_cutoff) > 1:
             for protein in protein_list_cutoff:
                 triv_names.append(html.Option(value=protein.get_trivial_name()))
@@ -369,10 +388,10 @@ def create_protein_fig(n_clicks, checkbox_values):
             protein_fig = protein_graphic_plotly(protein_list_cutoff, difference_metric='area_sum', show_pfam = 'show')
         else:
             protein_fig = protein_graphic_plotly(protein_list_cutoff, difference_metric='area_sum')
-        return protein_fig, triv_names
+        return protein_fig, triv_names, html.Div(datatable)
     
     else:
-        return {}, []
+        return {}, [], html.Div()
 
 peptide_lists=[]
 def create_peptide_fig(clickData, search_protein, checkbox_values):
@@ -477,6 +496,7 @@ app.callback(
 app.callback(
     Output('protein-fig', 'figure'),
     Output('protein-list', 'children'),
+    Output('protein-info-table','children'),
     [Input("close-modal-file", "n_clicks_timestamp"),
     Input('protein-checklist','value')],
     )(create_protein_fig)
