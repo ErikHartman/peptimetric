@@ -33,7 +33,7 @@ class Protein:
         self.accession = accession
         self.fasta = self.get_fasta()
 
-    def get_area_sum(self):
+    def get_area_sum_all_samples(self):
         area_columns = [col for col in self.df if col.startswith('Area')]
         area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
         area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
@@ -47,7 +47,10 @@ class Protein:
             df_area = self.df.copy()
             df_area.fillna(0, inplace=True)
             area_sum_g2.append(df_area[a].sum())
-        return statistics.mean(area_sum_g1), statistics.mean(area_sum_g2)
+        area_g1_dict = dict(zip(area_columns_g1, area_sum_g1))
+        area_g2_dict = dict(zip(area_columns_g2, area_sum_g2))
+        area_g2_dict.update(area_g1_dict)
+        return area_g2_dict
 
     def get_area_sum(self):
         area_columns = [col for col in self.df if col.startswith('Area')]

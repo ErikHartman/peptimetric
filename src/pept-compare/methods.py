@@ -388,7 +388,8 @@ def protein_graphic_plotly(protein_list, **kwargs):
         'difference_metric': 'area_sum',
         'color': 'green',
         'show_stdev':'',
-        'show_pfam':''
+        'show_pfam':'',
+        'protein_id':''
 
     }
     default_settings.update(**kwargs)
@@ -426,7 +427,7 @@ def protein_graphic_plotly(protein_list, **kwargs):
         color_thresholds = get_thresholds(nbr_of_peptides)
         col = []
         size = []
-        for n in nbr_of_peptides:
+        for i, n in zip(range(len(nbr_of_peptides)), nbr_of_peptides):
             if n > color_thresholds[4]:
                 col.append(color['dark'])
                 size.append(color_thresholds[4])
@@ -457,6 +458,14 @@ def protein_graphic_plotly(protein_list, **kwargs):
     fig = px.scatter(df_fig, x='g2_intensity', y='g1_intensity', 
         color='nbr_of_peptides', color_continuous_scale=px.colors.diverging.PiYG, 
         size='nbr_of_peptides', log_x=True, log_y=True, hover_data=['trivial_name','nbr_of_peptides','pfam','accession'])
+    if kwargs.get('protein_id') != '':
+        marker_color_list = ['rgba(0,0,0,0)' for n in range(len(accession))]
+        for i in range(len(accession)):
+            if str(kwargs.get('protein_id')) == str(accession[i]):
+                marker_color_list[i] = red['medium']
+                fig.update_traces(marker=dict(line=dict(width=2, color=marker_color_list)),
+                  selector=dict(mode='markers'))
+
     minimum = min(g1_intensity + g2_intensity)
     maximum = max(g1_intensity + g2_intensity)
     print("Figure created")
@@ -473,6 +482,8 @@ def protein_graphic_plotly(protein_list, **kwargs):
                     y0 = p1.get_area_sum()[0]
                     y1 = p2.get_area_sum()[0]
                     fig.add_shape(type="line",x0=x0, y0=y0, x1=x1, y1=y1, line=dict(color="firebrick",width=1, dash='dash'))
+
+
     fig = go.FigureWidget(fig.data, fig.layout)
     return fig
 
@@ -950,3 +961,25 @@ def apply_cut_off(protein_list, **kwargs):
 def get_thresholds(lst):
     return [int(np.quantile(lst, .35)), int(np.quantile(lst, .40)), int(np.quantile(lst, .45)), int(np.quantile(lst, .50)),
             int(np.quantile(lst, .55))]
+
+def all_sample_bar_chart(protein_list, accession, **kwargs):
+    default_settings = {
+        'metric':'area_sum'
+    }
+    default_settings.update(kwargs)
+    selected_protein = ''
+    title=''
+    for protein in protein_list:
+        if protein.get_id() == accession:
+            selected_protein = protein
+            title = protein.get_trivial_name()
+    
+    if kwargs.get('metric') == 'area_sum':
+        intensities = selected_protein.get_area_sum_all_samples()
+        df = pd.DataFrame(intensities.items(), columns=['sample', 'intensity'])
+    else:
+        print('No samples')
+        df = None
+    fig = px.bar(df, x = 'sample', y='intensity', color='intensity', color_continuous_scale=px.colors.sequential.algae, title=title, log_y=True)
+    fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}, showlegend=False, coloraxis_showscale=False)
+    return fig

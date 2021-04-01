@@ -15,7 +15,7 @@ import plotly.graph_objects as go
 from dash.dependencies import Input, Output, State
 
 from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, apply_cut_off, create_protein_list, protein_graphic_plotly, create_peptide_list, peptide_graphic_plotly
-from methods import amino_acid_piecharts, common_family
+from methods import amino_acid_piecharts, common_family, all_sample_bar_chart
 app = dash.Dash(__name__,external_stylesheets=[dbc.themes.SANDSTONE], suppress_callback_exceptions=True)
 
 app.layout = html.Div([
@@ -205,6 +205,9 @@ protein_fig = html.Div([
         
         ])
 
+all_samples_protein_fig = html.Div([
+    dcc.Graph(id='hover-all-protein-samples', figure={}, style={'height': 300, 'width':500}
+)])
 
 peptide_fig = html.Div([
         html.H3('Peptide View'),
@@ -256,8 +259,9 @@ protein_info = html.Div(id = 'protein-info-table', className='ml-auto'),
 
 
 
-peptide_info = html.Div(id='peptide-info-table', className='ml-auto'),
-
+peptide_info = html.Div([
+    html.Div(id='peptide-info-table', className='ml-auto'),
+])
 #---------------------------PAGES---------------------------------------------------------------
 main_page = dbc.Container([
     dbc.Row([
@@ -268,7 +272,10 @@ main_page = dbc.Container([
     ]),
     dbc.Row([
         dbc.Col(protein_fig, width={'size':8}),
-        dbc.Col(protein_info, width={'size':4}),
+        dbc.Col([
+            dbc.Row(protein_info),
+            dbc.Row(all_samples_protein_fig)], 
+            width={'size':4}),
     ]),
     dbc.Row([
         dbc.Col(peptide_fig, width={'size': 8}),
@@ -293,7 +300,6 @@ documentation_page = html.Div([
     html.Br(),
     dcc.Link('Go back to home', href='/')
 ])
-
 #-----------------DEFS AND CALLBACKS--------------------------------------------------------------
 
 def display_page(pathname):
@@ -348,10 +354,10 @@ def create_protein_fig(n_clicks, checkbox_values):
         protein_list = create_protein_list(master)
         protein_lists.append(protein_list)
         protein_list_cutoff = apply_cut_off(protein_list, nbr_of_peptides=5, area=1000000, spectral_count=4)
-        protein_info_columns = ['Protein','UniProt id','Number of peptides','Intensity_g1','Intensity_g2', 'Protein family']
+        protein_info_columns = ['Protein','UniProt id','#peptides g1','#peptides g2','Intensity_g1','Intensity_g2', 'Protein family']
         df_protein_info = pd.DataFrame(columns=protein_info_columns)
         for protein in protein_list:
-            df_protein_info = df_protein_info.append({'Protein': str(protein.get_trivial_name()), 'UniProt id': protein.get_id(),'Number of peptides': protein.get_nbr_of_peptides(), 
+            df_protein_info = df_protein_info.append({'Protein': str(protein.get_trivial_name()), 'UniProt id': protein.get_id(),'#peptides g1': protein.get_nbr_of_peptides()[0], '#peptides g2': protein.get_nbr_of_peptides()[1], 
             'Intensity_g1': "{:.2e}".format(protein.get_area_sum()[0]), 'Intensity_g2': "{:.2e}".format(protein.get_area_sum()[2]), 'Protein family':protein.get_protein_family()},  ignore_index=True)
         df_protein_info.sort_values(by=['Intensity_g1', 'Intensity_g2'], ascending=False, inplace=True)
         datatable = dash_table.DataTable(
@@ -372,9 +378,10 @@ def create_protein_fig(n_clicks, checkbox_values):
             style_cell={
                 'textAlign':'left',
                 'padding':'5px',
-                'maxWidth': 95,
+                'maxWidth': 105,
+                'minWidth': 105,
             },
-            style_table={'height': '400px', 'width':'100%', 'overflowY': 'auto'}
+            style_table={'height': '200px', 'width':'500px', 'overflowY': 'auto','overflowX':'auto'}
     )   
         if len(protein_list_cutoff) > 1:
             for protein in protein_list_cutoff:
@@ -388,7 +395,7 @@ def create_protein_fig(n_clicks, checkbox_values):
             protein_fig = protein_graphic_plotly(protein_list_cutoff, difference_metric='area_sum', show_pfam = 'show')
         else:
             protein_fig = protein_graphic_plotly(protein_list_cutoff, difference_metric='area_sum')
-        return protein_fig, triv_names, html.Div(datatable)
+        return protein_fig, triv_names, datatable
     
     else:
         return {}, [], html.Div()
@@ -443,10 +450,12 @@ def create_peptide_fig(clickData, search_protein, checkbox_values):
                 'textAlign':'left',
                 'padding':'5px',
                 'maxWidth': 95,
+                'minWdith':95,
             },
-            style_table={'height': '400px', 'width':'100%', 'overflowY': 'auto'}
+            style_table={'height': '400px', 'width':'500px', 'overflowY': 'auto', 'overflowX':'auto'}
     )   
-        return peptide_fig, search_text, html.Div([datatable])
+        return peptide_fig, search_text, html.Div(datatable)
+    
     else:
         return {}, search_text, []
 
@@ -461,6 +470,21 @@ def amino_acid_dropdown(n_clicks_complete_proteome, n_clicks_selected_protein):
     else:
         return  {},{},{}, {},{},{}, ''
 
+
+def generate_hover_graphs(hoverData):
+    if hoverData:
+        accession = hoverData['points'][0]['customdata'][-1]
+        protein_list = protein_lists[-1]
+        fig = all_sample_bar_chart(protein_list, accession=accession, metric='area_sum',)
+        return fig
+    else:
+        return {}
+
+
+app.callback(
+    Output('hover-all-protein-samples', 'figure'),
+    Input('protein-fig','hoverData')
+)(generate_hover_graphs)
 
 app.callback(
     Output('complete-aa-seq-fig-g1', 'figure'),
@@ -497,8 +521,8 @@ app.callback(
     Output('protein-fig', 'figure'),
     Output('protein-list', 'children'),
     Output('protein-info-table','children'),
-    [Input("close-modal-file", "n_clicks_timestamp"),
-    Input('protein-checklist','value')],
+    Input("close-modal-file", "n_clicks_timestamp"),
+    Input('protein-checklist','value'),
     )(create_protein_fig)
 
 app.callback(Output('page-content', 'children'),
