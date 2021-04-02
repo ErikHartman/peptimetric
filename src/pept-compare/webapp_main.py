@@ -39,8 +39,8 @@ modal_file = html.Div([
                         
                     ]),    
                     dbc.Row([
-                        dbc.Col(dbc.ModalBody(id='output-filename-1', className='ml-auto text-center')),
-                        dbc.Col(dbc.ModalBody(id='output-filename-2', className='ml-auto text-center')),
+                        dbc.Col(dbc.ModalBody(id='output-filename-1', children=[], className='ml-auto text-center')),
+                        dbc.Col(dbc.ModalBody(id='output-filename-2', children=[], className='ml-auto text-center')),
                     ]),
                 dbc.ModalFooter(
                     dbc.Button("Generate protein graph", color = 'primary', id="close-modal-file", className="ml-auto", n_clicks_timestamp=0)
@@ -89,11 +89,31 @@ modal_view_setings = dbc.Modal([
 
 modal_cutoff = dbc.Modal([
                 dbc.ModalHeader("Cutoff settings", className="font-weight-bold"),
+                dbc.Form([
+                    dbc.FormGroup([
+                    dbc.Label("Cutoff 1", className="mr-2"),
+                    dbc.Input('Enter number...', placeholder='0', type='number', className='ml-auto', min=0),
+                    ], className="mr-3",),
+                    dbc.FormGroup([
+                    dbc.Label('Cutoff 2', className='mr-2'),
+                    dbc.Input('Enter number...', placeholder='0', type="number", className='ml-auto', min=0),
+                    ], className="mr-3",),
+                    dbc.FormGroup([
+                    dbc.Label('Cutoff 3', className='mr-2'),
+                    dbc.Input('Enter number...', placeholder='0', type="number", className='ml-auto', min=0),
+                    ], className="mr-3",),
+                    dbc.FormGroup([
+                    dbc.Label('Cutoff 4', className='mr-2'),
+                    dbc.Input('Enter number...', placeholder='0', type="number", className='ml-auto', min=0),
+                    ], className="mr-3",)
+                ],
+                inline=True),
                 dbc.ModalFooter(
-                    dbc.Button("Close", id="close-modal-cutoff", className="ml-auto")
+                    dbc.Button("Apply", id="close-modal-cutoff", className="ml-auto")
                 ),
             ],
             id="modal-cutoff",
+            size='sm',
             centered=True,
               )
 
@@ -169,7 +189,7 @@ how_to_use_collapse = html.Div(
     [
         dbc.Button(
             "How to Use",
-            id="collapse-button",
+            id="how-to-use-collapse-button",
             className="mb-3",
             color="info",
         ),
@@ -178,7 +198,32 @@ how_to_use_collapse = html.Div(
             dbc.CardHeader("How to use!"),
             dbc.CardBody("This will display steps and links on how to use the app."),
             ]),
-            id="collapse",
+            id="how-to-use-collapse",
+            className="mb-4"
+        ),
+    ]
+)
+
+sample_collapse = html.Div(
+    [
+        dbc.Button(
+            "Samples",
+            id="sample-collapse-button",
+            className="mb-3",
+            color="info",
+        ),
+        dbc.Collapse(
+            dbc.Card([
+            dbc.Row([
+                dbc.Col('Group 1'),
+                dbc.Col('Group 2')
+                ]),
+            dbc.Row([
+            dbc.Col(children=[], id='sample-collapse-1'),
+            dbc.Col(children=[], id='sample-collapse-2'),
+                ]),
+            ]),
+            id="sample-collapse",
             className="mb-4"
         ),
     ]
@@ -268,7 +313,8 @@ main_page = dbc.Container([
         dbc.Col(navbar, width={"size":12}, className="mb-4")
     ]),
     dbc.Row([
-        dbc.Col(how_to_use_collapse , width={'size':12}),
+        dbc.Col(how_to_use_collapse , width={'size':8}),
+        dbc.Col(sample_collapse, width={'size':4}),
     ]),
     dbc.Row([
         dbc.Col(protein_fig, width={'size':8}),
@@ -322,15 +368,15 @@ def toggle_modal(n1, n2, is_open):
 
 df_g = []
 def update_file_list(contents, filename):
-    s = ""
-    i=1
+    children = []
+    i=0
     if filename:
         for f in filename:
-            s = s + (f"S{i}:{f}" + "\n")
+            children.append(html.Div(f"S{i}: {f}"))
             i+=1  
         master_df = update_data_frame(contents, filename)
         df_g.append(master_df)
-    return s
+    return children, children
 
 def update_data_frame(contents, filename):
     decoded_list = []
@@ -388,11 +434,11 @@ def create_protein_fig(n_clicks, checkbox_values):
                 triv_names.append(html.Option(value=protein.get_trivial_name()))
     if len(df_g) >= 2:
         if checkbox_values and 'show-stdev' in checkbox_values and 'show-pfam' in checkbox_values:
-            protein_fig = protein_graphic_plotly(protein_list_cutoff, difference_metric='area_sum', show_pfam='show', show_stdev = 'show')
+            protein_fig = protein_graphic_plotly(protein_list_cutoff, difference_metric='area_sum', show_pfam=True, show_stdev = True)
         elif checkbox_values and 'show-stdev' in checkbox_values:
-            protein_fig = protein_graphic_plotly(protein_list_cutoff, difference_metric='area_sum', show_stdev = 'show')
+            protein_fig = protein_graphic_plotly(protein_list_cutoff, difference_metric='area_sum', show_stdev = True)
         elif checkbox_values and 'show-pfam' in checkbox_values:
-            protein_fig = protein_graphic_plotly(protein_list_cutoff, difference_metric='area_sum', show_pfam = 'show')
+            protein_fig = protein_graphic_plotly(protein_list_cutoff, difference_metric='area_sum', show_pfam = True)
         else:
             protein_fig = protein_graphic_plotly(protein_list_cutoff, difference_metric='area_sum')
         return protein_fig, triv_names, datatable
@@ -509,11 +555,13 @@ app.callback(
 
 app.callback(
     Output("output-filename-1", "children"),
+    Output("sample-collapse-1", "children"),
     [Input("upload-data-1", "contents"), Input("upload-data-1", "filename")],
 )(update_file_list)
 
 app.callback(
     Output("output-filename-2", "children"),
+    Output("sample-collapse-2", "children"),
     [Input("upload-data-2", "contents"), Input("upload-data-2", "filename")],
 )(update_file_list)
 
@@ -559,10 +607,17 @@ app.callback(
 )(toggle_modal)
 
 app.callback(
-    Output("collapse", "is_open"),
-    [Input("collapse-button", "n_clicks")],
-    [State("collapse", "is_open")],
+    Output("how-to-use-collapse", "is_open"),
+    [Input("how-to-use-collapse-button", "n_clicks")],
+    [State("how-to-use-collapse", "is_open")],
 )(toggle_collapse)
+
+app.callback(
+    Output("sample-collapse", "is_open"),
+    [Input("sample-collapse-button", "n_clicks")],
+    [State("sample-collapse", "is_open")],
+)(toggle_collapse)
+
 
 
 

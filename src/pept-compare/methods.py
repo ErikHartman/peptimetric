@@ -471,9 +471,9 @@ def protein_graphic_plotly(protein_list, **kwargs):
     print("Figure created")
     fig.add_shape(type="line",x0=minimum, y0=minimum, x1=maximum, y1=maximum, line=dict(color="#919499",width=1, dash='dash'))
     fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}, coloraxis_colorbar=dict(title='Number of peptides'))
-    if kwargs.get('show_stdev') == 'show':
+    if kwargs.get('show_stdev') == True:
         fig.update_traces(error_x= dict(array=df_fig['g2_stdev'].array, thickness=1), error_y=dict(array=df_fig['g1_stdev'].array, thickness=1))
-    if kwargs.get('show_pfam') == 'show':
+    if kwargs.get('show_pfam') == True:
         for p1 in protein_list:
             for p2 in protein_list:
                 if common_family(p1.get_protein_family(), p2.get_protein_family())[0]:
@@ -482,7 +482,6 @@ def protein_graphic_plotly(protein_list, **kwargs):
                     y0 = p1.get_area_sum()[0]
                     y1 = p2.get_area_sum()[0]
                     fig.add_shape(type="line",x0=x0, y0=y0, x1=x1, y1=y1, line=dict(color="firebrick",width=1, dash='dash'))
-
 
     fig = go.FigureWidget(fig.data, fig.layout)
     return fig
@@ -609,6 +608,7 @@ def peptide_graphic_plotly(peptide_list, **kwargs):
         'difference_metric':'area_sum',
         'show_difference':'',
         'show_weight':'',
+        
     }
     default_settings.update(**kwargs)
     color=green

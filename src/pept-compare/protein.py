@@ -49,8 +49,8 @@ class Protein:
             area_sum_g2.append(df_area[a].sum())
         area_g1_dict = dict(zip(area_columns_g1, area_sum_g1))
         area_g2_dict = dict(zip(area_columns_g2, area_sum_g2))
-        area_g2_dict.update(area_g1_dict)
-        return area_g2_dict
+        area_g1_dict.update(area_g2_dict)
+        return area_g1_dict
 
     def get_area_sum(self):
         area_columns = [col for col in self.df if col.startswith('Area')]
