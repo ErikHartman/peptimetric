@@ -86,10 +86,7 @@ modal_view_setings = dbc.Modal([
             id="modal-view-settings",
             centered=True,
               )
-
-modal_cutoff = dbc.Modal([
-                dbc.ModalHeader("Cutoff settings", className="font-weight-bold"),
-                dbc.Form([
+protein_tab = dbc.Form([
                     dbc.FormGroup([
                     dbc.Label("Cutoff 1", className="mr-2"),
                     dbc.Input('Enter number...', placeholder='0', type='number', className='ml-auto', min=0),
@@ -108,6 +105,33 @@ modal_cutoff = dbc.Modal([
                     ], className="mr-3",)
                 ],
                 inline=True),
+
+peptide_tab = dbc.Form([
+                    dbc.FormGroup([
+                    dbc.Label("Cutoff 5", className="mr-2"),
+                    dbc.Input('Enter number...', placeholder='0', type='number', className='ml-auto', min=0),
+                    ], className="mr-3",),
+                    dbc.FormGroup([
+                    dbc.Label('Cutoff 6', className='mr-2'),
+                    dbc.Input('Enter number...', placeholder='0', type="number", className='ml-auto', min=0),
+                    ], className="mr-3",),
+                    dbc.FormGroup([
+                    dbc.Label('Cutoff 7', className='mr-2'),
+                    dbc.Input('Enter number...', placeholder='0', type="number", className='ml-auto', min=0),
+                    ], className="mr-3",),
+                    dbc.FormGroup([
+                    dbc.Label('Cutoff 8', className='mr-2'),
+                    dbc.Input('Enter number...', placeholder='0', type="number", className='ml-auto', min=0),
+                    ], className="mr-3",)
+                ],
+                inline=True),
+
+modal_cutoff = dbc.Modal([
+                dbc.ModalHeader("Cutoff settings", className="font-weight-bold"),
+                dbc.Tabs([
+                    dbc.Tab(protein_tab, label='Protein'),
+                    dbc.Tab(peptide_tab, label='Peptide')
+                ]),
                 dbc.ModalFooter(
                     dbc.Button("Apply", id="close-modal-cutoff", className="ml-auto")
                 ),
@@ -300,12 +324,12 @@ amino_acid_figs = html.Div([
     
 
 
-protein_info = html.Div(id = 'protein-info-table', className='ml-auto'), 
+protein_info = html.Div(id = 'protein-info-table'), 
 
 
 
 peptide_info = html.Div([
-    html.Div(id='peptide-info-table', className='ml-auto'),
+    html.Div(id='peptide-info-table'),
 ])
 #---------------------------PAGES---------------------------------------------------------------
 main_page = dbc.Container([

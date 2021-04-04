@@ -25,13 +25,21 @@ class Peptide:
     def create_array(self):
         return list(self.get_sequence())
 
-    def is_unique(self):
-        area_columns = [col for col in self.df if col.startswith('Area')]
-        i = 0
-        for area in area_columns:
-            if area != 0:
-                i += 1
-        return i == 1
+    def unique_or_common(self):
+        df_unique = self.df.copy()
+        df_unique.fillna(0, inplace=True)
+        area_columns = [col for col in df_unique if col.startswith('Area')]
+        area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
+        area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
+        g1_count=0
+        g2_count=0
+        for area in area_columns_g1:
+            if int(df_unique[area]) != 0:
+                g1_count += 1
+        for area in area_columns_g2:
+            if int(df_unique[area]) != 0:
+                g2_count += 1
+        return g1_count, g2_count
 
     def get_area(self):
         area_columns = [col for col in self.df if col.startswith('Area')]
