@@ -3,6 +3,7 @@ import tkinter as tk
 from functools import reduce
 from tkinter.filedialog import askopenfilenames
 from typing import List
+import copy
 
 import plotly.graph_objects as go
 from IPython.display import display
@@ -103,7 +104,38 @@ def concatenate_dataframes(dfs: list) -> pd.DataFrame:
 
 
 def merge_dataframes(g1, g2):
+    g1 = g1.add_suffix('_g1')
+    g1 = g1.rename(index=str, columns={'Peptide_g1':'Peptide', 'Accession_g1':'Accession'})
+    g2 = g2.add_suffix('_g2')
+    g2 = g2.rename(index=str, columns={'Peptide_g2':'Peptide', 'Accession_g2':'Accession'})
     return g1.merge(g2, on=['Peptide', 'Accession'], how='outer', suffixes=['_g1', '_g2'])
+
+
+def set_color_and_size(nbr_of_peptides):
+    color=green
+    color_thresholds = get_thresholds(nbr_of_peptides)
+    col = []
+    size = []
+    for n in nbr_of_peptides:
+        if n > color_thresholds[4]:
+            col.append(color['dark'])
+            size.append(color_thresholds[4])
+        elif n >= color_thresholds[3]:
+            col.append(color['mediumdark'])
+            size.append(color_thresholds[3])
+        elif n >= color_thresholds[2]:
+            col.append(color['medium'])
+            size.append(color_thresholds[2])
+        elif n >= color_thresholds[1]:
+            col.append(color['mediumlight'])
+            size.append(color_thresholds[1])
+        elif n == 1:
+            col.append(color['grey'])
+            size.append(color_thresholds[0])
+        else:
+            col.append(color['light'])
+            size.append(color_thresholds[0])
+    return col, size, color_thresholds
 
 def amino_acid_frequency(p_list, **kwargs):
     default_settings = {
@@ -719,30 +751,6 @@ def create_protein_scatter(protein_list, **kwargs):
             g1_intensity.append(protein.get_spectral_count_sum()[0])
             g2_intensity.append(protein.get_spectral_count_sum()[1])
 
-    def set_color_and_size(nbr_of_peptides):
-        color_thresholds = get_thresholds(nbr_of_peptides)
-        col = []
-        size = []
-        for n in nbr_of_peptides:
-            if n > color_thresholds[4]:
-                col.append(color['dark'])
-                size.append(color_thresholds[4])
-            elif n >= color_thresholds[3]:
-                col.append(color['mediumdark'])
-                size.append(color_thresholds[3])
-            elif n >= color_thresholds[2]:
-                col.append(color['medium'])
-                size.append(color_thresholds[2])
-            elif n >= color_thresholds[1]:
-                col.append(color['mediumlight'])
-                size.append(color_thresholds[1])
-            elif n == 1:
-                col.append(color['grey'])
-                size.append(color_thresholds[0])
-            else:
-                col.append(color['light'])
-                size.append(color_thresholds[0])
-        return col, size, color_thresholds
 
     col, size, color_thresholds = set_color_and_size(nbr_of_peptides)
     for s in size:
@@ -959,8 +967,8 @@ def apply_cut_off(protein_list, **kwargs):
 
 
 def get_thresholds(lst):
-    return [int(np.quantile(lst, .35)), int(np.quantile(lst, .40)), int(np.quantile(lst, .45)), int(np.quantile(lst, .50)),
-            int(np.quantile(lst, .55))]
+    return [int(np.quantile(lst, .3)), int(np.quantile(lst, .40)), int(np.quantile(lst, .5)), int(np.quantile(lst, .6)),
+            int(np.quantile(lst, .8))]
 
 def all_sample_bar_chart(protein_list, accession, **kwargs):
     default_settings = {
@@ -1005,13 +1013,119 @@ def venn_bars(protein_list):
     top_labels = ['Group 1', 'Common', 'Group 2']
 
     fig = go.Figure()
-    fig.add_trace(go.Bar(x=['1'], y=[len(group_1_unique)], name='group_1_unique', marker=dict(color=green['light'])))
-    fig.add_trace(go.Bar(x=['1'], y=[len(common)], name='common', marker=dict(color=green['medium'])))
-    fig.add_trace(go.Bar(x=['1'], y=[len(group_2_unique)], name='group_2_unique', marker=dict(color=green['dark'])))
     fig.update_layout(
         barmode='relative',
         paper_bgcolor='rgb(255, 255, 255)',
         plot_bgcolor='rgb(255, 255, 255)',
         )
+    fig.add_trace(go.Bar(x=['1'], y=[len(group_1_unique)], name='group_1_unique', marker=dict(color=green['light'])))
+    fig.add_trace(go.Bar(x=['1'], y=[len(common)], name='common', marker=dict(color=green['medium'])))
+    fig.add_trace(go.Bar(x=['1'], y=[len(group_2_unique)], name='group_2_unique', marker=dict(color=green['dark'])))
+
     
+    return fig
+
+def stacked_samples_peptide(peptide_list):
+    fasta = peptide_list[0].fasta
+    fig  = go.Figure()
+    fig.update_layout(
+        barmode='relative',
+        paper_bgcolor='rgb(255, 255, 255)',
+        plot_bgcolor='rgb(255, 255, 255)',
+        )
+    start = []
+    end = []
+    start_neg = []
+    end_neg = []
+    intensity_pos = []
+    intensity_neg = []
+    for peptide in peptide_list:
+        start.append(peptide.get_start())
+        end.append(peptide.get_end())
+        intensity_pos.append(peptide.get_area_all_samples()[0])
+        intensity_neg.append(peptide.get_area_all_samples()[1])
+    
+    sample_dicts_pos = []
+    sample_dicts_neg = []
+    for sample in range(len(intensity_pos[0])):
+        sample_dict = {"index": [], "counter": [], "intensity": []}
+        for i in range(len(fasta)):
+            sample_dict["index"].append(i)
+            sample_dict["counter"].append(0)
+            sample_dict["intensity"].append(0)
+        for index in range(len(intensity_pos)):
+            s = start[index]
+            e = end[index]
+            intensity = intensity_pos[index][sample]
+            for i in range(s, e):
+                sample_dict['intensity'][i] += ma.log10(intensity) if intensity != 0 else 0
+                if intensity != 0:
+                    sample_dict['counter'][i] += 1
+        sample_dicts_pos.append(sample_dict)
+
+    for sample in range(len(intensity_neg[0])):
+        sample_dict = {"index": [], "counter": [], "intensity": []}
+        for i in range(len(fasta)):
+            sample_dict["index"].append(i)
+            sample_dict["counter"].append(0)
+            sample_dict["intensity"].append(0)
+
+        for index in range(len(intensity_neg)):
+            s = start[index]
+            e = end[index]
+            intensity = intensity_neg[index][sample]
+            for i in range(s, e):
+                sample_dict['intensity'][i] += - ma.log10(intensity) if intensity != 0 else 0
+                if intensity != 0:
+                    sample_dict['counter'][i] += 1
+
+        sample_dicts_neg.append(sample_dict)
+        
+    nbr_of_peptides = []
+    for sample_dict in sample_dicts_pos:
+        nbr_of_peptides.append(sample_dict['counter'])
+    for sample_dict in sample_dicts_neg:
+        nbr_of_peptides.append(sample_dict['counter'])
+    color_thresholds = get_thresholds(nbr_of_peptides)
+    print(color_thresholds)
+    i=0
+    color = green
+    for sample_dict in sample_dicts_pos:
+        col = []
+        for n in sample_dict['counter']:
+            if n > color_thresholds[4]:
+                col.append(color['dark'])
+            elif n >= color_thresholds[3]:
+                col.append(color['mediumdark'])
+            elif n >= color_thresholds[2]:
+                col.append(color['medium'])
+            elif n >= color_thresholds[1]:
+                col.append(color['mediumlight'])
+            elif n == 1:
+                col.append(color['grey'])
+            else:
+                col.append(color['light'])
+        fig.add_trace(go.Bar(x=sample_dict["index"], y=sample_dict["intensity"], name=f'g1_s{i}', marker_color=col, customdata=sample_dict['counter']
+        , hovertext=sample_dict['counter']))
+        i += 1
+    i=0
+    for sample_dict in sample_dicts_neg:
+        col=[]
+        for n in sample_dict['counter']:
+            if n > color_thresholds[4]:
+                col.append(color['dark'])
+            elif n >= color_thresholds[3]:
+                col.append(color['mediumdark'])
+            elif n >= color_thresholds[2]:
+                col.append(color['medium'])
+            elif n >= color_thresholds[1]:
+                col.append(color['mediumlight'])
+            elif n == 1:
+                col.append(color['grey'])
+            else:
+                col.append(color['light'])
+        
+        fig.add_trace(go.Bar(x=sample_dict["index"], y=sample_dict["intensity"], name=f'g2_s{i}', marker_color=col, customdata=sample_dict['counter']
+        , hovertext=sample_dict['counter']))
+        i += 1
     return fig

@@ -57,6 +57,22 @@ class Peptide:
             area_mean_g2.append(df_area[a].mean())
         return statistics.mean(area_mean_g1), statistics.mean(area_mean_g2)
 
+    def get_area_all_samples(self):
+        area_columns = [col for col in self.df if col.startswith('Area')]
+        area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
+        area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
+        area_g1 = []
+        area_g2 = []
+        for a in area_columns_g1:
+            df_area = self.df.copy()
+            df_area.fillna(0, inplace=True)
+            area_g1.append(df_area[a].mean())
+        for a in area_columns_g2:
+            df_area = self.df.copy()
+            df_area.fillna(0, inplace=True)
+            area_g2.append(df_area[a].mean())
+        return area_g1, area_g2
+
     def get_spectral_count(self):
         spc_columns = [col for col in self.df if col.startswith('Spectral')]
         spc_columns_g1 = [col for col in spc_columns if col.endswith('g1')]

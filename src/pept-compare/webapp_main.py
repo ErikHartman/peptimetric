@@ -417,6 +417,7 @@ def create_protein_fig(n_clicks, checkbox_values):
     triv_names = []
     protein_fig = {}
     protein_list = []
+    protein_list_cutoff = []
     if n_clicks:
         g1 = df_g[-2]
         g2 = df_g[-1]
