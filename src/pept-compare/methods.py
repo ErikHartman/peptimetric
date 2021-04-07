@@ -1025,14 +1025,21 @@ def venn_bars(protein_list):
     
     return fig
 
-def stacked_samples_peptide(peptide_list):
+def stacked_samples_peptide(peptide_list, **kwargs):
+    default_settings = {
+        'color':'green',
+        'difference_metric':'area_sum',
+        'show_difference':'',
+        'show_weight':'',
+        
+    }
+    default_settings.update(**kwargs)
+    color=green
+    if kwargs.get('color') == 'green':
+        color = green
     fasta = peptide_list[0].fasta
     fig  = go.Figure()
-    fig.update_layout(
-        barmode='relative',
-        paper_bgcolor='rgb(255, 255, 255)',
-        plot_bgcolor='rgb(255, 255, 255)',
-        )
+    
     start = []
     end = []
     start_neg = []
@@ -1105,7 +1112,7 @@ def stacked_samples_peptide(peptide_list):
                 col.append(color['grey'])
             else:
                 col.append(color['light'])
-        fig.add_trace(go.Bar(x=sample_dict["index"], y=sample_dict["intensity"], name=f'g1_s{i}', marker_color=col, customdata=sample_dict['counter']
+        fig.add_trace(go.Bar(x=sample_dict["index"], y=sample_dict["intensity"], name=f's{i}_g1', marker=dict(line=dict(width=0), color=col), customdata=sample_dict['counter']
         , hovertext=sample_dict['counter']))
         i += 1
     i=0
@@ -1125,7 +1132,39 @@ def stacked_samples_peptide(peptide_list):
             else:
                 col.append(color['light'])
         
-        fig.add_trace(go.Bar(x=sample_dict["index"], y=sample_dict["intensity"], name=f'g2_s{i}', marker_color=col, customdata=sample_dict['counter']
+        fig.add_trace(go.Bar(x=sample_dict["index"], y=sample_dict["intensity"], name=f's{i}_g2', marker=dict(line=dict(width=0), color=col), customdata=sample_dict['counter']
         , hovertext=sample_dict['counter']))
         i += 1
+
+    fig.update_layout(
+        barmode='relative',
+        paper_bgcolor='rgb(255, 255, 255)',
+        plot_bgcolor='rgb(255, 255, 255)',
+        )
+    fasta_dict = {"index": [], "counter": [], "intensity_pos": [], "intensity_neg": []}
+    for i in range(len(fasta)):
+        fasta_dict["index"].append(i)
+        fasta_dict['intensity_pos'].append(0)    
+        fasta_dict['intensity_neg'].append(0)      
+        for sample_dict_pos in sample_dicts_pos:
+            fasta_dict['intensity_pos'][i] += sample_dict_pos['intensity'][i]
+        for sample_dict_neg in sample_dicts_neg:
+            fasta_dict['intensity_neg'][i] += sample_dict_neg['intensity'][i]
+        
+
+    maximum_intensity = max(fasta_dict['intensity_pos'] + fasta_dict['intensity_neg'])
+    fig.update_yaxes(range=[-maximum_intensity, maximum_intensity])
+    fig.update_layout(yaxis=dict(title='log(Intensity)'), xaxis=dict(title='Sequence', rangeslider=dict(visible=True)))
+    if kwargs.get('show_weight') == 'show':
+        weight = (sum(fasta_dict['intensity_pos']) + sum(fasta_dict['intensity_neg'])) / len(fasta)
+        fig.add_shape(type='line', x0=0, y0=weight, x1=len(fasta), y1=weight, line=dict(
+        color="#182773",
+        width=2,
+        dash="dash",
+    ))
+    if kwargs.get('show_difference') == 'show':
+        difference = []
+        for i in list(range(len(fasta_dict["index"]))):
+            difference.append(fasta_dict['intensity_pos'][i] + fasta_dict['intensity_neg'][i])
+        fig.add_trace(go.Scatter(name='difference', x=fasta_dict["index"], y=difference, mode='lines', line=dict(color='firebrick', width=2), opacity=0.5))
     return fig

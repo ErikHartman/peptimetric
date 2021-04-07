@@ -14,7 +14,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output, State
 
-from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, apply_cut_off, create_protein_list, protein_graphic_plotly, create_peptide_list, peptide_graphic_plotly
+from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, apply_cut_off, create_protein_list, protein_graphic_plotly, create_peptide_list, stacked_samples_peptide
 from methods import amino_acid_piecharts, common_family, all_sample_bar_chart
 
 app = dash.Dash(__name__,external_stylesheets=[dbc.themes.SANDSTONE], suppress_callback_exceptions=True)
@@ -36,8 +36,8 @@ modal_file = html.Div([
                         dbc.Col(dbc.ModalBody('Group 2', className='ml-auto text-center')),
                     ]),
                     dbc.Row([
-                        dbc.Col(dcc.Upload(id='upload-data-1', children=dbc.Button('Select files'), multiple=True), className="text-center"),
-                        dbc.Col(dcc.Upload(id='upload-data-2', children=dbc.Button('Select files'), multiple=True, ), className="text-center"),
+                        dbc.Col(dcc.Upload(id='upload-data-1', children=dbc.Button('Select files'), multiple=True), className="text-center ml-auto"),
+                        dbc.Col(dcc.Upload(id='upload-data-2', children=dbc.Button('Select files'), multiple=True), className="text-center ml-auto"),
                         
                     ]),    
                     dbc.Row([
@@ -54,7 +54,7 @@ modal_file = html.Div([
                                     'fontWeight': 'bold',
                                 },
                                 style_cell={
-                                    'textAlign':'left',
+                                    'textAlign':'center',
                                 },
                             )),
                         dbc.Col(dash_table.DataTable(
@@ -70,7 +70,7 @@ modal_file = html.Div([
                                     'fontWeight': 'bold',
                                 },
                                 style_cell={
-                                    'textAlign':'left',
+                                    'textAlign':'center',
                                 },
                             )),
                     ]),
@@ -288,7 +288,7 @@ sample_collapse = html.Div(
                                     'fontWeight': 'bold',
                                 },
                                 style_cell={
-                                    'textAlign':'left',
+                                    'textAlign':'center',
                                 },
                             )),
             dbc.Col(dash_table.DataTable(
@@ -304,7 +304,7 @@ sample_collapse = html.Div(
                                     'fontWeight': 'bold',
                                 },
                                 style_cell={
-                                    'textAlign':'left',
+                                    'textAlign':'center',
                                 },
                             )),
                 ]),
@@ -555,13 +555,13 @@ def create_peptide_fig(clickData, search_protein, checkbox_values):
         peptide_list = create_peptide_list(protein_lists[-1], str(protein_accession))
         peptide_lists.append(peptide_list)
         if checkbox_values and 'show-difference-trace' in checkbox_values and 'show-weight' in checkbox_values:
-            peptide_fig = peptide_graphic_plotly(peptide_list, show_difference='show', show_weight ='show')
+            peptide_fig = stacked_samples_peptide(peptide_list, show_difference='show', show_weight ='show')
         elif checkbox_values and 'show-difference-trace' in checkbox_values:
-            peptide_fig = peptide_graphic_plotly(peptide_list, show_difference='show')
+            peptide_fig = stacked_samples_peptide(peptide_list, show_difference='show')
         elif checkbox_values and 'show-weight' in checkbox_values:
-            peptide_fig = peptide_graphic_plotly(peptide_list, show_weight='show')
+            peptide_fig = stacked_samples_peptide(peptide_list, show_weight='show')
         else:
-            peptide_fig = peptide_graphic_plotly(peptide_list)
+            peptide_fig = stacked_samples_peptide(peptide_list)
         peptide_info_columns = ['Peptide','Start','End','Intensity_g1','Intensity_g2']
         df_peptide_info = pd.DataFrame(columns=peptide_info_columns)
         for peptide in peptide_list:
