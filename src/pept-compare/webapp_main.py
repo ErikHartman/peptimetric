@@ -16,6 +16,7 @@ from dash.dependencies import Input, Output, State
 
 from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, apply_cut_off, create_protein_list, protein_graphic_plotly, create_peptide_list, peptide_graphic_plotly
 from methods import amino_acid_piecharts, common_family, all_sample_bar_chart
+
 app = dash.Dash(__name__,external_stylesheets=[dbc.themes.SANDSTONE], suppress_callback_exceptions=True)
 
 app.layout = html.Div([
@@ -24,6 +25,7 @@ app.layout = html.Div([
  ])
 
 #---------------------------------------PAGE-ELEMENTS------------------------------------------------
+file_columns = ['Sample', 'File']
 
 modal_file = html.Div([
     dbc.Button("Files", id="open-modal-file", color='info', className="mr-1"),
@@ -39,8 +41,38 @@ modal_file = html.Div([
                         
                     ]),    
                     dbc.Row([
-                        dbc.Col(dbc.ModalBody(id='output-filename-1', children=[], className='ml-auto text-center')),
-                        dbc.Col(dbc.ModalBody(id='output-filename-2', children=[], className='ml-auto text-center')),
+                        dbc.Col(dash_table.DataTable(
+                                id = 'output-filename-1',
+                                columns=[{"name": i, "id": i} for i in file_columns],
+                                data=[],
+                                style_data_conditional = [{
+                                    'if' : {'row_index':'odd'},
+                                    'backgroundColor' : 'rgb(182, 224, 194)'}
+                                ],
+                                style_header={
+                                    'textAlign':'center',
+                                    'fontWeight': 'bold',
+                                },
+                                style_cell={
+                                    'textAlign':'left',
+                                },
+                            )),
+                        dbc.Col(dash_table.DataTable(
+                                id = 'output-filename-2',
+                                columns=[{"name": i, "id": i} for i in file_columns],
+                                data=[],
+                                style_data_conditional = [{
+                                    'if' : {'row_index':'odd'},
+                                    'backgroundColor' : 'rgb(182, 224, 194)'}
+                                ],
+                                style_header={
+                                    'textAlign':'center',
+                                    'fontWeight': 'bold',
+                                },
+                                style_cell={
+                                    'textAlign':'left',
+                                },
+                            )),
                     ]),
                 dbc.ModalFooter(
                     dbc.Button("Generate protein graph", color = 'primary', id="close-modal-file", className="ml-auto", n_clicks_timestamp=0)
@@ -243,8 +275,38 @@ sample_collapse = html.Div(
                 dbc.Col('Group 2')
                 ]),
             dbc.Row([
-            dbc.Col(children=[], id='sample-collapse-1'),
-            dbc.Col(children=[], id='sample-collapse-2'),
+            dbc.Col(dash_table.DataTable(
+                                id = 'sample-collapse-1',
+                                columns=[{"name": i, "id": i} for i in file_columns],
+                                data=[],
+                                style_data_conditional = [{
+                                    'if' : {'row_index':'odd'},
+                                    'backgroundColor' : 'rgb(182, 224, 194)'}
+                                ],
+                                style_header={
+                                    'textAlign':'center',
+                                    'fontWeight': 'bold',
+                                },
+                                style_cell={
+                                    'textAlign':'left',
+                                },
+                            )),
+            dbc.Col(dash_table.DataTable(
+                                id = 'sample-collapse-2',
+                                columns=[{"name": i, "id": i} for i in file_columns],
+                                data=[],
+                                style_data_conditional = [{
+                                    'if' : {'row_index':'odd'},
+                                    'backgroundColor' : 'rgb(182, 224, 194)'}
+                                ],
+                                style_header={
+                                    'textAlign':'center',
+                                    'fontWeight': 'bold',
+                                },
+                                style_cell={
+                                    'textAlign':'left',
+                                },
+                            )),
                 ]),
             ]),
             id="sample-collapse",
@@ -392,15 +454,20 @@ def toggle_modal(n1, n2, is_open):
 
 df_g = []
 def update_file_list(contents, filename):
-    children = []
-    i=0
     if filename:
+        file_list = []
+        i=0
         for f in filename:
-            children.append(html.Div(f"S{i}: {f}"))
+            s = [f"S{i}", f]
+            file_list.append(s)
             i+=1  
         master_df = update_data_frame(contents, filename)
         df_g.append(master_df)
-    return children, children
+        df = pd.DataFrame(file_list, columns = ['Sample', 'File'])
+        print(df)
+        return df.to_dict('rows'), df.to_dict('rows')
+    else:
+        return [],[]
 
 def update_data_frame(contents, filename):
     decoded_list = []
@@ -579,14 +646,14 @@ app.callback(
 )(create_peptide_fig)
 
 app.callback(
-    Output("output-filename-1", "children"),
-    Output("sample-collapse-1", "children"),
+    Output("output-filename-1", "data"),
+    Output("sample-collapse-1", "data"),
     [Input("upload-data-1", "contents"), Input("upload-data-1", "filename")],
 )(update_file_list)
 
 app.callback(
-    Output("output-filename-2", "children"),
-    Output("sample-collapse-2", "children"),
+    Output("output-filename-2", "data"),
+    Output("sample-collapse-2", "data"),
     [Input("upload-data-2", "contents"), Input("upload-data-2", "filename")],
 )(update_file_list)
 
