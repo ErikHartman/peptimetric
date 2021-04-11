@@ -55,7 +55,9 @@ class Peptide:
             df_area = self.df.copy()
             df_area.fillna(0, inplace=True)
             area_mean_g2.append(df_area[a].mean())
-        return statistics.mean(area_mean_g1), statistics.mean(area_mean_g2)
+        if len(area_columns_g1) > 1 and len(area_columns_g2) > 1:
+            return statistics.mean(area_mean_g1), statistics.stdev(area_mean_g1), statistics.mean(area_mean_g2), statistics.stdev(area_mean_g2)
+        else: return statistics.mean(area_mean_g1), 0, statistics.mean(area_mean_g2), 0 
 
     def get_area_all_samples(self):
         area_columns = [col for col in self.df if col.startswith('Area')]

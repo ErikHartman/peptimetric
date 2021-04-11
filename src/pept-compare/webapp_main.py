@@ -34,6 +34,7 @@ modal_file = html.Div([
                     dbc.Row([
                         dbc.Col(dbc.ModalBody('Group 1', className='ml-auto text-center')),
                         dbc.Col(dbc.ModalBody('Group 2', className='ml-auto text-center')),
+                        
                     ]),
                     dbc.Row([
                         dbc.Col(dcc.Upload(id='upload-data-1', children=dbc.Button('Select files'), multiple=True), className="text-center ml-auto"),
@@ -344,16 +345,11 @@ peptide_fig = html.Div([
         html.H3('Peptide View'),
         dbc.Row([
             dbc.Col(
-            dbc.Checklist(
-                switch=True,
-                inline=True,
-                className='ml-auto',
-                id='peptide-checklist',
-                options=[
-                    {'label': 'Show weight', 'value': 'show-weight'},
-                    {'label': 'Show difference trace', 'value': 'show-difference-trace'}
-                    ],
-                ))                 
+            dbc.DropdownMenu(label='peptide dropdown',
+            children = [
+                dbc.DropdownMenuItem("Sum", id="peptide-dropdown-sum", n_clicks_timestamp=0),
+                dbc.DropdownMenuItem("Mean", id="peptide-dropdown-mean", n_clicks_timestamp=0),
+            ]))                 
         ]),
         dcc.Loading(type='cube', color = '#76b382',
             children=dcc.Graph(id='peptide-fig', figure={})
@@ -485,7 +481,7 @@ def create_protein_fig(n_clicks, checkbox_values):
     protein_fig = {}
     protein_list = []
     protein_list_cutoff = []
-    if n_clicks:
+    if n_clicks and len(df_g) >= 2:
         g1 = df_g[-2]
         g2 = df_g[-1]
         master = merge_dataframes(g1,g2)
@@ -539,7 +535,7 @@ def create_protein_fig(n_clicks, checkbox_values):
         return {}, [], html.Div()
 
 peptide_lists=[]
-def create_peptide_fig(clickData, search_protein, checkbox_values):
+def create_peptide_fig(clickData, search_protein, n_clicks_sum, n_clicks_mean):
     protein_accession = ''
     search_text = ''
     if search_protein != '' and len(protein_lists) > 0:
@@ -554,14 +550,10 @@ def create_peptide_fig(clickData, search_protein, checkbox_values):
     if protein_accession != '':
         peptide_list = create_peptide_list(protein_lists[-1], str(protein_accession))
         peptide_lists.append(peptide_list)
-        if checkbox_values and 'show-difference-trace' in checkbox_values and 'show-weight' in checkbox_values:
-            peptide_fig = stacked_samples_peptide(peptide_list, show_difference='show', show_weight ='show')
-        elif checkbox_values and 'show-difference-trace' in checkbox_values:
-            peptide_fig = stacked_samples_peptide(peptide_list, show_difference='show')
-        elif checkbox_values and 'show-weight' in checkbox_values:
-            peptide_fig = stacked_samples_peptide(peptide_list, show_weight='show')
+        if n_clicks_sum == 0 and n_clicks_mean == 0 or n_clicks_sum > n_clicks_mean:
+            peptide_fig = stacked_samples_peptide(peptide_list, show_difference='show', show_weight ='show', average=False)
         else:
-            peptide_fig = stacked_samples_peptide(peptide_list)
+            peptide_fig = stacked_samples_peptide(peptide_list, show_difference='show', show_weight ='show', average=True)
         peptide_info_columns = ['Peptide','Start','End','Intensity_g1','Intensity_g2']
         df_peptide_info = pd.DataFrame(columns=peptide_info_columns)
         for peptide in peptide_list:
@@ -642,7 +634,8 @@ app.callback(
     Output('peptide-info-table', 'children'),
     Input('protein-fig', 'clickData'),
     Input('search-protein', 'value'),
-    Input('peptide-checklist','value'),
+    Input('peptide-dropdown-sum', 'n_clicks_timestamp'),
+    Input('peptide-dropdown-mean','n_clicks_timestamp'),
 )(create_peptide_fig)
 
 app.callback(

@@ -659,7 +659,7 @@ def peptide_graphic_plotly(peptide_list, **kwargs):
         start = peptide.get_start()
         end = peptide.get_end()
         intensity_pos = peptide.get_area()[0]
-        intensity_neg = peptide.get_area()[1]
+        intensity_neg = peptide.get_area()[2]
         for i in list(range(start, end)):
             if intensity_neg > 0 or intensity_pos > 0:
                 fasta_dict["intensity_pos"][i] += ma.log10(intensity_pos) if intensity_pos != 0 else 0
@@ -967,7 +967,7 @@ def apply_cut_off(protein_list, **kwargs):
 
 
 def get_thresholds(lst):
-    return [int(np.quantile(lst, .3)), int(np.quantile(lst, .40)), int(np.quantile(lst, .5)), int(np.quantile(lst, .6)),
+    return [int(np.quantile(lst, .3)), int(np.quantile(lst, .5)), int(np.quantile(lst, .6)), int(np.quantile(lst, .65)),
             int(np.quantile(lst, .8))]
 
 def all_sample_bar_chart(protein_list, accession, **kwargs):
@@ -1031,6 +1031,7 @@ def stacked_samples_peptide(peptide_list, **kwargs):
         'difference_metric':'area_sum',
         'show_difference':'',
         'show_weight':'',
+        'average': False,
         
     }
     default_settings.update(**kwargs)
@@ -1087,84 +1088,205 @@ def stacked_samples_peptide(peptide_list, **kwargs):
                     sample_dict['counter'][i] += 1
 
         sample_dicts_neg.append(sample_dict)
-        
+    
     nbr_of_peptides = []
     for sample_dict in sample_dicts_pos:
-        nbr_of_peptides.append(sample_dict['counter'])
+        nbr_of_peptides = nbr_of_peptides + sample_dict['counter']
     for sample_dict in sample_dicts_neg:
-        nbr_of_peptides.append(sample_dict['counter'])
+        nbr_of_peptides = nbr_of_peptides + sample_dict['counter']
+    
+    nbr_of_peptides = [i for i in nbr_of_peptides if i != 0]
     color_thresholds = get_thresholds(nbr_of_peptides)
-    print(color_thresholds)
     i=0
     color = green
-    for sample_dict in sample_dicts_pos:
-        col = []
-        for n in sample_dict['counter']:
-            if n > color_thresholds[4]:
-                col.append(color['dark'])
-            elif n >= color_thresholds[3]:
-                col.append(color['mediumdark'])
-            elif n >= color_thresholds[2]:
-                col.append(color['medium'])
-            elif n >= color_thresholds[1]:
-                col.append(color['mediumlight'])
-            elif n == 1:
-                col.append(color['grey'])
-            else:
-                col.append(color['light'])
-        fig.add_trace(go.Bar(x=sample_dict["index"], y=sample_dict["intensity"], name=f's{i}_g1', marker=dict(line=dict(width=0), color=col), customdata=sample_dict['counter']
-        , hovertext=sample_dict['counter']))
-        i += 1
-    i=0
-    for sample_dict in sample_dicts_neg:
-        col=[]
-        for n in sample_dict['counter']:
-            if n > color_thresholds[4]:
-                col.append(color['dark'])
-            elif n >= color_thresholds[3]:
-                col.append(color['mediumdark'])
-            elif n >= color_thresholds[2]:
-                col.append(color['medium'])
-            elif n >= color_thresholds[1]:
-                col.append(color['mediumlight'])
-            elif n == 1:
-                col.append(color['grey'])
-            else:
-                col.append(color['light'])
+    if kwargs.get('average') == False:
+        for sample_dict in sample_dicts_pos:
+            col = []
+            for n in sample_dict['counter']:
+                if n > color_thresholds[4]:
+                    col.append(color['dark'])
+                elif n >= color_thresholds[3]:
+                    col.append(color['mediumdark'])
+                elif n >= color_thresholds[2]:
+                    col.append(color['medium'])
+                elif n >= color_thresholds[1]:
+                    col.append(color['mediumlight'])
+                elif n == 1:
+                    col.append(color['grey'])
+                else:
+                    col.append(color['light'])
+            fig.add_trace(go.Bar(x=sample_dict["index"], y=sample_dict["intensity"], name=f's{i}_g1', width=1, marker=dict(line=dict(width=0), color=col), customdata=sample_dict['counter']
+            , hovertext=sample_dict['counter']))
+            i += 1
+        i=0
+        for sample_dict in sample_dicts_neg:
+            col=[]
+            for n in sample_dict['counter']:
+                if n > color_thresholds[4]:
+                    col.append(color['dark'])
+                elif n >= color_thresholds[3]:
+                    col.append(color['mediumdark'])
+                elif n >= color_thresholds[2]:
+                    col.append(color['medium'])
+                elif n >= color_thresholds[1]:
+                    col.append(color['mediumlight'])
+                elif n == 1:
+                    col.append(color['grey'])
+                else:
+                    col.append(color['light'])
+            
+            fig.add_trace(go.Bar(x=sample_dict["index"], y=sample_dict["intensity"], name=f's{i}_g2', width=1, marker=dict(line=dict(width=0), color=col), customdata=sample_dict['counter']
+            , hovertext=sample_dict['counter']))
+            i += 1
+        fasta_dict = {"index": [], "counter": [], "intensity_pos": [], "intensity_neg": []}
+        for i in range(len(fasta)):
+            fasta_dict["index"].append(i)
+            fasta_dict['intensity_pos'].append(0)    
+            fasta_dict['intensity_neg'].append(0)      
+            for sample_dict_pos in sample_dicts_pos:
+                fasta_dict['intensity_pos'][i] += sample_dict_pos['intensity'][i]
+            for sample_dict_neg in sample_dicts_neg:
+                fasta_dict['intensity_neg'][i] += sample_dict_neg['intensity'][i]
+            
+        if kwargs.get('show_weight') == 'show':
+            weight = (sum(fasta_dict['intensity_pos']) + sum(fasta_dict['intensity_neg'])) / len(fasta)
+            fig.add_trace(go.Scatter( x=[0, len(fasta)], y=[weight, weight], mode='lines', name='weight', line=dict(
+            color="#182773",
+            width=2,
+            dash="dash",
+        )))
+        if kwargs.get('show_difference') == 'show':
+            difference = []
+            for i in list(range(len(fasta_dict["index"]))):
+                difference.append(fasta_dict['intensity_pos'][i] + fasta_dict['intensity_neg'][i])
+            fig.add_trace(go.Scatter(name='difference', x=fasta_dict["index"], y=difference, mode='lines', line=dict(color='firebrick', width=2), opacity=0.5))
+        maximum_intensity = max(fasta_dict['intensity_pos'] + np.abs(fasta_dict['intensity_neg']))
         
-        fig.add_trace(go.Bar(x=sample_dict["index"], y=sample_dict["intensity"], name=f's{i}_g2', marker=dict(line=dict(width=0), color=col), customdata=sample_dict['counter']
-        , hovertext=sample_dict['counter']))
-        i += 1
+    if kwargs.get('average') == True:
+        pos = []
+        neg = []
+        pos_mean = []
+        neg_mean = []
+        pos_std = []
+        neg_std = []
+        pos_nbr_of_peptides = []
+        neg_nbr_of_peptides = []
+        color_pos = []
+        color_neg = []
+        for sample_dict in sample_dicts_pos:
+            pos.append(sample_dict['intensity'])
+            pos_nbr_of_peptides.append(sample_dict['counter'])
+        for sample_dict in sample_dicts_neg:
+            neg.append(sample_dict['intensity'])
+            neg_nbr_of_peptides.append(sample_dict['counter'])
+        
+        for i in range(len(pos[0])):
+            pos_average = []
+            pos_nbr_of_peptides_average = []
+            for sample in range(len(pos)):
+                pos_average.append(pos[sample][i])
+                pos_nbr_of_peptides_average.append(pos_nbr_of_peptides[sample][i])
+            pos_mean.append(statistics.mean(pos_average))
+            color_pos.append(statistics.mean(pos_nbr_of_peptides_average))
+            if i > 1:
+                pos_std.append(statistics.stdev(pos_average))
+            else:
+                pos_std.append(0)
+        
+        for i in range(len(neg[0])): 
+            neg_average = []
+            neg_nbr_of_peptides_average = []
+            for sample in range(len(neg)):
+                neg_average.append(neg[sample][i])
+                neg_nbr_of_peptides_average.append(neg_nbr_of_peptides[sample][i])
+            neg_mean.append(statistics.mean(neg_average))
+            color_neg.append(statistics.mean(neg_nbr_of_peptides_average))
+            if i > 1:
+                neg_std.append(statistics.stdev(neg_average))
+            else:
+                neg_std.append(0)
+        
+        nbr_of_peptides = color_pos + color_neg
+        nbr_of_peptides = [i for i in nbr_of_peptides if i != 0]
+        color_thresholds = get_thresholds(nbr_of_peptides)
+        print(color_thresholds)
+        col_pos=[]
+        for n in color_pos:
+            if n > color_thresholds[4]:
+                col_pos.append(color['dark'])
+            elif n >= color_thresholds[3]:
+                col_pos.append(color['mediumdark'])
+            elif n >= color_thresholds[2]:
+                col_pos.append(color['medium'])
+            elif n >= color_thresholds[1]:
+                col_pos.append(color['mediumlight'])
+            elif n == 1:
+                col_pos.append(color['grey'])
+            else:
+                col_pos.append(color['light'])
+        col_neg=[]
+        for n in color_neg:
+            if n > color_thresholds[4]:
+                col_neg.append(color['dark'])
+            elif n >= color_thresholds[3]:
+                col_neg.append(color['mediumdark'])
+            elif n >= color_thresholds[2]:
+                col_neg.append(color['medium'])
+            elif n >= color_thresholds[1]:
+                col_neg.append(color['mediumlight'])
+            elif n == 1:
+                col_neg.append(color['grey'])
+            else:
+                col_neg.append(color['light'])
+        x=sample_dict['index']
+        y_upper = [a + b for a, b in zip(pos_mean, pos_std)]
+        y_lower = [a - b for a, b in zip(pos_mean, pos_std)]
+        fig.add_trace(go.Bar(x=x, y=pos_mean, name='g1_mean', marker=dict(line=dict(width=0), color=col_pos), width=1))
+        fig.add_trace(go.Scatter(
+                x=x+x[::-1],
+                y=y_upper+y_lower[::-1],
+                fill='toself',
+                fillcolor='rgba(237, 206, 133,0.3)',
+                line=dict(color='rgba(255,255,255,0)'),
+                hoverinfo="skip",
+                name='standard_deviation_g1'
+            ))
+        
+        y_upper = [a + b for a, b in zip(neg_mean, neg_std)]
+        y_lower = [a - b for a, b in zip(neg_mean, neg_std)]
+        fig.add_trace(go.Bar(x=x, y=neg_mean, name='g2_mean', marker=dict(line=dict(width=0), color=col_neg), width=1))
+        fig.add_trace(go.Scatter(
+                x=x+x[::-1],
+                y=y_upper+y_lower[::-1],
+                fill='toself',
+                fillcolor='rgba(237, 206, 133,0.3)',
+                line=dict(color='rgba(255,255,255,0)'),
+                hoverinfo="skip",
+                name='standard_deviation_g2'
+            ))
+        if kwargs.get('show_weight') == 'show':
+            weight = (sum(pos_mean) + sum(neg_mean)) / len(fasta)
+            fig.add_trace(go.Scatter( x=[x[0],x[-1]], y=[weight, weight], mode='lines', name='weight', line=dict(
+            color="#182773",
+            width=2,
+            dash="dash",
+        )))
+        if kwargs.get('show_difference') == 'show':
+            difference = []
+            for i in range(len(pos_mean)):
+                difference.append(pos_mean[i] + neg_mean[i])
+            fig.add_trace(go.Scatter(name='difference', x=x, y=difference, mode='lines', line=dict(color='firebrick', width=2), opacity=0.5))
+        maximum_intensity = max(pos_mean + np.abs(neg_mean))
+        
 
     fig.update_layout(
         barmode='relative',
         paper_bgcolor='rgb(255, 255, 255)',
         plot_bgcolor='rgb(255, 255, 255)',
         )
-    fasta_dict = {"index": [], "counter": [], "intensity_pos": [], "intensity_neg": []}
-    for i in range(len(fasta)):
-        fasta_dict["index"].append(i)
-        fasta_dict['intensity_pos'].append(0)    
-        fasta_dict['intensity_neg'].append(0)      
-        for sample_dict_pos in sample_dicts_pos:
-            fasta_dict['intensity_pos'][i] += sample_dict_pos['intensity'][i]
-        for sample_dict_neg in sample_dicts_neg:
-            fasta_dict['intensity_neg'][i] += sample_dict_neg['intensity'][i]
-        
+    
 
-    maximum_intensity = max(fasta_dict['intensity_pos'] + fasta_dict['intensity_neg'])
-    fig.update_yaxes(range=[-maximum_intensity, maximum_intensity])
+    
     fig.update_layout(yaxis=dict(title='log(Intensity)'), xaxis=dict(title='Sequence', rangeslider=dict(visible=True)))
-    if kwargs.get('show_weight') == 'show':
-        weight = (sum(fasta_dict['intensity_pos']) + sum(fasta_dict['intensity_neg'])) / len(fasta)
-        fig.add_shape(type='line', x0=0, y0=weight, x1=len(fasta), y1=weight, line=dict(
-        color="#182773",
-        width=2,
-        dash="dash",
-    ))
-    if kwargs.get('show_difference') == 'show':
-        difference = []
-        for i in list(range(len(fasta_dict["index"]))):
-            difference.append(fasta_dict['intensity_pos'][i] + fasta_dict['intensity_neg'][i])
-        fig.add_trace(go.Scatter(name='difference', x=fasta_dict["index"], y=difference, mode='lines', line=dict(color='firebrick', width=2), opacity=0.5))
+    fig.update_yaxes(range=[-maximum_intensity, maximum_intensity])
     return fig

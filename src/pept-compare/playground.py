@@ -18,7 +18,7 @@ if __name__  == "__main__":
 
     peptide_list = create_peptide_list(protein_list, "P68871")
 
-    fig = stacked_samples_peptide(peptide_list, show_difference='show', show_weight ='show')
+    fig = stacked_samples_peptide(peptide_list, show_difference='show', show_weight ='show', average=True)
     fig.show()
     
     #fig = protein_graphic_plotly(protein_list, difference_metric='area_sum', protein_id='P69905')
