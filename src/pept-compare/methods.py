@@ -139,7 +139,8 @@ def set_color_and_size(nbr_of_peptides):
 
 def amino_acid_frequency(p_list, **kwargs):
     default_settings = {
-        'peptide_or_protein_list'
+        'peptide_or_protein_list',
+        'difference_metric'
     }
     default_settings.update(kwargs)
     def create_aa_dict():
@@ -173,25 +174,52 @@ def amino_acid_frequency(p_list, **kwargs):
     first_aa_g2 = create_aa_dict()
     last_aa_g2 = create_aa_dict()
     if kwargs.get('peptide_or_protein_list') == 'peptide_list':
-        for peptide in p_list:
-            first_aa_g1[peptide.get_sequence()[0]] += 1 ### CHANGE TO METRIC
-            last_aa_g1[peptide.get_sequence()[-1]] += 1
-            first_aa_g2[peptide.get_sequence()[0]] += 1
-            last_aa_g2[peptide.get_sequence()[-1]] += 1
-            for letter in peptide.get_sequence():
-                complete_seq_g1[letter] += 1
-                complete_seq_g2[letter] += 1
+        print('peptide_list')
+        if kwargs.get('difference_metric') == 'area':
+            print('area')
+            for peptide in p_list:
+                first_aa_g1[peptide.get_sequence()[0]] += peptide.get_area_log()[0] 
+                last_aa_g1[peptide.get_sequence()[-1]] += peptide.get_area_log()[0] 
+                first_aa_g2[peptide.get_sequence()[0]] += peptide.get_area_log()[1] 
+                last_aa_g2[peptide.get_sequence()[-1]] += peptide.get_area_log()[1] 
+                for letter in peptide.get_sequence():
+                    complete_seq_g1[letter] += peptide.get_area_log()[0] 
+                    complete_seq_g2[letter] += peptide.get_area_log()[1] 
+                    
+
+        elif kwargs.get('difference_metric') == 'spectral_count':
+            for peptide in p_list:
+                first_aa_g1[peptide.get_sequence()[0]] += peptide.get_spectral_count()[0] 
+                last_aa_g1[peptide.get_sequence()[-1]] += peptide.get_spectral_count()[0]
+                first_aa_g2[peptide.get_sequence()[0]] += peptide.get_spectral_count()[2]
+                last_aa_g2[peptide.get_sequence()[-1]] += peptide.get_spectral_count()[2]
+                for letter in peptide.get_sequence():
+                    complete_seq_g1[letter] += peptide.get_spectral_count()[0]
+                    complete_seq_g2[letter] += peptide.get_spectral_count()[2]
+
     elif kwargs.get('peptide_or_protein_list') == 'protein_list':
         for protein in p_list:
             peptide_list = create_peptide_list(p_list, protein.get_id())
-            for peptide in peptide_list:
-                first_aa_g1[peptide.get_sequence()[0]] += 1 ### CHANGE TO METRIC
-                last_aa_g1[peptide.get_sequence()[-1]] += 1
-                first_aa_g2[peptide.get_sequence()[0]] += 1
-                last_aa_g2[peptide.get_sequence()[-1]] += 1
-                for letter in peptide.get_sequence():
-                    complete_seq_g1[letter] += 1
-                    complete_seq_g2[letter] += 1
+            if kwargs.get('difference_metric') == 'area':
+                for peptide in peptide_list:
+                    first_aa_g1[peptide.get_sequence()[0]] += peptide.get_area_log()[0] 
+                    last_aa_g1[peptide.get_sequence()[-1]] += peptide.get_area_log()[0] 
+                    first_aa_g2[peptide.get_sequence()[0]] += peptide.get_area_log()[1] 
+                    last_aa_g2[peptide.get_sequence()[-1]] += peptide.get_area_log()[1] 
+                    
+                    for letter in peptide.get_sequence():
+                        complete_seq_g1[letter] += peptide.get_area_log()[0] 
+                        complete_seq_g2[letter] += peptide.get_area_log()[1] 
+            elif kwargs.get('difference_metric') == 'spectral_count':
+                for peptide in peptide_list:
+                    first_aa_g1[peptide.get_sequence()[0]] += peptide.get_spectral_count()[0] 
+                    last_aa_g1[peptide.get_sequence()[-1]] += peptide.get_spectral_count()[0]
+                    first_aa_g2[peptide.get_sequence()[0]] += peptide.get_spectral_count()[2]
+                    last_aa_g2[peptide.get_sequence()[-1]] += peptide.get_spectral_count()[2]
+                    for letter in peptide.get_sequence():
+                        complete_seq_g1[letter] += peptide.get_spectral_count()[0]
+                        complete_seq_g2[letter] += peptide.get_spectral_count()[2]
+    print(complete_seq_g1)
     return complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2    
 
 def amino_acid_piecharts(p_list, **kwargs):
@@ -220,12 +248,13 @@ def amino_acid_piecharts(p_list, **kwargs):
     ]
     default_settings = {
         'peptide_or_protein_list'
+        'difference_metric'
     }
     default_settings.update(kwargs)
     if kwargs.get('peptide_or_protein_list') == 'peptide_list':
-        complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2 = amino_acid_frequency(p_list, peptide_or_protein_list = 'peptide_list')
+        complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2 = amino_acid_frequency(p_list, peptide_or_protein_list = 'peptide_list', difference_metric=kwargs.get('difference_metric'))
     elif kwargs.get('peptide_or_protein_list') == 'protein_list':
-        complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2 = amino_acid_frequency(p_list, peptide_or_protein_list = 'protein_list')
+        complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2 = amino_acid_frequency(p_list, peptide_or_protein_list = 'protein_list', difference_metric=kwargs.get('difference_metric'))
     complete_seq_fig_g1 = go.Figure(data=[go.Pie(labels=list(complete_seq_g1.keys()), values=list(complete_seq_g1.values())
         , textinfo='label', marker_colors=color_dict)])
     first_aa_fig_g1 = go.Figure(data=[go.Pie(labels=list(first_aa_g1.keys()), values=list(first_aa_g1.values())
@@ -271,9 +300,6 @@ def group_amino_acids(peptide_list):
                 new_item += 'A'
         grouped.append(new_item)
     return grouped
-
-
-
 
 def create_graphic(protein_list, **kwargs):
     default_settings = {
@@ -384,7 +410,6 @@ def create_graphic(protein_list, **kwargs):
         for w1, w2, col1, col2 in zip(wedge1, wedge2, col_pos, col_neg):
             w1.set_edgecolor(col1)
             w2.set_edgecolor(col2)
-
     for w1, w2, accession in zip(wedge1, wedge2, accession):
         w1.set_label(accession)
         w2.set_label(accession)
