@@ -101,7 +101,10 @@ class Protein:
             df_spc = self.df.copy()
             df_spc.fillna(0, inplace=True)
             spc_sum_g2.append(df_spc[a].sum())
-        return statistics.mean(spc_sum_g1), statistics.mean(spc_sum_g2)
+        if len(spc_sum_g1) > 1 and len(spc_sum_g2) > 1:
+            return statistics.mean(spc_sum_g1), statistics.stdev(spc_sum_g1), statistics.mean(spc_sum_g2), statistics.stdev(spc_sum_g2)
+        else:
+            return statistics.mean(spc_sum_g1), 0, statistics.mean(spc_sum_g2), 0
 
     def get_spectral_count_mean(self):
         spc_columns = [col for col in self.df if col.startswith('Spectral')]
@@ -148,12 +151,22 @@ class Protein:
         spc_columns_g2 = [col for col in spc_columns if col.endswith('g2')]
         df_cols = self.df.copy()
         df_cols.fillna(0, inplace=True)
-        df_cols['sum_g1'] = df_cols[spc_columns_g1+area_columns_g1].sum(axis=1)
-        df_cols["sum_g2"] = df_cols[spc_columns_g2 + area_columns_g2].sum(axis=1)
-        df_cols['count_g1'] = df_cols['sum_g1'].apply(lambda x: 1 if x > 0 else 0)
-        df_cols['count_g2'] = df_cols['sum_g2'].apply(lambda x: 1 if x > 0 else 0)
-        nbr_of_peptides_g1 = df_cols['count_g1'].sum(axis=0)
-        nbr_of_peptides_g2 = df_cols['count_g2'].sum(axis=0)
+        df_cols[area_columns] = df_cols[area_columns].apply(lambda x: [1 if y > 0 else 0 for y in x])
+        df_cols[spc_columns] = df_cols[spc_columns].apply(lambda x: [1 if y > 0 else 0 for y in x])
+        nbr_of_peptides_g1 = 0
+        nbr_of_peptides_g2 = 0
+        for area_column, spc_column in zip(area_columns_g1, spc_columns_g1):
+            area_count = df_cols[area_column].to_numpy()
+            spc_count = df_cols[spc_column].to_numpy()
+            for i in range(len(area_count)):
+                if area_count[i] == 1 and spc_count[i] == 1:
+                    nbr_of_peptides_g1 += 1
+        for area_column, spc_column in zip(area_columns_g2, spc_columns_g2):
+            area_count = df_cols[area_column].to_numpy()
+            spc_count = df_cols[spc_column].to_numpy()
+            for i in range(len(area_count)):
+                if area_count[i] == 1 and spc_count[i] == 1:
+                    nbr_of_peptides_g2 += 1
         return nbr_of_peptides_g1, nbr_of_peptides_g2
 
     def get_id(self):
