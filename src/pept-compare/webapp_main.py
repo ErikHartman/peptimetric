@@ -172,6 +172,40 @@ modal_cutoff = dbc.Modal([
             centered=True,
               )
 
+modal_FAQ = html.Div([
+    dbc.Button("FAQ", id="open-modal-FAQ", color='info', className="mr-1"),
+    dbc.Modal([
+                dbc.ModalHeader("FAQ", className="font-weight-bold"),
+                dbc.ModalFooter(
+                    dbc.Button("Close", id="close-modal-FAQ", className="ml-auto")
+                ),
+            ],
+            id="modal-FAQ",
+            size='m',
+            centered=True,
+              )])
+
+modal_feedback = html.Div([
+    dbc.Button("Feedback", id="open-modal-feedback", color='info', className="mr-1"),
+    dbc.Modal([
+                dbc.ModalHeader("Feedback", className="font-weight-bold"),
+                dbc.Row(dbc.Textarea(
+                    id='textarea-feedback',
+                    placeholder='Send your feedback',
+                    style={'width': '80%', 'height': 100},
+                    
+                        ), 
+                        align='center', justify='center'),
+                
+                dbc.ModalFooter(
+                    dbc.Button("Close", id="close-modal-feedback", className="ml-auto")
+                ),
+            ],
+            id="modal-feedback",
+            size='m',
+            centered=True,
+              )])
+
 navbar = dbc.Navbar(
     [
         dbc.NavbarBrand("Eriks och Simons kandidatarbete"),
@@ -187,16 +221,12 @@ navbar = dbc.Navbar(
                 modal_other_graphics,
             ]
         ),
-            dbc.Nav(
-            [
-                dbc.NavLink("Home", href="/", active="exact"),
-                dbc.NavLink("Documentation", href="/Documentation", active="exact"),
-                dbc.NavLink("FAQ", href="/FAQ", active="exact"),
-                dbc.NavLink("Feedback", href="/Feedback", active="exact"),
-            ],
-            navbar=True,
-            className="ml-auto",
-        ),   
+        dbc.Nav([
+        modal_FAQ,
+        modal_feedback,
+        ],
+        navbar=True,
+        className="ml-auto",)
     ],
     
 )
@@ -399,19 +429,6 @@ main_page = dbc.Container([
     ])      
 ], fluid=True)
 
-FAQ_page = html.Div([
-    navbar,
-    html.H1('FAQ'),
-    html.Br(),
-    dcc.Link('Go back to home', href='/')
-])
-
-documentation_page = html.Div([
-    navbar,
-    html.H1('Documentation'),
-    html.Br(),
-    dcc.Link('Go back to home', href='/')
-])
 
 #-----------------DEFS AND CALLBACKS--------------------------------------------------------------
 
@@ -701,6 +718,18 @@ app.callback(
     Output("modal-view-settings", "is_open"),
     [Input("open-modal-view-settings", "n_clicks"), Input("close-modal-view-settings", "n_clicks")],
     [State("modal-view-settings", "is_open")],
+)(toggle_modal)
+
+app.callback(
+    Output("modal-FAQ", "is_open"),
+    [Input("open-modal-FAQ", "n_clicks"), Input("close-modal-FAQ", "n_clicks")],
+    [State("modal-FAQ", "is_open")],
+)(toggle_modal)
+
+app.callback(
+    Output("modal-feedback", "is_open"),
+    [Input("open-modal-feedback", "n_clicks"), Input("close-modal-feedback", "n_clicks")],
+    [State("modal-feedback", "is_open")],
 )(toggle_modal)
 
 app.callback(
