@@ -14,14 +14,16 @@ import plotly.express as px
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output, State
 
-from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, apply_cut_off, create_protein_list, protein_graphic_plotly, create_peptide_list, stacked_samples_peptide
+from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, create_protein_list, protein_graphic_plotly, create_peptide_list, stacked_samples_peptide
 from methods import amino_acid_piecharts, common_family, all_sample_bar_chart
+from methods import apply_protein_cutoffs, apply_peptide_cutoffs, get_unique_and_common_proteins
 
 app = dash.Dash(__name__,external_stylesheets=[dbc.themes.SANDSTONE], suppress_callback_exceptions=True)
 
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
     dbc.Container(id='page-content', fluid=True, className='vh-100'),
+    html.Div(id='cutoff-value-holder', style={'display': 'none'})
  ])
 
 #---------------------------------------PAGE-ELEMENTS------------------------------------------------
@@ -121,41 +123,37 @@ modal_view_setings = dbc.Modal([
               )
 protein_tab = dbc.Form([
                     dbc.FormGroup([
-                    dbc.Label("Cutoff 1", className="mr-2"),
-                    dbc.Input('Enter number...', placeholder='0', type='number', className='ml-auto', min=0),
+                    dbc.Label("Total intensity", className="mr-2"),
+                    dbc.Input(placeholder='0', type='number', className='ml-auto', min=0, id='tot-intensity-cutoff', value=0),
                     ], className="mr-3",),
                     dbc.FormGroup([
-                    dbc.Label('Cutoff 2', className='mr-2'),
-                    dbc.Input('Enter number...', placeholder='0', type="number", className='ml-auto', min=0),
+                    dbc.Label('Total spectral count', className='mr-2'),
+                    dbc.Input(placeholder='0', type="number", className='ml-auto', min=0, id='tot-spc-cutoff', value=0),
                     ], className="mr-3",),
                     dbc.FormGroup([
-                    dbc.Label('Cutoff 3', className='mr-2'),
-                    dbc.Input('Enter number...', placeholder='0', type="number", className='ml-auto', min=0),
+                    dbc.Label('Number of peptides', className='mr-2'),
+                    dbc.Input(placeholder='0', type="number", className='ml-auto', min=0, id='nbr-of-peptides-cutoff', value=0),
                     ], className="mr-3",),
-                    dbc.FormGroup([
-                    dbc.Label('Cutoff 4', className='mr-2'),
-                    dbc.Input('Enter number...', placeholder='0', type="number", className='ml-auto', min=0),
-                    ], className="mr-3",)
                 ],
                 inline=True),
 
 peptide_tab = dbc.Form([
                     dbc.FormGroup([
-                    dbc.Label("Cutoff 5", className="mr-2"),
-                    dbc.Input('Enter number...', placeholder='0', type='number', className='ml-auto', min=0),
+                    dbc.Label("Intensity", className="mr-2"),
+                    dbc.Input(placeholder='0', type='number', className='ml-auto', min=0, id='peptide-intensity-cutoff', value=0),
                     ], className="mr-3",),
                     dbc.FormGroup([
-                    dbc.Label('Cutoff 6', className='mr-2'),
-                    dbc.Input('Enter number...', placeholder='0', type="number", className='ml-auto', min=0),
+                    dbc.Label('Spectral count', className='mr-2'),
+                    dbc.Input(placeholder='0', type="number", className='ml-auto', min=0, id='peptide-spc-cutoff', value=0),
                     ], className="mr-3",),
                     dbc.FormGroup([
-                    dbc.Label('Cutoff 7', className='mr-2'),
-                    dbc.Input('Enter number...', placeholder='0', type="number", className='ml-auto', min=0),
-                    ], className="mr-3",),
-                    dbc.FormGroup([
-                    dbc.Label('Cutoff 8', className='mr-2'),
-                    dbc.Input('Enter number...', placeholder='0', type="number", className='ml-auto', min=0),
-                    ], className="mr-3",)
+                    dbc.Checklist(
+                         options=[
+                            {"label": "RT", "value": 'RT'},
+                            {"label": "CSS", "value": 'CSS'}],
+                            value=[],
+                            id='RT-CSS-checkbox')],
+                     className="mr-3",)
                 ],
                 inline=True),
 
@@ -170,7 +168,7 @@ modal_cutoff = dbc.Modal([
                 ),
             ],
             id="modal-cutoff",
-            size='sm',
+            size='m',
             centered=True,
               )
 
@@ -203,21 +201,6 @@ navbar = dbc.Navbar(
     
 )
             
-sidebar = html.Div(
-    [
-        html.H5("Visualization tool for proteomics and peptidomics", className="display-8"),
-        html.Hr(),
-        dbc.Nav([
-            dbc.NavLink("Menu 1", href="/", active="exact"),
-            dbc.NavLink("Menu 2", href="/menu-2", active="exact"),
-            dbc.NavLink("Menu 3", href="/menu-3", active="exact"),
-        ],
-        vertical=True,
-        pills=True,
-        className="mb-4"
-        ),
-    ],
-)
 
 amino_acid_pie_dropdown = dbc.DropdownMenu(label='View', color="light",
 children= [
@@ -391,6 +374,7 @@ peptide_info = html.Div([
 ])
 #---------------------------PAGES---------------------------------------------------------------
 main_page = dbc.Container([
+
     dbc.Row([
         dbc.Col(navbar, width={"size":12}, className="mb-4")
     ]),
@@ -428,6 +412,7 @@ documentation_page = html.Div([
     html.Br(),
     dcc.Link('Go back to home', href='/')
 ])
+
 #-----------------DEFS AND CALLBACKS--------------------------------------------------------------
 
 def display_page(pathname):
@@ -475,8 +460,23 @@ def update_data_frame(contents, filename):
     master_df = concatenate_dataframes(dfs)
     return master_df
 
+cutoffs = []
+def set_cutoffs(tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT_CSS_checkbox):
+    RT = False
+    CSS = False
+    if 'RT' in RT_CSS_checkbox:
+        RT=True
+    if 'CSS' in RT_CSS_checkbox:
+        CSS=True
+    cutoffs.append([tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS])
+    return [tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS]
+
 protein_lists = []
-def create_protein_fig(n_clicks, checkbox_values):
+def create_protein_fig(n_clicks, checkbox_values, apply_cutoffs):
+    if apply_cutoffs and len(cutoffs) >0:
+        tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS = cutoffs[-1]
+    else:
+        tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS = 0,0,0,0,0,False,False
     triv_names = []
     protein_fig = {}
     protein_list = []
@@ -487,10 +487,12 @@ def create_protein_fig(n_clicks, checkbox_values):
         master = merge_dataframes(g1,g2)
         protein_list = create_protein_list(master)
         protein_lists.append(protein_list)
-        protein_list_cutoff = apply_cut_off(protein_list, nbr_of_peptides=5, area=1000000, spectral_count=4)
+        protein_list_cutoff = apply_peptide_cutoffs(protein_list, area=pep_intensity_co, spc=pep_spc_co, RT=RT, CSS=CSS)
+        protein_list_cutoff = apply_protein_cutoffs(protein_list, nbr_of_peptides=nbr_of_peptides_co, tot_area=tot_intensity_co, tot_spc=tot_spc_co)
+        unique_protein_list, common_protein_list = get_unique_and_common_proteins(protein_list_cutoff)
         protein_info_columns = ['Protein','UniProt id','#peptides g1','#peptides g2','Intensity_g1','Intensity_g2', 'Protein family']
         df_protein_info = pd.DataFrame(columns=protein_info_columns)
-        for protein in protein_list:
+        for protein in protein_list_cutoff:
             df_protein_info = df_protein_info.append({'Protein': str(protein.get_trivial_name()), 'UniProt id': protein.get_id(),'#peptides g1': protein.get_nbr_of_peptides()[0], '#peptides g2': protein.get_nbr_of_peptides()[1], 
             'Intensity_g1': "{:.2e}".format(protein.get_area_sum()[0]), 'Intensity_g2': "{:.2e}".format(protein.get_area_sum()[2]), 'Protein family':protein.get_protein_family()},  ignore_index=True)
         df_protein_info.sort_values(by=['Intensity_g1', 'Intensity_g2'], ascending=False, inplace=True)
@@ -517,18 +519,18 @@ def create_protein_fig(n_clicks, checkbox_values):
             },
             style_table={'height': '200px', 'width':'500px', 'overflowY': 'auto','overflowX':'auto'}
     )   
-        if len(protein_list_cutoff) > 1:
+        if len(common_protein_list) > 1:
             for protein in protein_list_cutoff:
                 triv_names.append(html.Option(value=protein.get_trivial_name()))
     if len(df_g) >= 2:
         if checkbox_values and 'show-stdev' in checkbox_values and 'show-pfam' in checkbox_values:
-            protein_fig = protein_graphic_plotly(protein_list_cutoff, difference_metric='area_sum', show_pfam=True, show_stdev = True)
+            protein_fig = protein_graphic_plotly(common_protein_list, difference_metric='area_sum', show_pfam=True, show_stdev = True)
         elif checkbox_values and 'show-stdev' in checkbox_values:
-            protein_fig = protein_graphic_plotly(protein_list_cutoff, difference_metric='area_sum', show_stdev = True)
+            protein_fig = protein_graphic_plotly(common_protein_list, difference_metric='area_sum', show_stdev = True)
         elif checkbox_values and 'show-pfam' in checkbox_values:
-            protein_fig = protein_graphic_plotly(protein_list_cutoff, difference_metric='area_sum', show_pfam = True)
+            protein_fig = protein_graphic_plotly(common_protein_list, difference_metric='area_sum', show_pfam = True)
         else:
-            protein_fig = protein_graphic_plotly(protein_list_cutoff, difference_metric='area_sum')
+            protein_fig = protein_graphic_plotly(common_protein_list, difference_metric='area_sum')
         return protein_fig, triv_names, datatable
     
     else:
@@ -610,7 +612,6 @@ def generate_hover_graphs(hoverData):
     else:
         return {}
 
-
 app.callback(
     Output('hover-all-protein-samples', 'figure'),
     Input('protein-fig','hoverData')
@@ -656,7 +657,18 @@ app.callback(
     Output('protein-info-table','children'),
     Input("close-modal-file", "n_clicks_timestamp"),
     Input('protein-checklist','value'),
+    Input('close-modal-cutoff', 'n_clicks')
     )(create_protein_fig)
+
+app.callback(
+    Output('cutoff-value-holder', 'children'),
+    Input('tot-intensity-cutoff', 'value'),
+    Input('tot-spc-cutoff', 'value'),
+    Input('nbr-of-peptides-cutoff', 'value'),
+    Input('peptide-intensity-cutoff', 'value'),
+    Input('peptide-spc-cutoff', 'value'),
+    Input('RT-CSS-checkbox', 'value'),
+)(set_cutoffs)
 
 app.callback(Output('page-content', 'children'),
               [Input('url', 'pathname')])(display_page)

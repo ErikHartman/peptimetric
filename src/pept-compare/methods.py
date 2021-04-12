@@ -500,7 +500,7 @@ def protein_graphic_plotly(protein_list, **kwargs):
 
     minimum = min(g1_intensity + g2_intensity)
     maximum = max(g1_intensity + g2_intensity)
-    print("Figure created")
+    print(minimum, maximum)
     fig.add_shape(type="line",x0=minimum, y0=minimum, x1=maximum, y1=maximum, line=dict(color="#919499",width=1, dash='dash'))
     fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}, coloraxis_colorbar=dict(title='Number of peptides'))
     if kwargs.get('show_stdev') == True:
@@ -929,7 +929,18 @@ def create_protein_window(protein_list):
 
 
 def rt_check(df):
-    return df[(np.abs(stats.zscore(df[[col for col in df if col.startswith('RT')]])) < 3).all(axis=1)]
+    rt_cols = df[[col for col in df if col.startswith('RT')]]
+    if len(rt_cols) > 0:
+        return df[(np.abs(stats.zscore(rt_cols)) < 3).all(axis=1)]
+    else:
+        return df
+
+def css_check(df):
+    css_cols = df[[col for col in df if col.startswith('CSS')]]
+    if len(css_cols) > 0:
+        return df[(np.abs(stats.zscore(css_cols)) < 3).all(axis=1)]
+    else:
+        return df
 
 
 def check_sample_p_value(df):
@@ -938,17 +949,17 @@ def check_sample_p_value(df):
     area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
 
 
-def apply_cut_off(protein_list, **kwargs):
+def apply_peptide_cutoffs(protein_list, **kwargs):
     new_protein_list = []
     default_settings = {
-        'nbr_of_peptides': 0,
         'area': 0,
-        'spectral_count': 0
+        'spc': 0,
+        'rt':True,
+        'css': True,
     }
     default_settings.update(kwargs)
-    nbr_pep_limit = kwargs.get('nbr_of_peptides')
     area_limit = kwargs.get('area')
-    spc_limit = kwargs.get('spectral_count')
+    spc_limit = kwargs.get('spc')
     for protein in protein_list:
         df = protein.df.copy()
         df.fillna(0, inplace=True)
@@ -959,9 +970,27 @@ def apply_cut_off(protein_list, **kwargs):
         for col in area_columns:
             df[col].apply(lambda x: x if x > area_limit else 0)
 
-        p = Protein(df, protein.get_id())
-        if p.get_nbr_of_peptides()[0] > nbr_pep_limit and p.get_nbr_of_peptides()[1] > nbr_pep_limit:
-            new_protein_list.append(p)
+        if kwargs.get('rt') == True:
+            df = rt_check(df)
+        if kwargs.get('css') == True:
+            df = css_check(df)
+
+        p = Protein(df, protein.get_id())    
+        new_protein_list.append(p)
+    return new_protein_list
+
+def apply_protein_cutoffs(protein_list, **kwargs):
+    new_protein_list = []
+    default_settings = {
+        'tot_area': 0,
+        'tot_spc': 0,
+        'nbr_of_peptides': 0,
+    }
+    for protein in protein_list:
+        if protein.get_area_sum()[0] > kwargs.get('tot_area') or protein.get_area_sum()[2] > kwargs.get('tot_area'):
+            if protein.get_nbr_of_peptides()[0] > kwargs.get('nbr_of_peptides') or protein.get_nbr_of_peptides()[1] > kwargs.get('nbr_of_peptides'):
+                if protein.get_spectral_count_sum()[0] > kwargs.get('tot_spc') or protein.get_spectral_count_sum()[2] > kwargs.get('tot_spc'):
+                    new_protein_list.append(protein)
 
     return new_protein_list
 
@@ -1029,8 +1058,6 @@ def stacked_samples_peptide(peptide_list, **kwargs):
     default_settings = {
         'color':'green',
         'difference_metric':'area_sum',
-        'show_difference':'',
-        'show_weight':'',
         'average': False,
         
     }
@@ -1148,18 +1175,17 @@ def stacked_samples_peptide(peptide_list, **kwargs):
             for sample_dict_neg in sample_dicts_neg:
                 fasta_dict['intensity_neg'][i] += sample_dict_neg['intensity'][i]
             
-        if kwargs.get('show_weight') == 'show':
-            weight = (sum(fasta_dict['intensity_pos']) + sum(fasta_dict['intensity_neg'])) / len(fasta)
-            fig.add_trace(go.Scatter( x=[0, len(fasta)], y=[weight, weight], mode='lines', name='weight', line=dict(
-            color="#182773",
-            width=2,
-            dash="dash",
+        weight = (sum(fasta_dict['intensity_pos']) + sum(fasta_dict['intensity_neg'])) / len(fasta)
+        fig.add_trace(go.Scatter( x=[0, len(fasta)], y=[weight, weight], mode='lines', name='weight', line=dict(
+        color="#182773",
+        width=2,
+        dash="dash",
         )))
-        if kwargs.get('show_difference') == 'show':
-            difference = []
-            for i in list(range(len(fasta_dict["index"]))):
-                difference.append(fasta_dict['intensity_pos'][i] + fasta_dict['intensity_neg'][i])
-            fig.add_trace(go.Scatter(name='difference', x=fasta_dict["index"], y=difference, mode='lines', line=dict(color='firebrick', width=2), opacity=0.5))
+        
+        difference = []
+        for i in list(range(len(fasta_dict["index"]))):
+            difference.append(fasta_dict['intensity_pos'][i] + fasta_dict['intensity_neg'][i])
+        fig.add_trace(go.Scatter(name='difference', x=fasta_dict["index"], y=difference, mode='lines', line=dict(color='firebrick', width=2), opacity=0.5))
         maximum_intensity = max(fasta_dict['intensity_pos'] + np.abs(fasta_dict['intensity_neg']))
         
     if kwargs.get('average') == True:
@@ -1264,29 +1290,36 @@ def stacked_samples_peptide(peptide_list, **kwargs):
                 hoverinfo="skip",
                 name='standard_deviation_g2'
             ))
-        if kwargs.get('show_weight') == 'show':
-            weight = (sum(pos_mean) + sum(neg_mean)) / len(fasta)
-            fig.add_trace(go.Scatter( x=[x[0],x[-1]], y=[weight, weight], mode='lines', name='weight', line=dict(
-            color="#182773",
-            width=2,
-            dash="dash",
+        weight = (sum(pos_mean) + sum(neg_mean)) / len(fasta)
+        fig.add_trace(go.Scatter( x=[x[0],x[-1]], y=[weight, weight], mode='lines', name='weight', line=dict(
+        color="#182773",
+        width=2,
+        dash="dash",
         )))
-        if kwargs.get('show_difference') == 'show':
-            difference = []
-            for i in range(len(pos_mean)):
-                difference.append(pos_mean[i] + neg_mean[i])
-            fig.add_trace(go.Scatter(name='difference', x=x, y=difference, mode='lines', line=dict(color='firebrick', width=2), opacity=0.5))
+        difference = []
+        for i in range(len(pos_mean)):
+            difference.append(pos_mean[i] + neg_mean[i])
+        fig.add_trace(go.Scatter(name='difference', x=x, y=difference, mode='lines', line=dict(color='firebrick', width=2), opacity=0.5))
+
         maximum_intensity = max(pos_mean + np.abs(neg_mean))
-        
+    
 
     fig.update_layout(
         barmode='relative',
         paper_bgcolor='rgb(255, 255, 255)',
         plot_bgcolor='rgb(255, 255, 255)',
         )
-    
-
-    
+        
     fig.update_layout(yaxis=dict(title='log(Intensity)'), xaxis=dict(title='Sequence', rangeslider=dict(visible=True)))
     fig.update_yaxes(range=[-maximum_intensity, maximum_intensity])
     return fig
+
+def get_unique_and_common_proteins(protein_list):
+    unique_protein_list = []
+    common_protein_list = []
+    for protein in protein_list:
+        if protein.get_nbr_of_peptides()[0] == 0 or protein.get_nbr_of_peptides()[1] == 0:
+            unique_protein_list.append(protein)
+        else:
+            common_protein_list.append(protein)
+    return unique_protein_list, common_protein_list
