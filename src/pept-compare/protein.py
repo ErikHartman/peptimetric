@@ -197,19 +197,3 @@ class Protein:
                 protein_families.append(i.get('id'))
             return protein_families
 
-    def empai(self, base):
-        n_observed = self.get_nbr_of_peptides()
-        rt = []
-        for seq in self.df['Peptide']:
-            rt.append(calculate_rt(seq))
-        rt_min, rt_max = min(rt), max(rt)
-
-        all_observable_peptides = parser.cleave(self.get_fasta(), 'trypsin', 0)
-        observable = []
-        for peptide in all_observable_peptides:
-            if (calculate_rt(peptide) < rt_max) & (calculate_rt(peptide) > rt_min):
-                observable.append(peptide)
-
-        pai = [nbr / len(all_observable_peptides) for nbr in n_observed]
-
-        return (np.power(base, pai)) - 1

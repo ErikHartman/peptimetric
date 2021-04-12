@@ -376,7 +376,7 @@ amino_acid_radioitems = html.Div([
                 {"label": "Area", "value": 'area'},
                 {"label": "Spectral count", "value": 'spectral_count'}, 
             ], 
-            value=1,
+            value='area',
             id="aa-radioitems", 
             inline=True,
 
