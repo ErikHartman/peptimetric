@@ -356,10 +356,29 @@ peptide_fig = html.Div([
         )
         ])
 
+amino_acid_radioitems = html.Div([
+        dbc.Label("Select difference metric"), 
+        dbc.RadioItems(
+            options=[
+                {"label": "Area", "value": 'area'},
+                {"label": "Spectral count", "value": 'spectral_count'}, 
+            ], 
+            value=1,
+            id="aa-radioitems", 
+            inline=True,
+
+        )
+])
+
 amino_acid_figs = html.Div([
         html.H3('Amino Acid Profile'),
-        amino_acid_pie_dropdown,
+        dbc.Row([
+            dbc.Col(amino_acid_pie_dropdown),
+            dbc.Col(amino_acid_radioitems)
+
+        ]),
         html.P(id='complete-or-selected'),
+        
         dcc.Loading(type='cube', color = '#76b382',
             children=[ dbc.Row([
                 dbc.Col([
@@ -590,12 +609,12 @@ def create_peptide_fig(clickData, search_protein, n_clicks_sum, n_clicks_mean):
         return {}, search_text, []
 
 
-def amino_acid_dropdown(n_clicks_complete_proteome, n_clicks_selected_protein):
+def amino_acid_dropdown(n_clicks_complete_proteome, n_clicks_selected_protein, radioitem_value):
     if n_clicks_complete_proteome > n_clicks_selected_protein and len(protein_lists)>0:
-        complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2 = amino_acid_piecharts(protein_lists[-1], peptide_or_protein_list = 'protein_list')
+        complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2 = amino_acid_piecharts(protein_lists[-1], peptide_or_protein_list = 'protein_list', difference_metric = radioitem_value)
         return complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2, 'Complete proteome'
     if n_clicks_selected_protein > n_clicks_complete_proteome and len(protein_lists)>0:
-        complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2 = amino_acid_piecharts(peptide_lists[-1], peptide_or_protein_list = 'peptide_list')
+        complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2 = amino_acid_piecharts(peptide_lists[-1], peptide_or_protein_list = 'peptide_list', difference_metric = radioitem_value)
         return complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2, 'Selected Protein'
     else:
         return  {},{},{}, {},{},{}, ''
@@ -626,6 +645,7 @@ app.callback(
     Output('complete-or-selected', 'children'),
     Input('complete-proteome', 'n_clicks_timestamp'),
     Input('selected-protein','n_clicks_timestamp'),
+    Input('aa-radioitems', 'value')
 )(amino_acid_dropdown)
 
 app.callback(

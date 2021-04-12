@@ -1,5 +1,7 @@
 import re
 import statistics
+import numpy as np
+
 
 
 class Peptide:
@@ -59,6 +61,18 @@ class Peptide:
             return statistics.mean(area_mean_g1), statistics.stdev(area_mean_g1), statistics.mean(area_mean_g2), statistics.stdev(area_mean_g2)
         else: return statistics.mean(area_mean_g1), 0, statistics.mean(area_mean_g2), 0 
 
+    def get_area_log(self):
+        g1, g1_std, g2, g2_std = self.get_area()
+        if g1 != 0:
+            g1 = np.log10(g1)
+        else: g1 = 0
+        if g2 != 0:
+            g2 = np.log10(g2)
+        else:
+            g2 = 0
+        return g1, g2
+
+
     def get_area_all_samples(self):
         area_columns = [col for col in self.df if col.startswith('Area')]
         area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
@@ -79,17 +93,19 @@ class Peptide:
         spc_columns = [col for col in self.df if col.startswith('Spectral')]
         spc_columns_g1 = [col for col in spc_columns if col.endswith('g1')]
         spc_columns_g2 = [col for col in spc_columns if col.endswith('g2')]
-        spc_mean_g1 = []
-        spc_mean_g2 = []
+        spc_sum_g1 = []
+        spc_sum_g2 = []
         for a in spc_columns_g1:
             df_spc = self.df.copy()
             df_spc.fillna(0, inplace=True)
-            spc_mean_g1.append(df_spc[a].mean())
+            spc_sum_g1.append(df_spc[a].sum())
         for a in spc_columns_g2:
             df_spc = self.df.copy()
             df_spc.fillna(0, inplace=True)
-            spc_mean_g2.append(df_spc[a].mean())
-        return statistics.mean(spc_mean_g1), statistics.mean(spc_mean_g2)
+            spc_sum_g2.append(df_spc[a].sum())
+        if len(spc_columns_g1) > 1 and len(spc_columns_g2) > 1:
+            return statistics.mean(spc_sum_g1), statistics.stdev(spc_sum_g1), statistics.mean(spc_sum_g2), statistics.stdev(spc_sum_g2)
+        else: return statistics.mean(spc_sum_g1), 0, statistics.mean(spc_sum_g2), 0 
 
     def get_rt(self):
         rt_columns = [col for col in self.df if col.startswith('RT')]
