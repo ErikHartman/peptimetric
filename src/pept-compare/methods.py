@@ -351,7 +351,7 @@ def protein_graphic_plotly(protein_list, **kwargs):
     df_fig = pd.DataFrame(list(zip(g1_intensity,g2_intensity, nbr_of_peptides, trivial_name, pfam, col, accession, g1_stdev, g2_stdev)),
         columns=['g1_intensity','g2_intensity','nbr_of_peptides','trivial_name','pfam','col','accession', 'g1_stdev', 'g2_stdev'])
     print(df_fig)
-    fig = px.scatter(df_fig, x='g2_intensity', y='g1_intensity', 
+    fig = px.scatter(df_fig, x='g2_intensity', y='g1_intensity',
         color='nbr_of_peptides', color_continuous_scale=px.colors.diverging.PiYG, 
         size='nbr_of_peptides', log_x=True, log_y=True, hover_data=['trivial_name','nbr_of_peptides','pfam','accession'])
     if kwargs.get('protein_id') != '':
@@ -565,7 +565,6 @@ def all_sample_bar_chart(protein_list, accession, **kwargs):
     fig = px.bar(df, x = 'sample', y='intensity', color='intensity', color_continuous_scale=px.colors.sequential.algae, title=title, log_y=True)
     fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}, showlegend=False, coloraxis_showscale=False)
     return fig
-
 
 def venn_bars(protein_list):
     group_1_unique = []
