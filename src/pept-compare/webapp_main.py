@@ -31,6 +31,11 @@ file_columns = ['Sample', 'File']
 
 modal_file = html.Div([
     dbc.Button("Files", id="open-modal-file", color='info', className="mr-1"),
+    dbc.Tooltip(
+        "Import files",
+        target='open-modal-file',
+        placement='bottom'
+    ),
         dbc.Modal([
                 dbc.ModalHeader("Files", className="font-weight-bold"),
                     dbc.Row([
@@ -271,6 +276,11 @@ how_to_use_collapse = html.Div(
             id="how-to-use-collapse",
             className="mb-4"
         ),
+        dbc.Tooltip(
+            "View guideline on how to use (NAMN)",
+            target="how-to-use-collapse-button", 
+            placement="right"
+        ),
     ]
 )
 
@@ -281,6 +291,12 @@ sample_collapse = html.Div(
             id="sample-collapse-button",
             className="mb-3",
             color="info",
+        ),
+        dbc.Tooltip(
+            "View samples",
+            target="sample-collapse-button",
+            placement="right",
+            #style={},
         ),
         dbc.Collapse(
             dbc.Card([
