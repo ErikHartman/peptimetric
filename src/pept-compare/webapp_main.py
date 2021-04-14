@@ -30,6 +30,11 @@ file_columns = ['Sample', 'File']
 
 modal_file = html.Div([
     dbc.Button("Files", id="open-modal-file", color='info', className="mr-1"),
+    dbc.Tooltip(
+        "Import files",
+        target='open-modal-file',
+        placement='bottom'
+    ),
         dbc.Modal([
                 dbc.ModalHeader("Files", className="font-weight-bold"),
                     dbc.Row([
@@ -270,6 +275,11 @@ how_to_use_collapse = html.Div(
             id="how-to-use-collapse",
             className="mb-4"
         ),
+        dbc.Tooltip(
+            "View guideline on how to use (NAMN)",
+            target="how-to-use-collapse-button", 
+            placement="right"
+        ),
     ]
 )
 
@@ -280,6 +290,12 @@ sample_collapse = html.Div(
             id="sample-collapse-button",
             className="mb-3",
             color="info",
+        ),
+        dbc.Tooltip(
+            "View samples",
+            target="sample-collapse-button",
+            placement="right",
+            #style={},
         ),
         dbc.Collapse(
             dbc.Card([
@@ -344,13 +360,14 @@ protein_fig = html.Div([
                 )                 
         )]),
         dcc.Loading(type='cube', color = '#76b382',
-            children=dcc.Graph(id='protein-fig', figure={})
+            children=dcc.Graph(id='protein-fig', figure={}, config={'toImageButtonOptions':{'format': 'jpeg'}, 'displaylogo':False})
         )
         
         ])
 
 all_samples_protein_fig = html.Div([
-    dcc.Graph(id='hover-all-protein-samples', figure={}, style={'height': 300, 'width':500}
+    dcc.Graph(id='hover-all-protein-samples', figure={}, style={'height': 300, 'width':500},
+    config={'displayModeBar': False}
 )])
 
 peptide_fig = html.Div([
@@ -364,7 +381,7 @@ peptide_fig = html.Div([
             ]))                 
         ]),
         dcc.Loading(type='cube', color = '#76b382',
-            children=dcc.Graph(id='peptide-fig', figure={})
+            children=dcc.Graph(id='peptide-fig', figure={}, config={'displaylogo': False})
         )
         ])
 
@@ -394,19 +411,19 @@ amino_acid_figs = html.Div([
         dcc.Loading(type='cube', color = '#76b382',
             children=[ dbc.Row([
                 dbc.Col([
-                    dcc.Graph(id='complete-aa-seq-fig-g1', figure={})], width={'size':3}),
+                    dcc.Graph(id='complete-aa-seq-fig-g1', figure={}, config={'displaylogo': False})], width={'size':3}),
                 dbc.Col([
-                    dcc.Graph(id='first-aa-fig-g1', figure={})], width={'size':3}),
+                    dcc.Graph(id='first-aa-fig-g1', figure={}, config={'displaylogo': False})], width={'size':3}),
                 dbc.Col([
-                    dcc.Graph(id='last-aa-fig-g1', figure={})], width={'size':3}),
+                    dcc.Graph(id='last-aa-fig-g1', figure={}, config={'displaylogo': False})], width={'size':3}),
             ]),
             dbc.Row([
                 dbc.Col([
-                    dcc.Graph(id='complete-aa-seq-fig-g2', figure={})], width={'size':3}),
+                    dcc.Graph(id='complete-aa-seq-fig-g2', figure={}, config={'displaylogo': False})], width={'size':3}),
                 dbc.Col([
-                    dcc.Graph(id='first-aa-fig-g2', figure={})], width={'size':3}),
+                    dcc.Graph(id='first-aa-fig-g2', figure={}, config={'displaylogo': False})], width={'size':3}),
                 dbc.Col([
-                    dcc.Graph(id='last-aa-fig-g2', figure={})], width={'size':3}),
+                    dcc.Graph(id='last-aa-fig-g2', figure={}, config={'displaylogo': False})], width={'size':3}),
             ])]
         )
         ])
