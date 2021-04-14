@@ -8,13 +8,8 @@ import copy
 import plotly.graph_objects as go
 from IPython.display import display
 import plotly.express as px
-import matplotlib.patches as mpatches
-import matplotlib.pyplot as plt
-import mplcursors
 import numpy as np
 import pandas as pd
-from matplotlib import colors, widgets
-from matplotlib_venn import venn2
 from numpy import ma
 from pyteomics import achrom, electrochem
 from scipy import stats
@@ -408,14 +403,15 @@ def peptide_graphic_plotly(peptide_list, **kwargs):
         end = peptide.get_end()
         intensity_pos = peptide.get_area()[0]
         intensity_neg = peptide.get_area()[2]
-        for i in list(range(start, end)):
-            if intensity_neg > 0 or intensity_pos > 0:
-                fasta_dict["intensity_pos"][i] += ma.log10(intensity_pos) if intensity_pos != 0 else 0
-                fasta_dict["intensity_neg"][i] += ma.log10(intensity_neg) if intensity_neg != 0 else 0
-                if intensity_pos > 0:
-                    fasta_dict["counter_pos"][i] += 1
-                if intensity_neg > 0:
-                    fasta_dict["counter_neg"][i] += 1
+        if peptide.get_start() != None:
+            for i in list(range(start, end)):
+                if intensity_neg > 0 or intensity_pos > 0:
+                    fasta_dict["intensity_pos"][i] += ma.log10(intensity_pos) if intensity_pos != 0 else 0
+                    fasta_dict["intensity_neg"][i] += ma.log10(intensity_neg) if intensity_neg != 0 else 0
+                    if intensity_pos > 0:
+                        fasta_dict["counter_pos"][i] += 1
+                    if intensity_neg > 0:
+                        fasta_dict["counter_neg"][i] += 1
     col_pos = []
     col_neg = []
     max_count = max(fasta_dict["counter_pos"] + fasta_dict["counter_neg"])
@@ -497,10 +493,10 @@ def css_check(df):
 def apply_peptide_cutoffs(protein_list, **kwargs):
     new_protein_list = []
     default_settings = {
-        'area': 0,
-        'spc': 0,
-        'rt':True,
-        'css': True,
+        'area',
+        'spc',
+        'rt',
+        'css',
     }
     default_settings.update(kwargs)
     area_limit = kwargs.get('area')
@@ -510,11 +506,8 @@ def apply_peptide_cutoffs(protein_list, **kwargs):
         df.fillna(0, inplace=True)
         spc_columns = [col for col in df if col.startswith('Spectral')]
         area_columns = [col for col in df if col.startswith('Area')]
-        for col in spc_columns:
-            df[col].apply(lambda x: x if x > spc_limit else 0)
-        for col in area_columns:
-            df[col].apply(lambda x: x if x > area_limit else 0)
-
+        df[spc_columns] = df[spc_columns].apply(lambda x: [x if y >spc_limit else 0 for y in x])
+        df[area_columns] = df[area_columns].apply(lambda x: [x if y > area_limit else 0 for y in x])
         if kwargs.get('rt') == True:
             df = rt_check(df)
         if kwargs.get('css') == True:
@@ -637,10 +630,11 @@ def stacked_samples_peptide(peptide_list, **kwargs):
             s = start[index]
             e = end[index]
             intensity = intensity_pos[index][sample]
-            for i in range(s, e):
-                sample_dict['intensity'][i] += ma.log10(intensity) if intensity != 0 else 0
-                if intensity != 0:
-                    sample_dict['counter'][i] += 1
+            if s != None and e!= None:
+                for i in range(s, e):
+                    sample_dict['intensity'][i] += ma.log10(intensity) if intensity != 0 else 0
+                    if intensity != 0:
+                        sample_dict['counter'][i] += 1
         sample_dicts_pos.append(sample_dict)
 
     for sample in range(len(intensity_neg[0])):
@@ -654,10 +648,11 @@ def stacked_samples_peptide(peptide_list, **kwargs):
             s = start[index]
             e = end[index]
             intensity = intensity_neg[index][sample]
-            for i in range(s, e):
-                sample_dict['intensity'][i] += - ma.log10(intensity) if intensity != 0 else 0
-                if intensity != 0:
-                    sample_dict['counter'][i] += 1
+            if s != None and e!= None:
+                for i in range(s, e):
+                    sample_dict['intensity'][i] += - ma.log10(intensity) if intensity != 0 else 0
+                    if intensity != 0:
+                        sample_dict['counter'][i] += 1
 
         sample_dicts_neg.append(sample_dict)
     
@@ -868,3 +863,4 @@ def get_unique_and_common_proteins(protein_list):
         else:
             common_protein_list.append(protein)
     return unique_protein_list, common_protein_list
+

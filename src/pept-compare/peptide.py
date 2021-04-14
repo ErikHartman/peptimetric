@@ -22,6 +22,8 @@ class Peptide:
                 return i
 
     def get_end(self):
+        if self.get_start() is None:
+            return None 
         return self.get_start() + len(self.get_sequence())
 
     def create_array(self):

@@ -23,7 +23,6 @@ app = dash.Dash(__name__,external_stylesheets=[dbc.themes.SANDSTONE], suppress_c
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
     dbc.Container(id='page-content', fluid=True, className='vh-100'),
-    html.Div(id='cutoff-value-holder', style={'display': 'none'})
  ])
 
 #---------------------------------------PAGE-ELEMENTS------------------------------------------------
@@ -421,6 +420,16 @@ protein_info = html.Div(id = 'protein-info-table'),
 peptide_info = html.Div([
     html.Div(id='peptide-info-table'),
 ])
+
+
+hidden_divs = html.Div([
+    html.Div(id='cutoff-value-holder', style={'display': 'none'}),
+    html.Div(id='protein-lists-holder', style={'display': 'none'}),
+    html.Div(id='peptide-lists-holder', style={'display': 'none'}),
+    html.Div(id='df_g1-holder', style={'display':'none'}),
+    html.Div(id='df_g2-holder', style={'display':'none'}),
+
+])
 #---------------------------PAGES---------------------------------------------------------------
 main_page = dbc.Container([
 
@@ -445,7 +454,8 @@ main_page = dbc.Container([
 
     dbc.Row([
         dbc.Col(amino_acid_figs),
-    ])      
+    ]),  
+    hidden_divs,
 ], fluid=True)
 
 
@@ -469,7 +479,7 @@ def toggle_modal(n1, n2, is_open):
         return not is_open
     return is_open
 
-df_g = []
+
 def update_file_list(contents, filename):
     if filename:
         file_list = []
@@ -479,12 +489,10 @@ def update_file_list(contents, filename):
             file_list.append(s)
             i+=1  
         master_df = update_data_frame(contents, filename)
-        df_g.append(master_df)
         df = pd.DataFrame(file_list, columns = ['Sample', 'File'])
-        print(df)
-        return df.to_dict('rows'), df.to_dict('rows')
+        return df.to_dict('rows'), df.to_dict('rows'), master_df.to_json()
     else:
-        return [],[]
+        return [],[], []
 
 def update_data_frame(contents, filename):
     decoded_list = []
@@ -508,29 +516,29 @@ def set_cutoffs(tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_
     return [tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS]
 
 protein_lists = []
-def create_protein_fig(n_clicks, checkbox_values, apply_cutoffs):
-    if apply_cutoffs and len(cutoffs) >0:
-        tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS = cutoffs[-1]
+def create_protein_fig(n_clicks, checkbox_values, apply_cutoffs_button, cutoff_values, df_g1, df_g2):
+    if apply_cutoffs_button and len(cutoffs) >0:
+        tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS = cutoff_values
     else:
         tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS = 0,0,0,0,0,False,False
     triv_names = []
     protein_fig = {}
     protein_list = []
     protein_list_cutoff = []
-    if n_clicks and len(df_g) >= 2:
-        g1 = df_g[-2]
-        g2 = df_g[-1]
+    if n_clicks and df_g1 and df_g2:
+        g1 = pd.read_json(df_g1)
+        g2 = pd.read_json(df_g2)
         master = merge_dataframes(g1,g2)
         protein_list = create_protein_list(master)
         protein_lists.append(protein_list)
-        protein_list_cutoff = apply_peptide_cutoffs(protein_list, area=pep_intensity_co, spc=pep_spc_co, RT=RT, CSS=CSS)
+        protein_list_cutoff = apply_peptide_cutoffs(protein_list, area=pep_intensity_co, spc=pep_spc_co, rt=RT, css=CSS)
         protein_list_cutoff = apply_protein_cutoffs(protein_list, nbr_of_peptides=nbr_of_peptides_co, tot_area=tot_intensity_co, tot_spc=tot_spc_co)
         unique_protein_list, common_protein_list = get_unique_and_common_proteins(protein_list_cutoff)
-        protein_info_columns = ['Protein','UniProt id','#peptides g1','#peptides g2','Intensity_g1','Intensity_g2', 'Protein family']
+        protein_info_columns = ['Protein','UniProt id','#peptides g1','#peptides g2','Intensity_g1','Intensity_g2', 'Protein family','p-value']
         df_protein_info = pd.DataFrame(columns=protein_info_columns)
         for protein in protein_list_cutoff:
             df_protein_info = df_protein_info.append({'Protein': str(protein.get_trivial_name()), 'UniProt id': protein.get_id(),'#peptides g1': protein.get_nbr_of_peptides()[0], '#peptides g2': protein.get_nbr_of_peptides()[1], 
-            'Intensity_g1': "{:.2e}".format(protein.get_area_sum()[0]), 'Intensity_g2': "{:.2e}".format(protein.get_area_sum()[2]), 'Protein family':protein.get_protein_family()},  ignore_index=True)
+            'Intensity_g1': "{:.2e}".format(protein.get_area_sum()[0]), 'Intensity_g2': "{:.2e}".format(protein.get_area_sum()[2]), 'Protein family':protein.get_protein_family(), 'p-value':protein.get_pvalue()},  ignore_index=True)
         df_protein_info.sort_values(by=['Intensity_g1', 'Intensity_g2'], ascending=False, inplace=True)
         datatable = dash_table.DataTable(
             data = df_protein_info.to_dict('rows'),
@@ -558,7 +566,7 @@ def create_protein_fig(n_clicks, checkbox_values, apply_cutoffs):
         if len(common_protein_list) > 1:
             for protein in protein_list_cutoff:
                 triv_names.append(html.Option(value=protein.get_trivial_name()))
-    if len(df_g) >= 2:
+    if df_g1 and df_g2:
         if checkbox_values and 'show-stdev' in checkbox_values and 'show-pfam' in checkbox_values:
             protein_fig = protein_graphic_plotly(common_protein_list, difference_metric='area_sum', show_pfam=True, show_stdev = True)
         elif checkbox_values and 'show-stdev' in checkbox_values:
@@ -596,7 +604,7 @@ def create_peptide_fig(clickData, search_protein, n_clicks_sum, n_clicks_mean):
         df_peptide_info = pd.DataFrame(columns=peptide_info_columns)
         for peptide in peptide_list:
             df_peptide_info = df_peptide_info.append({'Peptide': str(peptide.get_sequence()), 'Start': peptide.get_start(),'End': peptide.get_end(), 'Intensity_g1': "{:.2e}".format(peptide.get_area()[0]), 
-            'Intensity_g2': "{:.2e}".format(peptide.get_area()[1])}, ignore_index=True)
+            'Intensity_g2': "{:.2e}".format(peptide.get_area()[2])}, ignore_index=True)
         print(df_peptide_info)
         df_peptide_info.sort_values(by=['Intensity_g1', 'Intensity_g2'], ascending=False, inplace=True)
         datatable = dash_table.DataTable(
@@ -679,12 +687,14 @@ app.callback(
 app.callback(
     Output("output-filename-1", "data"),
     Output("sample-collapse-1", "data"),
+    Output('df_g1-holder', 'children'),
     [Input("upload-data-1", "contents"), Input("upload-data-1", "filename")],
 )(update_file_list)
 
 app.callback(
     Output("output-filename-2", "data"),
     Output("sample-collapse-2", "data"),
+    Output('df_g2-holder','children'),
     [Input("upload-data-2", "contents"), Input("upload-data-2", "filename")],
 )(update_file_list)
 
@@ -694,7 +704,10 @@ app.callback(
     Output('protein-info-table','children'),
     Input("close-modal-file", "n_clicks_timestamp"),
     Input('protein-checklist','value'),
-    Input('close-modal-cutoff', 'n_clicks')
+    Input('close-modal-cutoff', 'n_clicks'),
+    State('cutoff-value-holder', 'children'),
+    State('df_g1-holder', 'children'),
+    State('df_g2-holder', 'children'),
     )(create_protein_fig)
 
 app.callback(
