@@ -10,17 +10,19 @@ if __name__  == "__main__":
     g2 = concatenate_dataframes(read_files_gui())
     master = merge_dataframes(g1,g2)
     protein_list = create_protein_list(master)
-    protein = protein_list[1]
-    df = protein.df.copy()
-    df.fillna(0, inplace=True)
-    spc_columns = [col for col in df if col.startswith('Spectral')]
-    area_columns = [col for col in df if col.startswith('Area')]
-    print(df[area_columns])
+    protein_list = protein_list[0:3]
     protein_list = apply_peptide_cutoffs(protein_list, area=10000000, spc=0, rt=False, css=False)
-    protein = protein_list[1]
-    df = protein.df.copy()
-    df.fillna(0, inplace=True)
-    print(df[area_columns])
+    for protein in protein_list:
+        spc_columns = [col for col in protein.df if col.startswith('Spectral')]
+        area_columns = [col for col in protein.df if col.startswith('Area')]
+        print(protein.df[area_columns])
+        print(protein.get_area_sum())
+
+    #spc_columns = [col for col in df if col.startswith('Spectral')]
+    #area_columns = [col for col in df if col.startswith('Area')]
+    
+    protein_list = apply_protein_cutoffs(protein_list, nbr_of_peptides=10, tot_area=5, tot_spc=5)
+
     
     
     

@@ -63,11 +63,11 @@ class Protein:
         for a in area_columns_g1:
             df_area = self.df.copy()
             df_area.fillna(0, inplace=True)
-            area_sum_g1.append(df_area[a].sum())
+            area_sum_g1.append(df_area[a].sum(axis=0))
         for a in area_columns_g2:
             df_area = self.df.copy()
             df_area.fillna(0, inplace=True)
-            area_sum_g2.append(df_area[a].sum())
+            area_sum_g2.append(df_area[a].sum(axis=0))
         if len(area_sum_g1) > 1 and len(area_sum_g2) > 1:
             return statistics.mean(area_sum_g1), statistics.stdev(area_sum_g1), statistics.mean(area_sum_g2), statistics.stdev(area_sum_g2)
         else:

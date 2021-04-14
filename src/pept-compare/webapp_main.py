@@ -549,7 +549,7 @@ def create_protein_fig(n_clicks, checkbox_values, apply_cutoffs_button, cutoff_v
         protein_list = create_protein_list(master)
         protein_lists.append(protein_list)
         protein_list_cutoff = apply_peptide_cutoffs(protein_list, area=pep_intensity_co, spc=pep_spc_co, rt=RT, css=CSS)
-        protein_list_cutoff = apply_protein_cutoffs(protein_list, nbr_of_peptides=nbr_of_peptides_co, tot_area=tot_intensity_co, tot_spc=tot_spc_co)
+        protein_list_cutoff = apply_protein_cutoffs(protein_list_cutoff, nbr_of_peptides=nbr_of_peptides_co, tot_area=tot_intensity_co, tot_spc=tot_spc_co)
         unique_protein_list, common_protein_list = get_unique_and_common_proteins(protein_list_cutoff)
         protein_info_columns = ['Protein','UniProt id','#peptides g1','#peptides g2','Intensity_g1','Intensity_g2', 'Protein family','p-value']
         df_protein_info = pd.DataFrame(columns=protein_info_columns)
@@ -598,11 +598,19 @@ def create_protein_fig(n_clicks, checkbox_values, apply_cutoffs_button, cutoff_v
         return {}, [], html.Div()
 
 peptide_lists=[]
-def create_peptide_fig(clickData, search_protein, n_clicks_sum, n_clicks_mean):
+def create_peptide_fig(clickData, search_protein, n_clicks_sum, n_clicks_mean, cutoff_values, apply_cutoffs_button):
     protein_accession = ''
     search_text = ''
+    if apply_cutoffs_button and len(cutoffs) >0:
+        tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS = cutoff_values
+    else:
+        tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS = 0,0,0,0,0,False,False
+
+    if len(protein_lists) > 0:
+        protein_list_cutoff = apply_peptide_cutoffs(protein_lists[-1], area=pep_intensity_co, spc=pep_spc_co, rt=RT, css=CSS)
+        protein_list_cutoff = apply_protein_cutoffs(protein_list_cutoff, nbr_of_peptides=nbr_of_peptides_co, tot_area=tot_intensity_co, tot_spc=tot_spc_co)
     if search_protein != '' and len(protein_lists) > 0:
-        for protein in protein_lists[-1]:
+        for protein in protein_list_cutoff:
             if search_protein == protein.get_trivial_name():
                 protein_accession = protein.get_id()
                 search_text = ''
@@ -611,7 +619,7 @@ def create_peptide_fig(clickData, search_protein, n_clicks_sum, n_clicks_mean):
         search_text=''
 
     if protein_accession != '':
-        peptide_list = create_peptide_list(protein_lists[-1], str(protein_accession))
+        peptide_list = create_peptide_list(protein_list_cutoff, str(protein_accession))
         peptide_lists.append(peptide_list)
         if n_clicks_sum == 0 and n_clicks_mean == 0 or n_clicks_sum > n_clicks_mean:
             peptide_fig = stacked_samples_peptide(peptide_list, show_difference='show', show_weight ='show', average=False)
@@ -699,6 +707,8 @@ app.callback(
     Input('search-protein', 'value'),
     Input('peptide-dropdown-sum', 'n_clicks_timestamp'),
     Input('peptide-dropdown-mean','n_clicks_timestamp'),
+    Input('cutoff-value-holder','children'),
+    Input('close-modal-cutoff', 'n_clicks'),
 )(create_peptide_fig)
 
 app.callback(

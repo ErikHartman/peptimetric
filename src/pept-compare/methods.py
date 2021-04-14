@@ -506,29 +506,35 @@ def apply_peptide_cutoffs(protein_list, **kwargs):
         df.fillna(0, inplace=True)
         spc_columns = [col for col in df if col.startswith('Spectral')]
         area_columns = [col for col in df if col.startswith('Area')]
-        df[spc_columns] = df[spc_columns].apply(lambda x: [x if y >spc_limit else 0 for y in x])
-        df[area_columns] = df[area_columns].apply(lambda x: [x if y > area_limit else 0 for y in x])
+        df[spc_columns] = df[spc_columns].apply(lambda x: [y if y > spc_limit else 0 for y in x])
+        df[area_columns] = df[area_columns].apply(lambda x: [y if y > area_limit else 0 for y in x])
         if kwargs.get('rt') == True:
             df = rt_check(df)
         if kwargs.get('css') == True:
             df = css_check(df)
-
-        p = Protein(df, protein.get_id())    
-        new_protein_list.append(p)
+        df.replace(0, np.nan, inplace=True)
+        df = df.dropna(axis=0, how='all', subset=area_columns)
+        df = df.dropna(axis=0, how='all', subset=spc_columns)
+        
+        if len(df.index) != 0:
+            p = Protein(df, protein.get_id())    
+            new_protein_list.append(p)
     return new_protein_list
 
 def apply_protein_cutoffs(protein_list, **kwargs):
     new_protein_list = []
     default_settings = {
-        'tot_area': 0,
-        'tot_spc': 0,
-        'nbr_of_peptides': 0,
+        'tot_area',
+        'tot_spc',
+        'nbr_of_peptides',
     }
+    default_settings.update(kwargs)
     for protein in protein_list:
-        if protein.get_area_sum()[0] > kwargs.get('tot_area') or protein.get_area_sum()[2] > kwargs.get('tot_area'):
-            if protein.get_nbr_of_peptides()[0] > kwargs.get('nbr_of_peptides') or protein.get_nbr_of_peptides()[1] > kwargs.get('nbr_of_peptides'):
-                if protein.get_spectral_count_sum()[0] > kwargs.get('tot_spc') or protein.get_spectral_count_sum()[2] > kwargs.get('tot_spc'):
-                    new_protein_list.append(protein)
+        if len(protein.df.index) > 0:
+            if protein.get_area_sum()[0] > kwargs.get('tot_area') or protein.get_area_sum()[2] > kwargs.get('tot_area'):
+                if protein.get_nbr_of_peptides()[0] > kwargs.get('nbr_of_peptides') or protein.get_nbr_of_peptides()[1] > kwargs.get('nbr_of_peptides'):
+                    if protein.get_spectral_count_sum()[0] > kwargs.get('tot_spc') or protein.get_spectral_count_sum()[2] > kwargs.get('tot_spc'):
+                        new_protein_list.append(protein)
 
     return new_protein_list
 
