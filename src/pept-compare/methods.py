@@ -600,7 +600,7 @@ def venn_bars(protein_list):
 def stacked_samples_peptide(peptide_list, **kwargs):
     default_settings = {
         'color':'green',
-        'difference_metric':'area_sum',
+        'difference_metric':'area',
         'average': False,
         
     }
@@ -610,7 +610,7 @@ def stacked_samples_peptide(peptide_list, **kwargs):
         color = green
     fasta = peptide_list[0].fasta
     fig  = go.Figure()
-    
+    trivial_name =  peptide_list[0].protein.get_trivial_name()
     start = []
     end = []
     start_neg = []
@@ -620,9 +620,14 @@ def stacked_samples_peptide(peptide_list, **kwargs):
     for peptide in peptide_list:
         start.append(peptide.get_start())
         end.append(peptide.get_end())
-        intensity_pos.append(peptide.get_area_all_samples()[0])
-        intensity_neg.append(peptide.get_area_all_samples()[1])
-    
+        if kwargs.get('difference_metric') == 'area':
+            intensity_pos.append(peptide.get_area_all_samples()[0])
+            intensity_neg.append(peptide.get_area_all_samples()[1])
+            y_axis_label = 'log(Intensity)'
+        elif kwargs.get('difference_metric') == 'spectral_count':
+            intensity_pos.append(peptide.get_spectral_count_all_samples()[0])
+            intensity_neg.append(peptide.get_spectral_count_all_samples()[1])
+            y_axis_label = 'Spectral Count '    
     sample_dicts_pos = []
     sample_dicts_neg = []
     for sample in range(len(intensity_pos[0])):
@@ -855,7 +860,7 @@ def stacked_samples_peptide(peptide_list, **kwargs):
         plot_bgcolor='rgb(255, 255, 255)',
         )
         
-    fig.update_layout(yaxis=dict(title='log(Intensity)'), xaxis=dict(title='Sequence', rangeslider=dict(visible=True)))
+    fig.update_layout(title=trivial_name, yaxis=dict(title=y_axis_label), xaxis=dict(title='Sequence', rangeslider=dict(visible=True)))
     fig.update_yaxes(range=[-maximum_intensity, maximum_intensity])
     return fig
 
