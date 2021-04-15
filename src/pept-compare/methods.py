@@ -869,3 +869,27 @@ def get_unique_and_common_proteins(protein_list):
             common_protein_list.append(protein)
     return unique_protein_list, common_protein_list
 
+def proteins_present_in_all_samples(protein_list):
+    proteins_present_in_all_samples = []
+    for protein in protein_list:
+        if protein.present_in_all_samples():
+            proteins_present_in_all_samples.append(protein)
+    return proteins_present_in_all_samples
+
+def create_peptide_datatable(peptide_list):
+    peptide_info_columns = ['Peptide','Start','End','Intensity_g1','Intensity_g2']
+    df_peptide_info = pd.DataFrame(columns=peptide_info_columns)
+    for peptide in peptide_list:
+        df_peptide_info = df_peptide_info.append({'Peptide': str(peptide.get_sequence()), 'Start': peptide.get_start(),'End': peptide.get_end(), 'Intensity_g1': "{:.2e}".format(peptide.get_area()[0]), 
+        'Intensity_g2': "{:.2e}".format(peptide.get_area()[2])}, ignore_index=True)
+    df_peptide_info.sort_values(by=['Intensity_g1', 'Intensity_g2'], ascending=False, inplace=True)
+    return df_peptide_info
+
+def create_protein_datatable(protein_list):
+    protein_info_columns = ['Protein','UniProt id','#peptides g1','#peptides g2','Intensity_g1','Intensity_g2', 'Protein family','p-value']
+    df_protein_info = pd.DataFrame(columns=protein_info_columns)
+    for protein in protein_list:
+        df_protein_info = df_protein_info.append({'Protein': str(protein.get_trivial_name()), 'UniProt id': protein.get_id(),'#peptides g1': protein.get_nbr_of_peptides()[0], '#peptides g2': protein.get_nbr_of_peptides()[1], 
+        'Intensity_g1': "{:.2e}".format(protein.get_area_sum()[0]), 'Intensity_g2': "{:.2e}".format(protein.get_area_sum()[2]), 'Protein family':protein.get_protein_family(), 'p-value':protein.get_pvalue()},  ignore_index=True)
+    df_protein_info.sort_values(by=['Intensity_g1', 'Intensity_g2'], ascending=False, inplace=True)
+    return df_protein_info

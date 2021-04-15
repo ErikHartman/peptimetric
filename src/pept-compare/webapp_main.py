@@ -17,6 +17,7 @@ from dash.dependencies import Input, Output, State
 from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, create_protein_list, protein_graphic_plotly, create_peptide_list, stacked_samples_peptide
 from methods import amino_acid_piecharts, common_family, all_sample_bar_chart
 from methods import apply_protein_cutoffs, apply_peptide_cutoffs, get_unique_and_common_proteins
+from methods import proteins_present_in_all_samples, create_protein_datatable, create_peptide_datatable
 
 app = dash.Dash(__name__,external_stylesheets=[dbc.themes.SANDSTONE], suppress_callback_exceptions=True)
 
@@ -27,6 +28,7 @@ app.layout = html.Div([
 
 #---------------------------------------PAGE-ELEMENTS------------------------------------------------
 file_columns = ['Sample', 'File']
+
 
 modal_file = html.Div([
     dbc.Button("Files", id="open-modal-file", color='info', className="mr-1"),
@@ -94,7 +96,10 @@ modal_export_data = html.Div([
     dbc.Button("Export Data", id="open-modal-export-data", color='info', className="mr-1"),
     dbc.Modal([
                 dbc.ModalHeader("Export data", className="font-weight-bold"),
-
+                dbc.ModalBody([
+                    dbc.Row(dbc.Button('Download protein table', id='download-protein-info'), justify='center', className='mr-1'),
+                    dbc.Row(dbc.Button('Download peptide table', id='download-peptide-table'), justify='center', className='mr-1'),
+                ]),
                 dbc.ModalFooter(
                     dbc.Button("Close", id="close-modal-export-data", className="ml-auto")
                 ),
@@ -104,27 +109,6 @@ modal_export_data = html.Div([
               )
 ])
 
-modal_other_graphics = dbc.Modal([
-                dbc.ModalHeader("Other Graphics", className="font-weight-bold"),
-
-                dbc.ModalFooter(
-                    dbc.Button("Close", id="close-modal-other-graphics", className="ml-auto")
-                ),
-            ],
-            id="modal-other-graphics",
-            centered=True,
-              )
-
-modal_view_setings = dbc.Modal([
-                dbc.ModalHeader("View Settings", className="font-weight-bold"),
-
-                dbc.ModalFooter(
-                    dbc.Button("Close", id="close-modal-view-settings", className="ml-auto")
-                ),
-            ],
-            id="modal-view-settings",
-            centered=True,
-              )
 protein_tab = dbc.Form([
                     dbc.FormGroup([
                     dbc.Label("Total intensity", className="mr-2"),
@@ -138,6 +122,14 @@ protein_tab = dbc.Form([
                     dbc.Label('Number of peptides', className='mr-2'),
                     dbc.Input(placeholder='0', type="number", className='ml-auto', min=0, id='nbr-of-peptides-cutoff', value=0),
                     ], className="mr-3",),
+                    dbc.FormGroup([
+                    dbc.Checklist(
+                         options=[
+                            {"label": "Only show proteins present in all samples", "value": 'present-in-all-samples'},
+                            ],
+                            value=[],
+                            id='proteins-present-in-all-samples-checkbox')],
+                     className="mr-3",)
                 ],
                 inline=True),
 
@@ -154,7 +146,8 @@ peptide_tab = dbc.Form([
                     dbc.Checklist(
                          options=[
                             {"label": "RT", "value": 'RT'},
-                            {"label": "CSS", "value": 'CSS'}],
+                            {"label": "CSS", "value": 'CSS'},
+                            ],
                             value=[],
                             id='RT-CSS-checkbox')],
                      className="mr-3",)
@@ -217,12 +210,8 @@ navbar = dbc.Navbar(
         modal_export_data,
         dbc.DropdownMenu(label="Settings",
             children=[
-                dbc.DropdownMenuItem("View", id="open-modal-view-settings"),
-                modal_view_setings,
                 dbc.DropdownMenuItem("Cutoffs", id="open-modal-cutoff"),
                 modal_cutoff,
-                dbc.DropdownMenuItem("Other graphics", id="open-modal-other-graphics"),
-                modal_other_graphics,
             ]
         ),
         dbc.Nav([
@@ -445,7 +434,8 @@ hidden_divs = html.Div([
     html.Div(id='peptide-lists-holder', style={'display': 'none'}),
     html.Div(id='df_g1-holder', style={'display':'none'}),
     html.Div(id='df_g2-holder', style={'display':'none'}),
-
+    html.Div(id='protein-data-holder', style={'display':'none'}),
+    html.Div(id='peptide-data-holder', style={'display':'none'}),
 ])
 #---------------------------PAGES---------------------------------------------------------------
 main_page = dbc.Container([
@@ -521,23 +511,25 @@ def update_data_frame(contents, filename):
     master_df = concatenate_dataframes(dfs)
     return master_df
 
-cutoffs = []
-def set_cutoffs(tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT_CSS_checkbox):
+
+def set_cutoffs(tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT_CSS_checkbox, proteins_present_in_all_samples):
     RT = False
     CSS = False
+    present_in_all_samples = False
     if 'RT' in RT_CSS_checkbox:
         RT=True
     if 'CSS' in RT_CSS_checkbox:
         CSS=True
-    cutoffs.append([tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS])
-    return [tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS]
+    if 'present-in-all-samples' in proteins_present_in_all_samples:
+        proteins_present_in_all_samples = True
+    return [tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS, present_in_all_samples]
 
 protein_lists = []
 def create_protein_fig(n_clicks, checkbox_values, apply_cutoffs_button, cutoff_values, df_g1, df_g2):
-    if apply_cutoffs_button and len(cutoffs) >0:
-        tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS = cutoff_values
+    if apply_cutoffs_button:
+        tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS, present_in_all_samples = cutoff_values
     else:
-        tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS = 0,0,0,0,0,False,False
+        tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS, present_in_all_samples = 0,0,0,0,0,False,False, False
     triv_names = []
     protein_fig = {}
     protein_list = []
@@ -550,19 +542,19 @@ def create_protein_fig(n_clicks, checkbox_values, apply_cutoffs_button, cutoff_v
         protein_lists.append(protein_list)
         protein_list_cutoff = apply_peptide_cutoffs(protein_list, area=pep_intensity_co, spc=pep_spc_co, rt=RT, css=CSS)
         protein_list_cutoff = apply_protein_cutoffs(protein_list_cutoff, nbr_of_peptides=nbr_of_peptides_co, tot_area=tot_intensity_co, tot_spc=tot_spc_co)
+        if present_in_all_samples:
+            protein_list_cutoff = proteins_present_in_all_samples(protein_list_cutoff)
         unique_protein_list, common_protein_list = get_unique_and_common_proteins(protein_list_cutoff)
-        protein_info_columns = ['Protein','UniProt id','#peptides g1','#peptides g2','Intensity_g1','Intensity_g2', 'Protein family','p-value']
-        df_protein_info = pd.DataFrame(columns=protein_info_columns)
-        for protein in protein_list_cutoff:
-            df_protein_info = df_protein_info.append({'Protein': str(protein.get_trivial_name()), 'UniProt id': protein.get_id(),'#peptides g1': protein.get_nbr_of_peptides()[0], '#peptides g2': protein.get_nbr_of_peptides()[1], 
-            'Intensity_g1': "{:.2e}".format(protein.get_area_sum()[0]), 'Intensity_g2': "{:.2e}".format(protein.get_area_sum()[2]), 'Protein family':protein.get_protein_family(), 'p-value':protein.get_pvalue()},  ignore_index=True)
-        df_protein_info.sort_values(by=['Intensity_g1', 'Intensity_g2'], ascending=False, inplace=True)
+        df_protein_info = create_protein_datatable(protein_list_cutoff)
         datatable = dash_table.DataTable(
             data = df_protein_info.to_dict('rows'),
             columns=[{"name": str(i), "id": str(i)} for i in df_protein_info.columns],
             sort_action='native',
             fixed_rows={'headers': True},
             filter_action='native',
+            virtualization=True,
+            export_format='xlsx',
+            css=[{'selector':'.export','rule':'position:font-type:Roboto;color:green'}],
             style_data_conditional = [{
                 'if' : {'row_index':'odd'},
                 'backgroundColor' : 'rgb(182, 224, 194)'
@@ -592,19 +584,19 @@ def create_protein_fig(n_clicks, checkbox_values, apply_cutoffs_button, cutoff_v
             protein_fig = protein_graphic_plotly(common_protein_list, difference_metric='area_sum', show_pfam = True)
         else:
             protein_fig = protein_graphic_plotly(common_protein_list, difference_metric='area_sum')
-        return protein_fig, triv_names, datatable
+        return protein_fig, triv_names, datatable, df_protein_info.to_json()
     
     else:
-        return {}, [], html.Div()
+        return {}, [], html.Div(), []
 
 peptide_lists=[]
 def create_peptide_fig(clickData, search_protein, n_clicks_sum, n_clicks_mean, cutoff_values, apply_cutoffs_button):
     protein_accession = ''
     search_text = ''
-    if apply_cutoffs_button and len(cutoffs) >0:
-        tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS = cutoff_values
+    if apply_cutoffs_button:
+        tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS, present_in_all_samples = cutoff_values
     else:
-        tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS = 0,0,0,0,0,False,False
+        tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS, present_in_all_samples = 0,0,0,0,0,False,False, False
 
     if len(protein_lists) > 0:
         protein_list_cutoff = apply_peptide_cutoffs(protein_lists[-1], area=pep_intensity_co, spc=pep_spc_co, rt=RT, css=CSS)
@@ -625,19 +617,16 @@ def create_peptide_fig(clickData, search_protein, n_clicks_sum, n_clicks_mean, c
             peptide_fig = stacked_samples_peptide(peptide_list, show_difference='show', show_weight ='show', average=False)
         else:
             peptide_fig = stacked_samples_peptide(peptide_list, show_difference='show', show_weight ='show', average=True)
-        peptide_info_columns = ['Peptide','Start','End','Intensity_g1','Intensity_g2']
-        df_peptide_info = pd.DataFrame(columns=peptide_info_columns)
-        for peptide in peptide_list:
-            df_peptide_info = df_peptide_info.append({'Peptide': str(peptide.get_sequence()), 'Start': peptide.get_start(),'End': peptide.get_end(), 'Intensity_g1': "{:.2e}".format(peptide.get_area()[0]), 
-            'Intensity_g2': "{:.2e}".format(peptide.get_area()[2])}, ignore_index=True)
-        print(df_peptide_info)
-        df_peptide_info.sort_values(by=['Intensity_g1', 'Intensity_g2'], ascending=False, inplace=True)
+        df_peptide_info = create_peptide_datatable(peptide_list)
         datatable = dash_table.DataTable(
             data = df_peptide_info.to_dict('rows'),
             columns=[{"name": str(i), "id": str(i)} for i in df_peptide_info.columns],
             sort_action='native',
             fixed_rows={'headers': True},
             filter_action='native',
+            virtualization=True,
+            css=[{'selector':'.export','rule':'position:font-type:Roboto;color:green'}],
+            export_format="xlsx",
             style_data_conditional = [{
                 'if' : {'row_index':'odd'},
                 'backgroundColor' : 'rgb(182, 224, 194)'
@@ -650,15 +639,16 @@ def create_peptide_fig(clickData, search_protein, n_clicks_sum, n_clicks_mean, c
             style_cell={
                 'textAlign':'left',
                 'padding':'5px',
-                'maxWidth': 95,
-                'minWdith':95,
+                'maxWidth': 105,
+                'minWidth': 105,
             },
-            style_table={'height': '400px', 'width':'500px', 'overflowY': 'auto', 'overflowX':'auto'}
+            style_table={'height': '400px', 'width':'500px', 'overflowY': 'auto','overflowX':'auto'}
     )   
-        return peptide_fig, search_text, html.Div(datatable)
+               
+        return peptide_fig, search_text, datatable, df_peptide_info.to_json()
     
     else:
-        return {}, search_text, []
+        return {}, search_text, [], []
 
 
 def amino_acid_dropdown(n_clicks_complete_proteome, n_clicks_selected_protein, radioitem_value):
@@ -680,6 +670,7 @@ def generate_hover_graphs(hoverData):
         return fig
     else:
         return {}
+
 
 app.callback(
     Output('hover-all-protein-samples', 'figure'),
@@ -703,6 +694,7 @@ app.callback(
     Output('peptide-fig', 'figure'),
     Output('search-protein', 'value'),
     Output('peptide-info-table', 'children'),
+    Output('peptide-data-holder', 'children'),
     Input('protein-fig', 'clickData'),
     Input('search-protein', 'value'),
     Input('peptide-dropdown-sum', 'n_clicks_timestamp'),
@@ -729,6 +721,7 @@ app.callback(
     Output('protein-fig', 'figure'),
     Output('protein-list', 'children'),
     Output('protein-info-table','children'),
+    Output('protein-data-holder', 'children'),
     Input("close-modal-file", "n_clicks_timestamp"),
     Input('protein-checklist','value'),
     Input('close-modal-cutoff', 'n_clicks'),
@@ -745,6 +738,7 @@ app.callback(
     Input('peptide-intensity-cutoff', 'value'),
     Input('peptide-spc-cutoff', 'value'),
     Input('RT-CSS-checkbox', 'value'),
+    Input('proteins-present-in-all-samples-checkbox', 'value')
 )(set_cutoffs)
 
 app.callback(Output('page-content', 'children'),
@@ -756,11 +750,6 @@ app.callback(
     [State("modal-file", "is_open")],
 )(toggle_modal)
 
-app.callback(
-    Output("modal-other-graphics", "is_open"),
-    [Input("open-modal-other-graphics", "n_clicks"), Input("close-modal-other-graphics", "n_clicks")],
-    [State("modal-other-graphics", "is_open")],
-)(toggle_modal)
 
 app.callback(
     Output("modal-export-data", "is_open"),
@@ -774,11 +763,6 @@ app.callback(
     [State("modal-cutoff", "is_open")],
 )(toggle_modal)
 
-app.callback(
-    Output("modal-view-settings", "is_open"),
-    [Input("open-modal-view-settings", "n_clicks"), Input("close-modal-view-settings", "n_clicks")],
-    [State("modal-view-settings", "is_open")],
-)(toggle_modal)
 
 app.callback(
     Output("modal-FAQ", "is_open"),
