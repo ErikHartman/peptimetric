@@ -10,19 +10,9 @@ if __name__  == "__main__":
     g2 = concatenate_dataframes(read_files_gui())
     master = merge_dataframes(g1,g2)
     protein_list = create_protein_list(master)
-    print(len(protein_list))
-    unique, common = get_unique_and_common_proteins(protein_list)
-    print(str(len(unique)) +  " " + str(len(common)))
-    not_all_samples = 0
-    all_samples = 0
-    for protein in protein_list:
-        if protein.present_in_all_samples() == True:
-            all_samples += 1
-        else:
-            not_all_samples += 1
-    print(all_samples)
-    print(not_all_samples) 
-    
+    peptide_list = create_peptide_list(protein_list, protein_list[0].get_id())
+    fig = stacked_samples_peptide(peptide_list, show_difference='show', show_weight ='show', average=True, difference_metric='area')
+    fig.show()
     
     
     

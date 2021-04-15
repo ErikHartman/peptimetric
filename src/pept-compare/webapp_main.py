@@ -558,8 +558,8 @@ def set_cutoffs(tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_
 protein_lists = []
 
 def create_protein_fig(n_clicks, checkbox_values, apply_cutoffs_button, protein_radioitems_value, cutoff_values, df_g1, df_g2):
-    if apply_cutoffs_button and len(cutoffs) >0:
-        tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS = cutoff_values
+    if apply_cutoffs_button:
+        tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS, present_in_all_samples = cutoff_values
 
     else:
         tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS, present_in_all_samples = 0,0,0,0,0,False,False, False
@@ -618,7 +618,7 @@ def create_protein_fig(n_clicks, checkbox_values, apply_cutoffs_button, protein_
         else:
 
             protein_fig = protein_graphic_plotly(common_protein_list, difference_metric=protein_radioitems_value)
-        return protein_fig, triv_names, datatable
+        return protein_fig, triv_names, datatable, df_protein_info.to_json()
 
     
     else:
@@ -651,7 +651,7 @@ def create_peptide_fig(clickData, search_protein, n_clicks_sum, n_clicks_mean, c
         if n_clicks_sum == 0 and n_clicks_mean == 0 or n_clicks_sum > n_clicks_mean:
             peptide_fig = stacked_samples_peptide(peptide_list, show_difference='show', show_weight ='show', average=False, difference_metric=peptide_radioitems_value)
         else:
-            peptide_fig = stacked_samples_peptide(peptide_list, show_difference='show', show_weight ='show', average=True)
+            peptide_fig = stacked_samples_peptide(peptide_list, show_difference='show', show_weight ='show', average=True, difference_metric=peptide_radioitems_value)
         df_peptide_info = create_peptide_datatable(peptide_list)
         datatable = dash_table.DataTable(
             data = df_peptide_info.to_dict('rows'),

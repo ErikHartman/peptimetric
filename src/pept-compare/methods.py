@@ -764,7 +764,7 @@ def stacked_samples_peptide(peptide_list, **kwargs):
         for sample_dict in sample_dicts_neg:
             neg.append(sample_dict['intensity'])
             neg_nbr_of_peptides.append(sample_dict['counter'])
-        
+            
         for i in range(len(pos[0])):
             pos_average = []
             pos_nbr_of_peptides_average = []
@@ -773,7 +773,7 @@ def stacked_samples_peptide(peptide_list, **kwargs):
                 pos_nbr_of_peptides_average.append(pos_nbr_of_peptides[sample][i])
             pos_mean.append(statistics.mean(pos_average))
             color_pos.append(statistics.mean(pos_nbr_of_peptides_average))
-            if i > 1:
+            if sample > 1:
                 pos_std.append(statistics.stdev(pos_average))
             else:
                 pos_std.append(0)
@@ -786,7 +786,7 @@ def stacked_samples_peptide(peptide_list, **kwargs):
                 neg_nbr_of_peptides_average.append(neg_nbr_of_peptides[sample][i])
             neg_mean.append(statistics.mean(neg_average))
             color_neg.append(statistics.mean(neg_nbr_of_peptides_average))
-            if i > 1:
+            if sample > 1:
                 neg_std.append(statistics.stdev(neg_average))
             else:
                 neg_std.append(0)
