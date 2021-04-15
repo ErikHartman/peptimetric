@@ -276,7 +276,7 @@ def group_amino_acids(peptide_list):
 
 def protein_graphic_plotly(protein_list, **kwargs):
     default_settings = {
-        'difference_metric': 'area_sum',
+        'difference_metric':'area',
         'color': 'green',
         'show_stdev':'',
         'show_pfam':'',
@@ -299,20 +299,30 @@ def protein_graphic_plotly(protein_list, **kwargs):
         accession.append(protein.get_id())
         nbr_of_peptides.append(sum(protein.get_nbr_of_peptides()))
         pfam.append(protein.get_protein_family())
-        if kwargs.get('difference_metric') == 'area_sum':
+        if kwargs.get('difference_metric') == 'area':
             g1_intensity.append(protein.get_area_sum()[0])
             g1_stdev.append(protein.get_area_sum()[1])
             g2_intensity.append(protein.get_area_sum()[2])
             g2_stdev.append(protein.get_area_sum()[3])
-        elif kwargs.get('difference_metric') == 'area_mean':
+            y_label = 'Group 1 Intensity'
+            x_label = 'Group 2 Intensity'
+            log_x = True
+            log_y = True
+        elif kwargs.get('difference_metric') == 'area_mean': #Not used now
             g1_intensity.append(protein.get_area_mean()[0])
             g2_intensity.append(protein.get_area_mean()[1])
-        elif kwargs.get('difference_metric') == 'spectral_count_mean':
+        elif kwargs.get('difference_metric') == 'spectral_count_mean': #Not used now
             g1_intensity.append(protein.get_spectral_count_mean()[0])
             g2_intensity.append(protein.get_spectral_count_mean()[1])
-        elif kwargs.get('difference_metric') == 'spectral_count_sum':
+        elif kwargs.get('difference_metric') == 'spectral_count':
             g1_intensity.append(protein.get_spectral_count_sum()[0])
-            g2_intensity.append(protein.get_spectral_count_sum()[1])
+            g1_stdev.append(protein.get_spectral_count_sum()[1])
+            g2_intensity.append(protein.get_spectral_count_sum()[2])
+            g2_stdev.append(protein.get_spectral_count_sum()[3])
+            y_label= 'Group 1 Spectral Count'
+            x_label = 'Group 2 Spectral Count'
+            log_x=False
+            log_y=False
 
     def set_color_and_size(nbr_of_peptides):
         color_thresholds = get_thresholds(nbr_of_peptides)
@@ -342,13 +352,12 @@ def protein_graphic_plotly(protein_list, **kwargs):
     col, size, color_thresholds = set_color_and_size(nbr_of_peptides)
     for s in size:
         s *= 4
-    
     df_fig = pd.DataFrame(list(zip(g1_intensity,g2_intensity, nbr_of_peptides, trivial_name, pfam, col, accession, g1_stdev, g2_stdev)),
         columns=['g1_intensity','g2_intensity','nbr_of_peptides','trivial_name','pfam','col','accession', 'g1_stdev', 'g2_stdev'])
-    print(df_fig)
     fig = px.scatter(df_fig, x='g2_intensity', y='g1_intensity',
         color='nbr_of_peptides', color_continuous_scale=px.colors.diverging.PiYG, 
-        size='nbr_of_peptides', log_x=True, log_y=True, hover_data=['trivial_name','nbr_of_peptides','pfam','accession'])
+        size='nbr_of_peptides', log_x=log_x, log_y=log_y, hover_data=['trivial_name','nbr_of_peptides','pfam','accession'])
+    fig.update_layout(yaxis=dict(title=y_label), xaxis=dict(title=x_label))
     if kwargs.get('protein_id') != '':
         marker_color_list = ['rgba(0,0,0,0)' for n in range(len(accession))]
         for i in range(len(accession)):

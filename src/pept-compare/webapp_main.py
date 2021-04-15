@@ -344,6 +344,19 @@ sample_collapse = html.Div(
     ]
 )
 
+protein_fig_radioitems = html.Div([
+    dbc.Label("Select difference metric"),
+    dbc.RadioItems(
+        options=[
+        {'label': 'Area', 'value': 'area'},
+        {'label': 'Spectral Count', 'value': 'spectral_count'}
+        ],
+        value='area',
+        id='protein-radioitems',
+        inline=True,
+    )
+])
+
 protein_fig = html.Div([
         html.H3('Protein View'),
         dbc.Row([
@@ -358,7 +371,9 @@ protein_fig = html.Div([
                     {'label': 'Show protein families', 'value': 'show-pfam'}
                     ],
                 )                 
-        )]),
+            ),
+            dbc.Col(protein_fig_radioitems)
+        ]),
         dcc.Loading(type='cube', color = '#76b382',
             children=dcc.Graph(id='protein-fig', figure={}, config={'toImageButtonOptions':{'format': 'jpeg'}, 'displaylogo':False})
         )
@@ -549,7 +564,7 @@ def set_cutoffs(tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_
     return [tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS]
 
 protein_lists = []
-def create_protein_fig(n_clicks, checkbox_values, apply_cutoffs_button, cutoff_values, df_g1, df_g2):
+def create_protein_fig(n_clicks, checkbox_values, apply_cutoffs_button, protein_radioitems_value, cutoff_values, df_g1, df_g2):
     if apply_cutoffs_button and len(cutoffs) >0:
         tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS = cutoff_values
     else:
@@ -601,20 +616,20 @@ def create_protein_fig(n_clicks, checkbox_values, apply_cutoffs_button, cutoff_v
                 triv_names.append(html.Option(value=protein.get_trivial_name()))
     if df_g1 and df_g2:
         if checkbox_values and 'show-stdev' in checkbox_values and 'show-pfam' in checkbox_values:
-            protein_fig = protein_graphic_plotly(common_protein_list, difference_metric='area_sum', show_pfam=True, show_stdev = True)
+            protein_fig = protein_graphic_plotly(common_protein_list, difference_metric= protein_radioitems_value, show_pfam=True, show_stdev = True)
         elif checkbox_values and 'show-stdev' in checkbox_values:
-            protein_fig = protein_graphic_plotly(common_protein_list, difference_metric='area_sum', show_stdev = True)
+            protein_fig = protein_graphic_plotly(common_protein_list, difference_metric=protein_radioitems_value, show_stdev = True)
         elif checkbox_values and 'show-pfam' in checkbox_values:
-            protein_fig = protein_graphic_plotly(common_protein_list, difference_metric='area_sum', show_pfam = True)
+            protein_fig = protein_graphic_plotly(common_protein_list, difference_metric=protein_radioitems_value, show_pfam = True)
         else:
-            protein_fig = protein_graphic_plotly(common_protein_list, difference_metric='area_sum')
+            protein_fig = protein_graphic_plotly(common_protein_list, difference_metric=protein_radioitems_value)
         return protein_fig, triv_names, datatable
     
     else:
         return {}, [], html.Div()
 
 peptide_lists=[]
-def create_peptide_fig(clickData, search_protein, n_clicks_sum, n_clicks_mean, cutoff_values, apply_cutoffs_button, peptide_radioitems_value):
+def create_peptide_fig(clickData, search_protein, n_clicks_sum, n_clicks_mean, cutoff_values, apply_cutoffs_button, peptide_radioitems_value,):
     protein_accession = ''
     search_text = ''
     if apply_cutoffs_button and len(cutoffs) >0:
@@ -749,6 +764,7 @@ app.callback(
     Input("close-modal-file", "n_clicks_timestamp"),
     Input('protein-checklist','value'),
     Input('close-modal-cutoff', 'n_clicks'),
+    Input('protein-radioitems', 'value'),
     State('cutoff-value-holder', 'children'),
     State('df_g1-holder', 'children'),
     State('df_g2-holder', 'children'),

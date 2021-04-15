@@ -9,8 +9,7 @@ if __name__  == "__main__":
     master = merge_dataframes(g1,g2)
     protein_list = create_protein_list(master)
     peptide_list = create_peptide_list(protein_list, "P69905")
-    fig = stacked_samples_peptide(peptide_list, difference_metric= 'area', average=False)
-    fig1 = stacked_samples_peptide(peptide_list, difference_metric= 'spectral_count', average=False)
-
+    fig = protein_graphic_plotly(protein_list, difference_metric='area')
+    fig1 = protein_graphic_plotly(protein_list, difference_metric='spectral_count')
     fig.show()
     fig1.show()
