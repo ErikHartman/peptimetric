@@ -359,6 +359,19 @@ all_samples_protein_fig = html.Div([
     config={'displayModeBar': False}
 )])
 
+peptide_fig_radioitems = html.Div([
+    dbc.Label("Select difference metric"),
+    dbc.RadioItems(
+        options=[
+        {'label': 'Area', 'value': 'area'},
+        {'label': 'Spectral Count', 'value': 'spectral_count'}
+        ],
+        value='area',
+        id='peptide-radioitems',
+        inline=True,
+    )
+])
+
 peptide_fig = html.Div([
         html.H3('Peptide View'),
         dbc.Row([
@@ -367,7 +380,10 @@ peptide_fig = html.Div([
             children = [
                 dbc.DropdownMenuItem("Sum", id="peptide-dropdown-sum", n_clicks_timestamp=0),
                 dbc.DropdownMenuItem("Mean", id="peptide-dropdown-mean", n_clicks_timestamp=0),
-            ]))                 
+            ])),
+            dbc.Col(
+                peptide_fig_radioitems
+            )                 
         ]),
         dcc.Loading(type='cube', color = '#76b382',
             children=dcc.Graph(id='peptide-fig', figure={}, config={'displaylogo': False})
@@ -379,7 +395,7 @@ amino_acid_radioitems = html.Div([
         dbc.RadioItems(
             options=[
                 {"label": "Area", "value": 'area'},
-                {"label": "Spectral count", "value": 'spectral_count'}, 
+                {"label": "Spectral Count", "value": 'spectral_count'}, 
             ], 
             value='area',
             id="aa-radioitems", 
@@ -590,7 +606,7 @@ def create_protein_fig(n_clicks, checkbox_values, apply_cutoffs_button, cutoff_v
         return {}, [], html.Div(), []
 
 peptide_lists=[]
-def create_peptide_fig(clickData, search_protein, n_clicks_sum, n_clicks_mean, cutoff_values, apply_cutoffs_button):
+def create_peptide_fig(clickData, search_protein, n_clicks_sum, n_clicks_mean, cutoff_values, apply_cutoffs_button, peptide_radioitems_value):
     protein_accession = ''
     search_text = ''
     if apply_cutoffs_button:
@@ -614,7 +630,7 @@ def create_peptide_fig(clickData, search_protein, n_clicks_sum, n_clicks_mean, c
         peptide_list = create_peptide_list(protein_list_cutoff, str(protein_accession))
         peptide_lists.append(peptide_list)
         if n_clicks_sum == 0 and n_clicks_mean == 0 or n_clicks_sum > n_clicks_mean:
-            peptide_fig = stacked_samples_peptide(peptide_list, show_difference='show', show_weight ='show', average=False)
+            peptide_fig = stacked_samples_peptide(peptide_list, show_difference='show', show_weight ='show', average=False, difference_metric=peptide_radioitems_value)
         else:
             peptide_fig = stacked_samples_peptide(peptide_list, show_difference='show', show_weight ='show', average=True)
         df_peptide_info = create_peptide_datatable(peptide_list)
@@ -701,6 +717,7 @@ app.callback(
     Input('peptide-dropdown-mean','n_clicks_timestamp'),
     Input('cutoff-value-holder','children'),
     Input('close-modal-cutoff', 'n_clicks'),
+    Input('peptide-radioitems', 'value')
 )(create_peptide_fig)
 
 app.callback(
