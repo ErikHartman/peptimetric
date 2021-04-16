@@ -83,9 +83,8 @@ def merge_dataframes(g1, g2):
     return g1.merge(g2, on=['Peptide', 'Accession'], how='outer', suffixes=['_g1', '_g2'])
 
 
-def set_color_and_size(nbr_of_peptides):
+def set_color_and_size(nbr_of_peptides, color_thresholds):
     color=green
-    color_thresholds = get_thresholds(nbr_of_peptides)
     col = []
     size = []
     for n in nbr_of_peptides:
@@ -107,7 +106,7 @@ def set_color_and_size(nbr_of_peptides):
         else:
             col.append(color['light'])
             size.append(color_thresholds[0])
-    return col, size, color_thresholds
+    return col, size
 
 def amino_acid_frequency(p_list, **kwargs):
     default_settings = {
@@ -324,32 +323,8 @@ def protein_graphic_plotly(protein_list, **kwargs):
             log_x=False
             log_y=False
 
-    def set_color_and_size(nbr_of_peptides):
-        color_thresholds = get_thresholds(nbr_of_peptides)
-        col = []
-        size = []
-        for i, n in zip(range(len(nbr_of_peptides)), nbr_of_peptides):
-            if n > color_thresholds[4]:
-                col.append(color['dark'])
-                size.append(color_thresholds[4])
-            elif n >= color_thresholds[3]:
-                col.append(color['mediumdark'])
-                size.append(color_thresholds[3])
-            elif n >= color_thresholds[2]:
-                col.append(color['medium'])
-                size.append(color_thresholds[2])
-            elif n >= color_thresholds[1]:
-                col.append(color['mediumlight'])
-                size.append(color_thresholds[1])
-            elif n == 1:
-                col.append(color['grey'])
-                size.append(color_thresholds[0])
-            else:
-                col.append(color['light'])
-                size.append(color_thresholds[0])
-        return col, size, color_thresholds
-
-    col, size, color_thresholds = set_color_and_size(nbr_of_peptides)
+    color_thresholds = get_thresholds(nbr_of_peptides)
+    col, size = set_color_and_size(nbr_of_peptides, color_thresholds)
     for s in size:
         s *= 4
     df_fig = pd.DataFrame(list(zip(g1_intensity,g2_intensity, nbr_of_peptides, trivial_name, pfam, col, accession, g1_stdev, g2_stdev)),
@@ -687,40 +662,13 @@ def stacked_samples_peptide(peptide_list, **kwargs):
     color = green
     if kwargs.get('average') == False:
         for sample_dict in sample_dicts_pos:
-            col = []
-            for n in sample_dict['counter']:
-                if n > color_thresholds[4]:
-                    col.append(color['dark'])
-                elif n >= color_thresholds[3]:
-                    col.append(color['mediumdark'])
-                elif n >= color_thresholds[2]:
-                    col.append(color['medium'])
-                elif n >= color_thresholds[1]:
-                    col.append(color['mediumlight'])
-                elif n == 1:
-                    col.append(color['grey'])
-                else:
-                    col.append(color['light'])
+            col, size = set_color_and_size(sample_dict['counter'], color_thresholds)
             fig.add_trace(go.Bar(x=sample_dict["index"], y=sample_dict["intensity"], name=f's{i}_g1', width=1, marker=dict(line=dict(width=0), color=col), customdata=sample_dict['counter']
             , hovertext=sample_dict['counter']))
             i += 1
         i=0
         for sample_dict in sample_dicts_neg:
-            col=[]
-            for n in sample_dict['counter']:
-                if n > color_thresholds[4]:
-                    col.append(color['dark'])
-                elif n >= color_thresholds[3]:
-                    col.append(color['mediumdark'])
-                elif n >= color_thresholds[2]:
-                    col.append(color['medium'])
-                elif n >= color_thresholds[1]:
-                    col.append(color['mediumlight'])
-                elif n == 1:
-                    col.append(color['grey'])
-                else:
-                    col.append(color['light'])
-            
+            col, size = set_color_and_size(sample_dict['counter'], color_thresholds)
             fig.add_trace(go.Bar(x=sample_dict["index"], y=sample_dict["intensity"], name=f's{i}_g2', width=1, marker=dict(line=dict(width=0), color=col), customdata=sample_dict['counter']
             , hovertext=sample_dict['counter']))
             i += 1
@@ -794,35 +742,8 @@ def stacked_samples_peptide(peptide_list, **kwargs):
         nbr_of_peptides = color_pos + color_neg
         nbr_of_peptides = [i for i in nbr_of_peptides if i != 0]
         color_thresholds = get_thresholds(nbr_of_peptides)
-        print(color_thresholds)
-        col_pos=[]
-        for n in color_pos:
-            if n > color_thresholds[4]:
-                col_pos.append(color['dark'])
-            elif n >= color_thresholds[3]:
-                col_pos.append(color['mediumdark'])
-            elif n >= color_thresholds[2]:
-                col_pos.append(color['medium'])
-            elif n >= color_thresholds[1]:
-                col_pos.append(color['mediumlight'])
-            elif n == 1:
-                col_pos.append(color['grey'])
-            else:
-                col_pos.append(color['light'])
-        col_neg=[]
-        for n in color_neg:
-            if n > color_thresholds[4]:
-                col_neg.append(color['dark'])
-            elif n >= color_thresholds[3]:
-                col_neg.append(color['mediumdark'])
-            elif n >= color_thresholds[2]:
-                col_neg.append(color['medium'])
-            elif n >= color_thresholds[1]:
-                col_neg.append(color['mediumlight'])
-            elif n == 1:
-                col_neg.append(color['grey'])
-            else:
-                col_neg.append(color['light'])
+        col_pos, size = set_color_and_size(color_pos, color_thresholds)
+        col_neg, size = set_color_and_size(color_neg, color_thresholds)
         x=sample_dict['index']
         y_upper = [a + b for a, b in zip(pos_mean, pos_std)]
         y_lower = [a - b for a, b in zip(pos_mean, pos_std)]
