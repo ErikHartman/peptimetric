@@ -794,6 +794,35 @@ def stacked_samples_peptide(peptide_list, **kwargs):
     fig.update_yaxes(range=[-maximum_intensity, maximum_intensity])
     return fig
 
+def create_length_histogram(p_list, **kwargs):
+    default_settings = {
+        'peptide_or_protein_list'
+    }
+    default_settings.update(kwargs)
+    peptide_length_df_g1 = pd.DataFrame(columns=['Length'])
+    peptide_length_df_g2 = pd.DataFrame(columns=['Length'])
+    if kwargs.get('peptide_or_protein_list') == 'peptide_list':
+        for peptide in p_list:
+            if peptide.get_area()[0] != 0:
+                peptide_length_df_g1 = peptide_length_df_g1.append({'Length': len(peptide.get_sequence())}, ignore_index=True)
+            if  peptide.get_area()[2] != 0:
+                peptide_length_df_g2 = peptide_length_df_g2.append({'Length': len(peptide.get_sequence())}, ignore_index=True)  
+        fig1 = px.histogram(peptide_length_df_g1, x='Length', color_discrete_sequence=[green['mediumdark']], title= 'Group 1 - Peptide Length')
+        fig2 = px.histogram(peptide_length_df_g2, x='Length', color_discrete_sequence=[green['mediumdark']], title= 'Group 2 - Peptide Length')
+
+    elif kwargs.get('peptide_or_protein_list') == 'protein_list':
+        for protein in p_list:
+            peptide_list = create_peptide_list(p_list, protein.get_id())
+            for peptide in peptide_list:
+                if peptide.get_area()[0] != 0:
+                    peptide_length_df_g1 = peptide_length_df_g1.append({'Length': len(peptide.get_sequence())}, ignore_index=True)
+                if peptide.get_area()[2] != 0:
+                    peptide_length_df_g2 = peptide_length_df_g2.append({'Length': len(peptide.get_sequence())}, ignore_index=True)
+        fig1 = px.histogram(peptide_length_df_g1, x='Length', color_discrete_sequence=[green['mediumdark']], title= 'Group 1 - Peptide Length')
+        fig2 = px.histogram(peptide_length_df_g2, x='Length', color_discrete_sequence=[green['mediumdark']], title= 'Group 2 - Peptide Length')
+    return fig1, fig2
+
+
 def get_unique_and_common_proteins(protein_list):
     unique_protein_list = []
     common_protein_list = []

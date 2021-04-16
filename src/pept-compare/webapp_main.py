@@ -17,7 +17,9 @@ from dash.dependencies import Input, Output, State
 from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, create_protein_list, protein_graphic_plotly, create_peptide_list, stacked_samples_peptide
 from methods import amino_acid_piecharts, common_family, all_sample_bar_chart
 from methods import apply_protein_cutoffs, apply_peptide_cutoffs, get_unique_and_common_proteins
-from methods import proteins_present_in_all_samples, create_protein_datatable, create_peptide_datatable, log_intensity, normalize_data
+from methods import proteins_present_in_all_samples, create_protein_datatable, create_peptide_datatable, log_intensity, normalize_data, create_length_histogram
+
+
 
 app = dash.Dash(__name__,external_stylesheets=[dbc.themes.SANDSTONE], suppress_callback_exceptions=True)
 
@@ -489,9 +491,34 @@ amino_acid_figs = html.Div([
                     dcc.Graph(id='last-aa-fig-g2', figure={}, config={'displaylogo': False})], width={'size':3}),
             ])]
         )
-        ])
-    
+    ])
 
+peptide_length_dropdown = dcc.Dropdown(
+    id= 'peptide-length-dropdown',
+    placeholder='Select view',
+    value='',
+    options=[
+        {'label': 'Complete proteome', 'value': 'complete-proteome-length'},
+        {'label': 'Selected protein', 'value': 'selected-protein-length'},
+    ],
+    
+)    
+
+peptide_length_figs = html.Div([
+    html.H3('Peptide Length'),
+    dbc.Row([
+        dbc.Col(peptide_length_dropdown, width={'size':2})
+    ]),
+    dcc.Loading(type='cube', color = '#76b382',
+        children=[    
+        dbc.Row([
+            dbc.Col([
+                dcc.Graph(id='peptide-length-fig-g1', figure={}, config={'displaylogo': False})], width={'size':5}),
+            dbc.Col([
+                dcc.Graph(id='peptide-length-fig-g2', figure={}, config={'displaylogo':False})], width={'size':5}),
+        ])]
+    )
+])
 
 protein_info = html.Div(dash_table.DataTable(
             id='protein-info-table',
@@ -558,6 +585,7 @@ peptide_info = html.Div([dash_table.DataTable(
 )]),
 
 
+
 hidden_divs = html.Div([
     html.Div(id='cutoff-value-holder', style={'display': 'none'}),
     html.Div(id='protein-lists-holder', style={'display': 'none'}),
@@ -592,6 +620,10 @@ main_page = dbc.Container([
 
     dbc.Row([
         dbc.Col(amino_acid_figs),
+    ]),
+
+    dbc.Row([
+        dbc.Col(peptide_length_figs),
     ]),  
     hidden_divs,
 ], fluid=True)
@@ -754,7 +786,7 @@ def amino_acid_dropdown(n_clicks_complete_proteome, n_clicks_selected_protein, r
     if n_clicks_complete_proteome > n_clicks_selected_protein and len(protein_lists)>0:
         complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2 = amino_acid_piecharts(protein_lists[-1], peptide_or_protein_list = 'protein_list', difference_metric = radioitem_value)
         return complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2, 'Complete proteome'
-    if n_clicks_selected_protein > n_clicks_complete_proteome and len(protein_lists)>0:
+    elif n_clicks_selected_protein > n_clicks_complete_proteome and len(protein_lists)>0:
         complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2 = amino_acid_piecharts(peptide_lists[-1], peptide_or_protein_list = 'peptide_list', difference_metric = radioitem_value)
         return complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2, 'Selected Protein'
     else:
@@ -795,6 +827,17 @@ def highlight_protein_fig(highlighted_triv_names, triv_names_holder, protein_fig
 
 
 
+def peptide_length_dropdown(length_dropdown_values):
+    if 'complete-proteome-length'  in length_dropdown_values and len(protein_lists) > 0:
+        length_fig_g1, length_fig_g2 = create_length_histogram(protein_lists[-1], peptide_or_protein_list='protein_list')
+        return length_fig_g1, length_fig_g2
+    elif 'selected-protein-length' in length_dropdown_values and len(protein_lists) > 0:
+        length_fig_g1, length_fig_g2 = create_length_histogram(peptide_lists[-1], peptide_or_protein_list='peptide_list')
+        return length_fig_g1, length_fig_g2
+    else:
+        return {}, {}
+
+
 app.callback(
     Output('search-protein', 'disabled'),
     Input('protein-list', 'children')
@@ -805,6 +848,8 @@ app.callback(
     Output('housekeeping-protein-input', 'disabled'),
     Input('normalization-radioitems', 'value')
 )(enable_input_housekeeping_protein)
+    
+
 
 app.callback(
     Output('hover-all-protein-samples', 'figure'),
@@ -824,6 +869,12 @@ app.callback(
     Input('selected-protein','n_clicks_timestamp'),
     Input('aa-radioitems', 'value')
 )(amino_acid_dropdown)
+
+app.callback(
+    Output('peptide-length-fig-g1', 'figure'),
+    Output('peptide-length-fig-g2', 'figure'),
+    Input('peptide-length-dropdown', 'value'),
+)(peptide_length_dropdown)
 
 app.callback(
     Output('peptide-fig', 'figure'),
