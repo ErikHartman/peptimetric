@@ -578,7 +578,7 @@ def create_protein_fig(n_clicks, checkbox_values, apply_cutoffs_button, protein_
         if present_in_all_samples:
             protein_list_cutoff = proteins_present_in_all_samples(protein_list_cutoff)
         unique_protein_list, common_protein_list = get_unique_and_common_proteins(protein_list_cutoff)
-        df_protein_info = create_protein_datatable(protein_list_cutoff)
+        df_protein_info = create_protein_datatable(protein_list_cutoff, protein_radioitems_value)
         datatable = dash_table.DataTable(
             data = df_protein_info.to_dict('rows'),
             columns=[{"name": str(i), "id": str(i)} for i in df_protein_info.columns],
@@ -587,7 +587,7 @@ def create_protein_fig(n_clicks, checkbox_values, apply_cutoffs_button, protein_
             filter_action='native',
             virtualization=True,
             export_format='xlsx',
-            css=[{'selector':'.export','rule':'position:font-type:Roboto;color:green'}],
+            css=[{'selector':'.export','rule':'position:font-type:Roboto;color:black;background-color:#FAFAFA;border-color:#FAFAFA;border:1px solid transparent'}],
             style_data_conditional = [{
                 'if' : {'row_index':'odd'},
                 'backgroundColor' : 'rgb(182, 224, 194)'
@@ -596,12 +596,15 @@ def create_protein_fig(n_clicks, checkbox_values, apply_cutoffs_button, protein_
             style_header={
                 'textAlign':'center',
                 'fontWeight': 'bold',
+                'font-family':'Roboto'
             },
             style_cell={
                 'textAlign':'left',
                 'padding':'5px',
                 'maxWidth': 105,
                 'minWidth': 105,
+                'font-family':'Roboto',
+                'fontSize':12,
             },
             style_table={'height': '200px', 'width':'500px', 'overflowY': 'auto','overflowX':'auto'}
     )   
@@ -652,7 +655,7 @@ def create_peptide_fig(clickData, search_protein, n_clicks_sum, n_clicks_mean, c
             peptide_fig = stacked_samples_peptide(peptide_list, show_difference='show', show_weight ='show', average=False, difference_metric=peptide_radioitems_value)
         else:
             peptide_fig = stacked_samples_peptide(peptide_list, show_difference='show', show_weight ='show', average=True, difference_metric=peptide_radioitems_value)
-        df_peptide_info = create_peptide_datatable(peptide_list)
+        df_peptide_info = create_peptide_datatable(peptide_list, peptide_radioitems_value)
         datatable = dash_table.DataTable(
             data = df_peptide_info.to_dict('rows'),
             columns=[{"name": str(i), "id": str(i)} for i in df_peptide_info.columns],
@@ -660,7 +663,7 @@ def create_peptide_fig(clickData, search_protein, n_clicks_sum, n_clicks_mean, c
             fixed_rows={'headers': True},
             filter_action='native',
             virtualization=True,
-            css=[{'selector':'.export','rule':'position:font-type:Roboto;color:green'}],
+            css=[{'selector':'.export','rule':'position:font-type:Roboto;color:black;background-color:#FAFAFA;border-color:#FAFAFA;border:1px solid transparent'}],
             export_format="xlsx",
             style_data_conditional = [{
                 'if' : {'row_index':'odd'},
@@ -670,12 +673,15 @@ def create_peptide_fig(clickData, search_protein, n_clicks_sum, n_clicks_mean, c
             style_header={
                 'textAlign':'center',
                 'fontWeight': 'bold',
+                'font-family':'Roboto'
             },
             style_cell={
                 'textAlign':'left',
                 'padding':'5px',
                 'maxWidth': 105,
                 'minWidth': 105,
+                'font-family':'Roboto',
+                'fontSize':12,
             },
             style_table={'height': '400px', 'width':'500px', 'overflowY': 'auto','overflowX':'auto'}
     )   
@@ -697,11 +703,11 @@ def amino_acid_dropdown(n_clicks_complete_proteome, n_clicks_selected_protein, r
         return  {},{},{}, {},{},{}, ''
 
 
-def generate_hover_graphs(hoverData):
+def generate_hover_graphs(hoverData, protein_radioitems_value):
     if hoverData:
         accession = hoverData['points'][0]['customdata'][-1]
         protein_list = protein_lists[-1]
-        fig = all_sample_bar_chart(protein_list, accession=accession, metric='area_sum',)
+        fig = all_sample_bar_chart(protein_list, accession=accession, metric=protein_radioitems_value)
         return fig
     else:
         return {}
@@ -709,7 +715,8 @@ def generate_hover_graphs(hoverData):
 
 app.callback(
     Output('hover-all-protein-samples', 'figure'),
-    Input('protein-fig','hoverData')
+    Input('protein-fig','hoverData'),
+    Input('protein-radioitems', 'value'),
 )(generate_hover_graphs)
 
 app.callback(
