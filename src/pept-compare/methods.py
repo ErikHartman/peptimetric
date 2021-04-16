@@ -82,6 +82,11 @@ def merge_dataframes(g1, g2):
     g2 = g2.rename(index=str, columns={'Peptide_g2':'Peptide', 'Accession_g2':'Accession'})
     return g1.merge(g2, on=['Peptide', 'Accession'], how='outer', suffixes=['_g1', '_g2'])
 
+def log_intensity(df):
+    area_columns = [col for col in df if col.startswith('Area')]
+    for a in area_columns:
+        df[a] = np.log10(df[a])
+    return df
 
 def set_color_and_size(nbr_of_peptides, color_thresholds):
     color=green
@@ -529,7 +534,7 @@ def get_thresholds(lst):
 
 def all_sample_bar_chart(protein_list, accession, **kwargs):
     default_settings = {
-        'metric':'area_sum'
+        'metric':'area'
     }
     default_settings.update(kwargs)
     selected_protein = ''
@@ -539,12 +544,12 @@ def all_sample_bar_chart(protein_list, accession, **kwargs):
             selected_protein = protein
             title = protein.get_trivial_name()
     
-    if kwargs.get('metric') == 'area_sum':
+    if kwargs.get('metric') == 'area':
         intensities = selected_protein.get_area_sum_all_samples()
         df = pd.DataFrame(intensities.items(), columns=['sample', 'intensity'])
-    else:
-        print('No samples')
-        df = None
+    elif kwargs.get('metric') == 'spectral_count':
+        intensities = selected_protein.get_spectral_count_sum_all_samples()
+        df = pd.DataFrame(intensities.items(), columns=['sample', 'intensity'])
     fig = px.bar(df, x = 'sample', y='intensity', color='intensity', color_continuous_scale=px.colors.sequential.algae, title=title, log_y=True)
     fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}, showlegend=False, coloraxis_showscale=False)
     return fig
@@ -832,20 +837,55 @@ def proteins_present_in_all_samples(protein_list):
             proteins_present_in_all_samples.append(protein)
     return proteins_present_in_all_samples
 
-def create_peptide_datatable(peptide_list):
-    peptide_info_columns = ['Peptide','Start','End','Intensity_g1','Intensity_g2']
-    df_peptide_info = pd.DataFrame(columns=peptide_info_columns)
-    for peptide in peptide_list:
-        df_peptide_info = df_peptide_info.append({'Peptide': str(peptide.get_sequence()), 'Start': peptide.get_start(),'End': peptide.get_end(), 'Intensity_g1': "{:.2e}".format(peptide.get_area()[0]), 
-        'Intensity_g2': "{:.2e}".format(peptide.get_area()[2])}, ignore_index=True)
-    df_peptide_info.sort_values(by=['Intensity_g1', 'Intensity_g2'], ascending=False, inplace=True)
-    return df_peptide_info
+def create_peptide_datatable(peptide_list, peptide_radioitems_value):
+    if 'area' in peptide_radioitems_value:
+        peptide_info_columns = ['Peptide','Start','End','Intensity_g1','Intensity_g2']
+        df_peptide_info = pd.DataFrame(columns=peptide_info_columns)
+        for peptide in peptide_list:
+            df_peptide_info = df_peptide_info.append({'Peptide': str(peptide.get_sequence()), 'Start': peptide.get_start(),'End': peptide.get_end(), 'Intensity_g1': "{:.2e}".format(peptide.get_area()[0]), 
+            'Intensity_g2': "{:.2e}".format(peptide.get_area()[2])}, ignore_index=True)
+        df_peptide_info.sort_values(by=['Intensity_g1', 'Intensity_g2'], ascending=False, inplace=True)
+        return df_peptide_info
+    elif 'spectral_count' in peptide_radioitems_value:
+        peptide_info_columns = ['Peptide','Start','End','spc_g1','spc_g2']
+        df_peptide_info = pd.DataFrame(columns=peptide_info_columns)
+        for peptide in peptide_list:
+            df_peptide_info = df_peptide_info.append({'Peptide': str(peptide.get_sequence()), 'Start': peptide.get_start(),'End': peptide.get_end(), 'spc_g1':peptide.get_spectral_count()[0], 
+           'spc_g2':peptide.get_spectral_count()[2]}, ignore_index=True)
+        df_peptide_info.sort_values(by=['spc_g1', 'spc_g2'], ascending=False, inplace=True)
+        return df_peptide_info
+    else:
+        print('Error: Peptide Datatable')
+        return None
 
-def create_protein_datatable(protein_list):
-    protein_info_columns = ['Protein','UniProt id','#peptides g1','#peptides g2','Intensity_g1','Intensity_g2', 'Protein family','p-value']
-    df_protein_info = pd.DataFrame(columns=protein_info_columns)
-    for protein in protein_list:
-        df_protein_info = df_protein_info.append({'Protein': str(protein.get_trivial_name()), 'UniProt id': protein.get_id(),'#peptides g1': protein.get_nbr_of_peptides()[0], '#peptides g2': protein.get_nbr_of_peptides()[1], 
-        'Intensity_g1': "{:.2e}".format(protein.get_area_sum()[0]), 'Intensity_g2': "{:.2e}".format(protein.get_area_sum()[2]), 'Protein family':protein.get_protein_family(), 'p-value':protein.get_pvalue()},  ignore_index=True)
-    df_protein_info.sort_values(by=['Intensity_g1', 'Intensity_g2'], ascending=False, inplace=True)
-    return df_protein_info
+def create_protein_datatable(protein_list, protein_radioitems_value):
+    if 'area' in protein_radioitems_value:
+        protein_info_columns = ['Protein','UniProt id','#peptides g1','#peptides g2','Intensity_g1','Intensity_g2', 'Protein family','p-value']
+        df_protein_info = pd.DataFrame(columns=protein_info_columns)
+        for protein in protein_list:
+            df_protein_info = df_protein_info.append({'Protein': str(protein.get_trivial_name()), 'UniProt id': protein.get_id(),'#peptides g1': protein.get_nbr_of_peptides()[0], '#peptides g2': protein.get_nbr_of_peptides()[1], 
+            'Intensity_g1': protein.get_area_sum()[0], 'Intensity_g2': protein.get_area_sum()[2], 'Protein family':protein.get_protein_family(), 'p-value':protein.get_pvalue('area')},  ignore_index=True)
+        df_protein_info.sort_values(by=['Intensity_g1', 'Intensity_g2'], ascending=False, inplace=True)
+        return df_protein_info
+    elif 'spectral_count' in protein_radioitems_value:
+        protein_info_columns = ['Protein','UniProt id','#peptides g1','#peptides g2','spc_g1','spc_g2', 'Protein family','p-value']
+        df_protein_info = pd.DataFrame(columns=protein_info_columns)
+        for protein in protein_list:
+            df_protein_info = df_protein_info.append({'Protein': str(protein.get_trivial_name()), 'UniProt id': protein.get_id(),'#peptides g1': protein.get_nbr_of_peptides()[0], '#peptides g2': protein.get_nbr_of_peptides()[1], 
+            'spc_g1': protein.get_spectral_count_sum()[0], 'spc_g2': protein.get_spectral_count_sum()[2], 'Protein family':protein.get_protein_family(), 'p-value':protein.get_pvalue('spc')},  ignore_index=True)
+        df_protein_info.sort_values(by=['spc_g1', 'spc_g2'], ascending=False, inplace=True)
+        return df_protein_info
+    else:
+        print('Error: Protein Datatable')
+        return None
+    
+    
+#def normalize_data(protein_list, housekeeping_protein, normalize_on_total_intensity = False):
+#    if normalize_on_total_intensity:
+#        total_intensity = []
+#        for protein in protein_list:
+#            
+#    for protein in protein_list:
+#        if protein.get_id() == housekeeping_protein:
+#            housekeeping_protein_area = protein.get_area_sum_all_samples()
+#            housekeeping_protein_spc = protein.get_sp

@@ -53,6 +53,25 @@ class Protein:
         area_g2_dict = dict(zip(area_columns_g2, area_sum_g2))
         area_g1_dict.update(area_g2_dict)
         return area_g1_dict
+    
+    def get_spectral_count_sum_all_samples(self):
+        spc_columns = [col for col in self.df if col.startswith('Spectral')]
+        spc_columns_g1 = [col for col in spc_columns if col.endswith('g1')]
+        spc_columns_g2 = [col for col in spc_columns if col.endswith('g2')]
+        spc_sum_g1 = []
+        spc_sum_g2 = []
+        for s in spc_columns_g1:
+            df_spc = self.df.copy()
+            df_spc.fillna(0, inplace=True)
+            spc_sum_g1.append(df_spc[s].sum())
+        for s in spc_columns_g2:
+            df_spc = self.df.copy()
+            df_spc.fillna(0, inplace=True)
+            spc_sum_g2.append(df_spc[s].sum())
+        spc_g1_dict = dict(zip(spc_columns_g1, spc_sum_g1))
+        spc_g2_dict = dict(zip(spc_columns_g2, spc_sum_g2))
+        spc_g1_dict.update(spc_g2_dict)
+        return spc_g1_dict
 
     def get_area_sum(self):
         area_columns = [col for col in self.df if col.startswith('Area')]
@@ -206,8 +225,11 @@ class Protein:
         return len(area_columns_g1), len(area_columns_g2)
         
 
-    def get_pvalue(self):
-        g1_mean, g1_std, g2_mean, g2_std = self.get_area_sum()
+    def get_pvalue(self, spc_or_area):
+        if spc_or_area == 'spc':
+            g1_mean, g1_std, g2_mean, g2_std = self.get_spectral_count_sum()
+        else:
+            g1_mean, g1_std, g2_mean, g2_std = self.get_area_sum()
         n1, n2 = self.get_number_of_samples()
         nbr_of_peptides_g1, nbr_of_peptides_g2 = self.get_nbr_of_peptides()
         if n1 < 2 or n2 < 2:
