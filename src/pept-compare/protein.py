@@ -53,6 +53,7 @@ class Protein:
         area_g2_dict = dict(zip(area_columns_g2, area_sum_g2))
         area_g1_dict.update(area_g2_dict)
         return area_g1_dict
+
     
     def get_spectral_count_sum_all_samples(self):
         spc_columns = [col for col in self.df if col.startswith('Spectral')]

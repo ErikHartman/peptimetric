@@ -4,6 +4,7 @@ from functools import reduce
 from tkinter.filedialog import askopenfilenames
 from typing import List
 import copy
+from collections import Counter
 
 import plotly.graph_objects as go
 from IPython.display import display
@@ -84,8 +85,7 @@ def merge_dataframes(g1, g2):
 
 def log_intensity(df):
     area_columns = [col for col in df if col.startswith('Area')]
-    for a in area_columns:
-        df[a] = np.log10(df[a])
+    df[area_columns] = df[area_columns].apply(lambda x: [np.log10(y) if y > 0 else 0 for y in x])
     return df
 
 def set_color_and_size(nbr_of_peptides, color_thresholds):
@@ -154,13 +154,13 @@ def amino_acid_frequency(p_list, **kwargs):
         if kwargs.get('difference_metric') == 'area':
             print('area')
             for peptide in p_list:
-                first_aa_g1[peptide.get_sequence()[0]] += peptide.get_area_log()[0] 
-                last_aa_g1[peptide.get_sequence()[-1]] += peptide.get_area_log()[0] 
-                first_aa_g2[peptide.get_sequence()[0]] += peptide.get_area_log()[1] 
-                last_aa_g2[peptide.get_sequence()[-1]] += peptide.get_area_log()[1] 
+                first_aa_g1[peptide.get_sequence()[0]] += peptide.get_area()[0]
+                last_aa_g1[peptide.get_sequence()[-1]] += peptide.get_area()[0] 
+                first_aa_g2[peptide.get_sequence()[0]] += peptide.get_area()[1] 
+                last_aa_g2[peptide.get_sequence()[-1]] += peptide.get_area()[1] 
                 for letter in peptide.get_sequence():
-                    complete_seq_g1[letter] += peptide.get_area_log()[0] 
-                    complete_seq_g2[letter] += peptide.get_area_log()[1] 
+                    complete_seq_g1[letter] += peptide.get_area()[0] 
+                    complete_seq_g2[letter] += peptide.get_area()[1] 
                     
 
         elif kwargs.get('difference_metric') == 'spectral_count':
@@ -178,14 +178,14 @@ def amino_acid_frequency(p_list, **kwargs):
             peptide_list = create_peptide_list(p_list, protein.get_id())
             if kwargs.get('difference_metric') == 'area':
                 for peptide in peptide_list:
-                    first_aa_g1[peptide.get_sequence()[0]] += peptide.get_area_log()[0] 
-                    last_aa_g1[peptide.get_sequence()[-1]] += peptide.get_area_log()[0] 
-                    first_aa_g2[peptide.get_sequence()[0]] += peptide.get_area_log()[1] 
-                    last_aa_g2[peptide.get_sequence()[-1]] += peptide.get_area_log()[1] 
+                    first_aa_g1[peptide.get_sequence()[0]] += peptide.get_area()[0] 
+                    last_aa_g1[peptide.get_sequence()[-1]] += peptide.get_area()[0] 
+                    first_aa_g2[peptide.get_sequence()[0]] += peptide.get_area()[1] 
+                    last_aa_g2[peptide.get_sequence()[-1]] += peptide.get_area()[1] 
                     
                     for letter in peptide.get_sequence():
-                        complete_seq_g1[letter] += peptide.get_area_log()[0] 
-                        complete_seq_g2[letter] += peptide.get_area_log()[1] 
+                        complete_seq_g1[letter] += peptide.get_area()[0] 
+                        complete_seq_g2[letter] += peptide.get_area()[1] 
             elif kwargs.get('difference_metric') == 'spectral_count':
                 for peptide in peptide_list:
                     first_aa_g1[peptide.get_sequence()[0]] += peptide.get_spectral_count()[0] 
@@ -310,8 +310,6 @@ def protein_graphic_plotly(protein_list, **kwargs):
             g2_stdev.append(protein.get_area_sum()[3])
             y_label = 'Group 1 Intensity'
             x_label = 'Group 2 Intensity'
-            log_x = True
-            log_y = True
         elif kwargs.get('difference_metric') == 'area_mean': #Not used now
             g1_intensity.append(protein.get_area_mean()[0])
             g2_intensity.append(protein.get_area_mean()[1])
@@ -325,9 +323,6 @@ def protein_graphic_plotly(protein_list, **kwargs):
             g2_stdev.append(protein.get_spectral_count_sum()[3])
             y_label= 'Group 1 Spectral Count'
             x_label = 'Group 2 Spectral Count'
-            log_x=False
-            log_y=False
-
     color_thresholds = get_thresholds(nbr_of_peptides)
     col, size = set_color_and_size(nbr_of_peptides, color_thresholds)
     for s in size:
@@ -336,12 +331,12 @@ def protein_graphic_plotly(protein_list, **kwargs):
         columns=['g1_intensity','g2_intensity','nbr_of_peptides','trivial_name','pfam','col','accession', 'g1_stdev', 'g2_stdev'])
     fig = px.scatter(df_fig, x='g2_intensity', y='g1_intensity',
         color='nbr_of_peptides', color_continuous_scale=px.colors.diverging.PiYG, 
-        size='nbr_of_peptides', log_x=log_x, log_y=log_y, hover_data=['trivial_name','nbr_of_peptides','pfam','accession'])
+        size='nbr_of_peptides', hover_data=['trivial_name','nbr_of_peptides','pfam','accession'])
     fig.update_layout(yaxis=dict(title=y_label), xaxis=dict(title=x_label))
-    if kwargs.get('protein_id') != '':
-        marker_color_list = ['rgba(0,0,0,0)' for n in range(len(accession))]
-        for i in range(len(accession)):
-            if str(kwargs.get('protein_id')) == str(accession[i]):
+    if kwargs.get('protein_triv_name') != '':
+        marker_color_list = ['rgba(0,0,0,0)' for n in range(len(trivial_name))]
+        for i in range(len(trivial_name)):
+            if str(kwargs.get('protein_triv_name')) == str(trivial_name[i]):
                 marker_color_list[i] = red['medium']
                 fig.update_traces(marker=dict(line=dict(width=2, color=marker_color_list)),
                   selector=dict(mode='markers'))
@@ -395,8 +390,8 @@ def peptide_graphic_plotly(peptide_list, **kwargs):
         if peptide.get_start() != None:
             for i in list(range(start, end)):
                 if intensity_neg > 0 or intensity_pos > 0:
-                    fasta_dict["intensity_pos"][i] += ma.log10(intensity_pos) if intensity_pos != 0 else 0
-                    fasta_dict["intensity_neg"][i] += ma.log10(intensity_neg) if intensity_neg != 0 else 0
+                    fasta_dict["intensity_pos"][i] += intensity_pos
+                    fasta_dict["intensity_neg"][i] += intensity_neg
                     if intensity_pos > 0:
                         fasta_dict["counter_pos"][i] += 1
                     if intensity_neg > 0:
@@ -550,7 +545,7 @@ def all_sample_bar_chart(protein_list, accession, **kwargs):
     elif kwargs.get('metric') == 'spectral_count':
         intensities = selected_protein.get_spectral_count_sum_all_samples()
         df = pd.DataFrame(intensities.items(), columns=['sample', 'intensity'])
-    fig = px.bar(df, x = 'sample', y='intensity', color='intensity', color_continuous_scale=px.colors.sequential.algae, title=title, log_y=True)
+    fig = px.bar(df, x = 'sample', y='intensity', color='intensity', color_continuous_scale=px.colors.sequential.algae, title=title)
     fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}, showlegend=False, coloraxis_showscale=False)
     return fig
 
@@ -631,7 +626,7 @@ def stacked_samples_peptide(peptide_list, **kwargs):
             intensity = intensity_pos[index][sample]
             if s != None and e!= None:
                 for i in range(s, e):
-                    sample_dict['intensity'][i] += ma.log10(intensity) if intensity != 0 else 0
+                    sample_dict['intensity'][i] += intensity 
                     if intensity != 0:
                         sample_dict['counter'][i] += 1
         sample_dicts_pos.append(sample_dict)
@@ -649,7 +644,7 @@ def stacked_samples_peptide(peptide_list, **kwargs):
             intensity = intensity_neg[index][sample]
             if s != None and e!= None:
                 for i in range(s, e):
-                    sample_dict['intensity'][i] += - ma.log10(intensity) if intensity != 0 else 0
+                    sample_dict['intensity'][i] += - intensity
                     if intensity != 0:
                         sample_dict['counter'][i] += 1
 
@@ -701,8 +696,8 @@ def stacked_samples_peptide(peptide_list, **kwargs):
         maximum_intensity = max(fasta_dict['intensity_pos'] + np.abs(fasta_dict['intensity_neg']))
         
     if kwargs.get('average') == True:
-        pos = []
-        neg = []
+        pos_intensity_sample = []
+        neg_intensity_sample = []
         pos_mean = []
         neg_mean = []
         pos_std = []
@@ -712,13 +707,13 @@ def stacked_samples_peptide(peptide_list, **kwargs):
         color_pos = []
         color_neg = []
         for sample_dict in sample_dicts_pos:
-            pos.append(sample_dict['intensity'])
+            pos_intensity_sample.append(sample_dict['intensity'])
             pos_nbr_of_peptides.append(sample_dict['counter'])
         for sample_dict in sample_dicts_neg:
-            neg.append(sample_dict['intensity'])
+            neg_intensity_sample.append(sample_dict['intensity'])
             neg_nbr_of_peptides.append(sample_dict['counter'])
             
-        for i in range(len(pos[0])):
+        for i in range(len(pos_intensity_sample[0])):
             pos_average = []
             pos_nbr_of_peptides_average = []
             for sample in range(len(pos)):
@@ -731,7 +726,7 @@ def stacked_samples_peptide(peptide_list, **kwargs):
             else:
                 pos_std.append(0)
         
-        for i in range(len(neg[0])): 
+        for i in range(len(neg_intensity_sample[0])): 
             neg_average = []
             neg_nbr_of_peptides_average = []
             for sample in range(len(neg)):
@@ -747,8 +742,8 @@ def stacked_samples_peptide(peptide_list, **kwargs):
         nbr_of_peptides = color_pos + color_neg
         nbr_of_peptides = [i for i in nbr_of_peptides if i != 0]
         color_thresholds = get_thresholds(nbr_of_peptides)
-        col_pos, size = set_color_and_size(color_pos, color_thresholds)
-        col_neg, size = set_color_and_size(color_neg, color_thresholds)
+        color_pos, size = set_color_and_size(color_pos, color_thresholds)
+        color_neg, size = set_color_and_size(color_neg, color_thresholds)
         x=sample_dict['index']
         y_upper = [a + b for a, b in zip(pos_mean, pos_std)]
         y_lower = [a - b for a, b in zip(pos_mean, pos_std)]
@@ -821,8 +816,8 @@ def create_peptide_datatable(peptide_list, peptide_radioitems_value):
         peptide_info_columns = ['Peptide','Start','End','Intensity_g1','Intensity_g2']
         df_peptide_info = pd.DataFrame(columns=peptide_info_columns)
         for peptide in peptide_list:
-            df_peptide_info = df_peptide_info.append({'Peptide': str(peptide.get_sequence()), 'Start': peptide.get_start(),'End': peptide.get_end(), 'Intensity_g1': "{:.2e}".format(peptide.get_area()[0]), 
-            'Intensity_g2': "{:.2e}".format(peptide.get_area()[2])}, ignore_index=True)
+            df_peptide_info = df_peptide_info.append({'Peptide': str(peptide.get_sequence()), 'Start': peptide.get_start(),'End': peptide.get_end(), 'Intensity_g1': peptide.get_area()[0], 
+            'Intensity_g2': peptide.get_area()[2]}, ignore_index=True)
         df_peptide_info.sort_values(by=['Intensity_g1', 'Intensity_g2'], ascending=False, inplace=True)
         return df_peptide_info
     elif 'spectral_count' in peptide_radioitems_value:
@@ -859,12 +854,47 @@ def create_protein_datatable(protein_list, protein_radioitems_value):
         return None
     
     
-#def normalize_data(protein_list, housekeeping_protein, normalize_on_total_intensity = False):
-#    if normalize_on_total_intensity:
-#        total_intensity = []
-#        for protein in protein_list:
-#            
-#    for protein in protein_list:
-#        if protein.get_id() == housekeeping_protein:
-#            housekeeping_protein_area = protein.get_area_sum_all_samples()
-#            housekeeping_protein_spc = protein.get_sp
+def normalize_data(protein_list, housekeeping_protein=False):
+    new_protein_list = []
+    if not housekeeping_protein:
+        total_intensity_dict = protein_list[0].get_area_sum_all_samples()
+        total_spc_dict = protein_list[0].get_spectral_count_sum_all_samples()
+        for protein in protein_list[1:]:
+            protein_intensity_dict = Counter(protein.get_area_sum_all_samples())
+            protein_spc_dict =  Counter(protein.get_spectral_count_sum_all_samples())
+            total_intensity_dict = Counter(total_intensity_dict) + protein_intensity_dict
+            total_spc_dict = Counter(total_spc_dict) + protein_spc_dict
+
+        for protein in protein_list:
+            df = protein.df.copy()
+            for key, value in total_intensity_dict.items():
+                df[key] = df[key].apply(lambda x: x/value)
+            for key, value in total_spc_dict.items():
+                df[key] = df[key].apply(lambda x: x/value)
+            p = Protein(df, protein.get_id())
+            new_protein_list.append(p)
+        print('global Done')
+        return new_protein_list
+
+    if housekeeping_protein != False and housekeeping_protein != '':
+        housekeeping_protein_intensity = {}
+        housekeeping_protein_spc = {}
+        for protein in protein_list:
+            if protein.get_trivial_name() == housekeeping_protein:
+                print('found trivname')
+                housekeeping_protein_intensity = protein.get_area_sum_all_samples()
+                housekeeping_protein_spc = protein.get_spectral_count_sum_all_samples()
+        for protein in protein_list:
+            df = protein.df.copy()
+            for key, value in housekeeping_protein_intensity.items():
+                df[key] = df[key].apply(lambda x: x/value)
+            for key, value in housekeeping_protein_spc.items():
+                df[key] = df[key].apply(lambda x: x/value)
+
+                p = Protein(df, protein.get_id())
+                new_protein_list.append(p)
+        print('housekeeping_protein Done')
+        return new_protein_list
+    else:
+        print('Error: Data Normalization')
+        return None

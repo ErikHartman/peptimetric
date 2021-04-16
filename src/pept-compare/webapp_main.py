@@ -17,7 +17,7 @@ from dash.dependencies import Input, Output, State
 from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, create_protein_list, protein_graphic_plotly, create_peptide_list, stacked_samples_peptide
 from methods import amino_acid_piecharts, common_family, all_sample_bar_chart
 from methods import apply_protein_cutoffs, apply_peptide_cutoffs, get_unique_and_common_proteins
-from methods import proteins_present_in_all_samples, create_protein_datatable, create_peptide_datatable
+from methods import proteins_present_in_all_samples, create_protein_datatable, create_peptide_datatable, log_intensity, normalize_data
 
 app = dash.Dash(__name__,external_stylesheets=[dbc.themes.SANDSTONE], suppress_callback_exceptions=True)
 
@@ -203,6 +203,46 @@ modal_feedback = html.Div([
             centered=True,
               )])
 
+modal_normalization = dbc.Modal([
+                dbc.ModalHeader("Normalize data", className="font-weight-bold"),
+                dbc.ModalBody([
+                    dbc.FormGroup([
+                        dbc.Label('log10 area', className='ml-auto'),
+                        dbc.Checkbox(id='log-checkbox', checked=True)
+                    ]),
+                    dbc.FormGroup([
+                        dbc.Label('Normalize data', className='ml-auto'),
+                        dbc.RadioItems(
+                            options=[
+                            {'label': 'Normalize on global intensity', 'value': 'global-intensity'},
+                            {'label': 'Normalize on housekeeping protein', 'value': 'housekeeping-protein'}
+                            ],
+                            value='',
+                            id='normalization-radioitems',
+                        ),
+                        dbc.Input(
+                            id='housekeeping-protein-input',
+                            placeholder='Search protein...',
+                            name = 'text',
+                            debounce=True,
+                            inputMode='latin',
+                            minLength=0, maxLength=30,
+                            size = '10',
+                            list = 'protein-list',
+                            className="ml-auto",
+                            disabled=True
+                        )
+                    ]),
+                ]),
+                dbc.ModalFooter(
+                    dbc.Button("Apply", id="close-modal-normalization", className="ml-auto")
+                ),
+            ],
+            id="modal-normalization",
+            size='m',
+            centered=True,
+              )
+
 navbar = dbc.Navbar(
     [
         dbc.NavbarBrand("Eriks och Simons kandidatarbete"),
@@ -211,7 +251,9 @@ navbar = dbc.Navbar(
         dbc.DropdownMenu(label="Settings",
             children=[
                 dbc.DropdownMenuItem("Cutoffs", id="open-modal-cutoff"),
+                dbc.DropdownMenuItem("Normalization", id="open-modal-normalization"),
                 modal_cutoff,
+                modal_normalization,
             ]
         ),
         dbc.Nav([
@@ -244,6 +286,7 @@ search_protein = html.Div([
             size = '20',
             list = 'protein-list',
             className="ml-auto",
+            disabled=True,
         )
     ]),
     html.Datalist( id = 'protein-list', children=[])
@@ -450,13 +493,69 @@ amino_acid_figs = html.Div([
     
 
 
-protein_info = html.Div(id = 'protein-info-table'), 
+protein_info = html.Div(dash_table.DataTable(
+            id='protein-info-table',
+            sort_action='native',
+            fixed_rows={'headers': True},
+            #filter_action='native',
+            virtualization=True,
+            row_selectable="multi",
+            export_format='xlsx',
+            selected_rows=[],
+            css=[{'selector':'.export','rule':'position:font-type:Roboto;color:black;background-color:#FAFAFA;border-color:#FAFAFA;border:1px solid transparent'}],
+            style_data_conditional = [{
+                'if' : {'row_index':'odd'},
+                'backgroundColor' : 'rgb(182, 224, 194)'
+            }
+            ],
+            style_header={
+                'textAlign':'center',
+                'fontWeight': 'bold',
+                'font-family':'Roboto'
+            },
+            style_cell={
+                'textAlign':'left',
+                'padding':'5px',
+                'maxWidth': 105,
+                'minWidth': 105,
+                'font-family':'Roboto',
+                'fontSize':12,
+            },
+            style_table={'height': '200px', 'width':'500px', 'overflowY': 'auto','overflowX':'auto'}
+    ),
+)
 
 
-
-peptide_info = html.Div([
-    html.Div(id='peptide-info-table'),
-])
+peptide_info = html.Div([dash_table.DataTable(
+            id='peptide-info-table',
+            sort_action='native',
+            fixed_rows={'headers': True},
+            #filter_action='native',
+            virtualization=True,
+            row_selectable="multi",
+            export_format='xlsx',
+            selected_rows=[],
+            css=[{'selector':'.export','rule':'position:font-type:Roboto;color:black;background-color:#FAFAFA;border-color:#FAFAFA;border:1px solid transparent'}],
+            style_data_conditional = [{
+                'if' : {'row_index':'odd'},
+                'backgroundColor' : 'rgb(182, 224, 194)'
+            }
+            ],
+            style_header={
+                'textAlign':'center',
+                'fontWeight': 'bold',
+                'font-family':'Roboto'
+            },
+            style_cell={
+                'textAlign':'left',
+                'padding':'5px',
+                'maxWidth': 105,
+                'minWidth': 105,
+                'font-family':'Roboto',
+                'fontSize':12,
+            },
+            style_table={'height': '400px', 'width':'500px', 'overflowY': 'auto','overflowX':'auto'}
+)]),
 
 
 hidden_divs = html.Div([
@@ -467,6 +566,7 @@ hidden_divs = html.Div([
     html.Div(id='df_g2-holder', style={'display':'none'}),
     html.Div(id='protein-data-holder', style={'display':'none'}),
     html.Div(id='peptide-data-holder', style={'display':'none'}),
+    html.Div(id='trivial-name-holder', style={'display':'none'})
 ])
 #---------------------------PAGES---------------------------------------------------------------
 main_page = dbc.Container([
@@ -540,6 +640,7 @@ def update_data_frame(contents, filename):
         decoded_list.append(io.BytesIO(decoded))
     dfs = make_peptide_dfs(decoded_list)
     master_df = concatenate_dataframes(dfs)
+    master_df = log_intensity(master_df)
     return master_df
 
 
@@ -557,7 +658,12 @@ def set_cutoffs(tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_
 
 protein_lists = []
 
-def create_protein_fig(n_clicks, checkbox_values, apply_cutoffs_button, protein_radioitems_value, cutoff_values, df_g1, df_g2):
+def create_protein_fig(n_clicks, checkbox_values, apply_cutoffs_button, protein_radioitems_value, normalization_radioitems, rows, selected_rows, housekeeping_protein, cutoff_values, df_g1, df_g2, protein_fig):
+    
+    if selected_rows is not None:
+        df= pd.DataFrame(selected_rows)
+        print(df)
+
     if apply_cutoffs_button:
         tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS, present_in_all_samples = cutoff_values
 
@@ -577,37 +683,16 @@ def create_protein_fig(n_clicks, checkbox_values, apply_cutoffs_button, protein_
         protein_list_cutoff = apply_protein_cutoffs(protein_list_cutoff, nbr_of_peptides=nbr_of_peptides_co, tot_area=tot_intensity_co, tot_spc=tot_spc_co)
         if present_in_all_samples:
             protein_list_cutoff = proteins_present_in_all_samples(protein_list_cutoff)
+        if 'global-intensity' in normalization_radioitems:
+            protein_list_cutoff = normalize_data(protein_list_cutoff, housekeeping_protein =False)
+        if 'housekeeping-protein' in normalization_radioitems and housekeeping_protein != '':
+            protein_list_cutoff = normalize_data(protein_list_cutoff, housekeeping_protein = housekeeping_protein)
         unique_protein_list, common_protein_list = get_unique_and_common_proteins(protein_list_cutoff)
         df_protein_info = create_protein_datatable(protein_list_cutoff, protein_radioitems_value)
-        datatable = dash_table.DataTable(
-            data = df_protein_info.to_dict('rows'),
-            columns=[{"name": str(i), "id": str(i)} for i in df_protein_info.columns],
-            sort_action='native',
-            fixed_rows={'headers': True},
-            filter_action='native',
-            virtualization=True,
-            export_format='xlsx',
-            css=[{'selector':'.export','rule':'position:font-type:Roboto;color:black;background-color:#FAFAFA;border-color:#FAFAFA;border:1px solid transparent'}],
-            style_data_conditional = [{
-                'if' : {'row_index':'odd'},
-                'backgroundColor' : 'rgb(182, 224, 194)'
-            }
-            ],
-            style_header={
-                'textAlign':'center',
-                'fontWeight': 'bold',
-                'font-family':'Roboto'
-            },
-            style_cell={
-                'textAlign':'left',
-                'padding':'5px',
-                'maxWidth': 105,
-                'minWidth': 105,
-                'font-family':'Roboto',
-                'fontSize':12,
-            },
-            style_table={'height': '200px', 'width':'500px', 'overflowY': 'auto','overflowX':'auto'}
-    )   
+        df_protein_info.fillna(0, inplace=True)
+        protein_info_data = df_protein_info.to_dict('rows')
+        protein_info_columns=[{"name": str(i), "id": str(i)} for i in df_protein_info.columns]
+            
         if len(common_protein_list) > 1:
             for protein in protein_list_cutoff:
                 triv_names.append(html.Option(value=protein.get_trivial_name()))
@@ -621,11 +706,11 @@ def create_protein_fig(n_clicks, checkbox_values, apply_cutoffs_button, protein_
         else:
 
             protein_fig = protein_graphic_plotly(common_protein_list, difference_metric=protein_radioitems_value)
-        return protein_fig, triv_names, datatable, df_protein_info.to_json()
+        return protein_fig, triv_names, protein_info_data, protein_info_columns, df_protein_info.to_json()
 
     
     else:
-        return {}, [], html.Div(), []
+        return {}, [], [], [], []
 
 peptide_lists=[]
 def create_peptide_fig(clickData, search_protein, n_clicks_sum, n_clicks_mean, cutoff_values, apply_cutoffs_button, peptide_radioitems_value,):
@@ -656,40 +741,13 @@ def create_peptide_fig(clickData, search_protein, n_clicks_sum, n_clicks_mean, c
         else:
             peptide_fig = stacked_samples_peptide(peptide_list, show_difference='show', show_weight ='show', average=True, difference_metric=peptide_radioitems_value)
         df_peptide_info = create_peptide_datatable(peptide_list, peptide_radioitems_value)
-        datatable = dash_table.DataTable(
-            data = df_peptide_info.to_dict('rows'),
-            columns=[{"name": str(i), "id": str(i)} for i in df_peptide_info.columns],
-            sort_action='native',
-            fixed_rows={'headers': True},
-            filter_action='native',
-            virtualization=True,
-            css=[{'selector':'.export','rule':'position:font-type:Roboto;color:black;background-color:#FAFAFA;border-color:#FAFAFA;border:1px solid transparent'}],
-            export_format="xlsx",
-            style_data_conditional = [{
-                'if' : {'row_index':'odd'},
-                'backgroundColor' : 'rgb(182, 224, 194)'
-            }
-            ],
-            style_header={
-                'textAlign':'center',
-                'fontWeight': 'bold',
-                'font-family':'Roboto'
-            },
-            style_cell={
-                'textAlign':'left',
-                'padding':'5px',
-                'maxWidth': 105,
-                'minWidth': 105,
-                'font-family':'Roboto',
-                'fontSize':12,
-            },
-            style_table={'height': '400px', 'width':'500px', 'overflowY': 'auto','overflowX':'auto'}
-    )   
-               
-        return peptide_fig, search_text, datatable, df_peptide_info.to_json()
+        df_peptide_info.fillna(0, inplace=True)
+        peptide_table_data = df_peptide_info.to_dict('rows'),
+        peptide_table_columns=[{"name": str(i), "id": str(i)} for i in df_peptide_info.columns],
+        return peptide_fig, search_text,  peptide_table_data, peptide_table_columns, df_peptide_info.to_json()
     
     else:
-        return {}, search_text, [], []
+        return {}, search_text, [], [], []
 
 
 def amino_acid_dropdown(n_clicks_complete_proteome, n_clicks_selected_protein, radioitem_value):
@@ -712,6 +770,41 @@ def generate_hover_graphs(hoverData, protein_radioitems_value):
     else:
         return {}
 
+def enable_input_housekeeping_protein(normalization_radio):
+    if 'housekeeping-protein' in normalization_radio:
+        return False
+    else:
+        return True
+
+def enable_input_search_protein(protein_list):
+        if not protein_list:
+            return True
+        else:
+            return False
+
+def highlight_protein_fig(highlighted_triv_names, triv_names_holder, protein_fig):
+    if highlighted_triv_names:
+        highlighted_triv_names = clickData['points'][0]['customdata'][-1]
+    marker_color_list = ['rgba(0,0,0,0)' for n in range(len(triv_names_holder))]
+    for i in range(len(triv_names_holder)):
+        if highlighted_triv_names == str(triv_names_holder[i]):
+            marker_color_list[i] = red['medium']
+            protein_fig.update_traces(marker=dict(line=dict(width=2, color=marker_color_list)),
+                selector=dict(mode='markers'))
+            return protein_fig
+
+
+
+app.callback(
+    Output('search-protein', 'disabled'),
+    Input('protein-list', 'children')
+)(enable_input_search_protein)
+    
+
+app.callback(
+    Output('housekeeping-protein-input', 'disabled'),
+    Input('normalization-radioitems', 'value')
+)(enable_input_housekeeping_protein)
 
 app.callback(
     Output('hover-all-protein-samples', 'figure'),
@@ -735,7 +828,8 @@ app.callback(
 app.callback(
     Output('peptide-fig', 'figure'),
     Output('search-protein', 'value'),
-    Output('peptide-info-table', 'children'),
+    Output('peptide-info-table', 'data'),
+    Output('peptide-info-table', 'columns'),
     Output('peptide-data-holder', 'children'),
     Input('protein-fig', 'clickData'),
     Input('search-protein', 'value'),
@@ -763,15 +857,21 @@ app.callback(
 app.callback(
     Output('protein-fig', 'figure'),
     Output('protein-list', 'children'),
-    Output('protein-info-table','children'),
+    Output('protein-info-table','data'),
+    Output('protein-info-table','columns'),
     Output('protein-data-holder', 'children'),
     Input("close-modal-file", "n_clicks_timestamp"),
     Input('protein-checklist','value'),
     Input('close-modal-cutoff', 'n_clicks'),
     Input('protein-radioitems', 'value'),
+    Input('normalization-radioitems', 'value'),
+    Input('housekeeping-protein-input','value'),
+    Input('protein-info-table', "derived_virtual_data"),
+    Input('protein-info-table', "derived_virtual_selected_rows"),
     State('cutoff-value-holder', 'children'),
     State('df_g1-holder', 'children'),
     State('df_g2-holder', 'children'),
+    State('protein-fig','figure'),
     )(create_protein_fig)
 
 app.callback(
@@ -807,6 +907,11 @@ app.callback(
     [State("modal-cutoff", "is_open")],
 )(toggle_modal)
 
+app.callback(
+    Output("modal-normalization", "is_open"),
+    [Input("open-modal-normalization", "n_clicks"), Input("close-modal-normalization", "n_clicks")],
+    [State("modal-normalization", "is_open")],
+)(toggle_modal)
 
 app.callback(
     Output("modal-FAQ", "is_open"),
