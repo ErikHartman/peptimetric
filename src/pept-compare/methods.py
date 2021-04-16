@@ -278,21 +278,21 @@ def group_amino_acids(peptide_list):
     return grouped
 
 
-def protein_graphic_plotly(protein_list, **kwargs):
+def create_protein_df_fig(protein_list, **kwargs):
     default_settings = {
         'difference_metric':'area',
         'color': 'green',
-        'show_stdev':'',
-        'show_pfam':'',
-        'protein_id':''
-
     }
     default_settings.update(**kwargs)
     color = green
-    g1_intensity = []
-    g2_intensity = []
-    g1_stdev = []
-    g2_stdev = []
+    g1_area = []
+    g2_area = []
+    g1_spc =[]
+    g2_spc = []
+    g1_area_stdev = []
+    g2_area_stdev = []
+    g1_spc_stdev = []
+    g2_spc_stdev = []
     trivial_name = []
     accession = []
     nbr_of_peptides = []
@@ -303,51 +303,53 @@ def protein_graphic_plotly(protein_list, **kwargs):
         accession.append(protein.get_id())
         nbr_of_peptides.append(sum(protein.get_nbr_of_peptides()))
         pfam.append(protein.get_protein_family())
-        if kwargs.get('difference_metric') == 'area':
-            g1_intensity.append(protein.get_area_sum()[0])
-            g1_stdev.append(protein.get_area_sum()[1])
-            g2_intensity.append(protein.get_area_sum()[2])
-            g2_stdev.append(protein.get_area_sum()[3])
-            y_label = 'Group 1 Intensity'
-            x_label = 'Group 2 Intensity'
-        elif kwargs.get('difference_metric') == 'area_mean': #Not used now
-            g1_intensity.append(protein.get_area_mean()[0])
-            g2_intensity.append(protein.get_area_mean()[1])
-        elif kwargs.get('difference_metric') == 'spectral_count_mean': #Not used now
-            g1_intensity.append(protein.get_spectral_count_mean()[0])
-            g2_intensity.append(protein.get_spectral_count_mean()[1])
-        elif kwargs.get('difference_metric') == 'spectral_count':
-            g1_intensity.append(protein.get_spectral_count_sum()[0])
-            g1_stdev.append(protein.get_spectral_count_sum()[1])
-            g2_intensity.append(protein.get_spectral_count_sum()[2])
-            g2_stdev.append(protein.get_spectral_count_sum()[3])
-            y_label= 'Group 1 Spectral Count'
-            x_label = 'Group 2 Spectral Count'
+        g1_area.append(protein.get_area_sum()[0])
+        g1_area_stdev.append(protein.get_area_sum()[1])
+        g2_area.append(protein.get_area_sum()[2])
+        g2_area_stdev.append(protein.get_area_sum()[3])
+        g1_spc.append(protein.get_spectral_count_sum()[0])
+        g1_spc_stdev.append(protein.get_spectral_count_sum()[1])
+        g2_spc.append(protein.get_spectral_count_sum()[2])
+        g2_spc_stdev.append(protein.get_spectral_count_sum()[3])
     color_thresholds = get_thresholds(nbr_of_peptides)
     col, size = set_color_and_size(nbr_of_peptides, color_thresholds)
     for s in size:
         s *= 4
-    df_fig = pd.DataFrame(list(zip(g1_intensity,g2_intensity, nbr_of_peptides, trivial_name, pfam, col, accession, g1_stdev, g2_stdev)),
-        columns=['g1_intensity','g2_intensity','nbr_of_peptides','trivial_name','pfam','col','accession', 'g1_stdev', 'g2_stdev'])
-    fig = px.scatter(df_fig, x='g2_intensity', y='g1_intensity',
+    df_fig = pd.DataFrame(list(zip(g1_area,g2_area, g1_spc,g2_spc, nbr_of_peptides, trivial_name, pfam, col, accession, g1_area_stdev, g2_area_stdev,
+    g1_spc_stdev, g2_spc_stdev)),
+        columns=['g1_area','g2_area','g1_spc','g2_spc','nbr_of_peptides','trivial_name','pfam','col','accession', 'g1_area_stdev', 'g2_area_stdev', 'g1_spc_stdev', 'g2_spc_stdev'])
+    
+    return df_fig
+
+def create_protein_fig(df_fig, protein_list, **kwargs):
+    default_settings =  {
+        'show_stdev':'',
+        'show_pfam':'',
+        'difference_metric':'',
+    }
+    default_settings.update(kwargs)
+    if kwargs.get('difference_metric') == 'area':
+        g1_intensity, g2_intensity = 'g1_area','g2_area'
+        g1_std, g2_std = 'g1_area_stdev', 'g2_area_stdev'
+        x_label = 'Group 2 log(intensity)'
+        y_label = 'Group 1 log(intensity)'
+    else:
+        g1_intensity, g2_intensity = 'g1_spc', 'g2_spc'
+        g1_std, g2_std = 'g1_spc_stdev', 'g2_spc_stdev'
+        x_label = 'Group 2 SPC'
+        y_label = 'Group 1 SPC'
+    fig = px.scatter(df_fig, x=g2_intensity, y=g1_intensity,
         color='nbr_of_peptides', color_continuous_scale=px.colors.diverging.PiYG, 
         size='nbr_of_peptides', hover_data=['trivial_name','nbr_of_peptides','pfam','accession'])
     fig.update_layout(yaxis=dict(title=y_label), xaxis=dict(title=x_label))
-    if kwargs.get('protein_triv_name') != '':
-        marker_color_list = ['rgba(0,0,0,0)' for n in range(len(trivial_name))]
-        for i in range(len(trivial_name)):
-            if str(kwargs.get('protein_triv_name')) == str(trivial_name[i]):
-                marker_color_list[i] = red['medium']
-                fig.update_traces(marker=dict(line=dict(width=2, color=marker_color_list)),
-                  selector=dict(mode='markers'))
-
+    g1_intensity = list(df_fig[g1_intensity])
+    g2_intensity = list(df_fig[g2_intensity])
     minimum = min(g1_intensity + g2_intensity)
     maximum = max(g1_intensity + g2_intensity)
-    print(minimum, maximum)
     fig.add_shape(type="line",x0=minimum, y0=minimum, x1=maximum, y1=maximum, line=dict(color="#919499",width=1, dash='dash'))
     fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}, coloraxis_colorbar=dict(title='Number of peptides'))
     if kwargs.get('show_stdev') == True:
-        fig.update_traces(error_x= dict(array=df_fig['g2_stdev'].array, thickness=1), error_y=dict(array=df_fig['g1_stdev'].array, thickness=1))
+        fig.update_traces(error_x= dict(array=df_fig[g2_std].array, thickness=1), error_y=dict(array=df_fig[g2_intensity].array, thickness=1))
     if kwargs.get('show_pfam') == True:
         for p1 in protein_list:
             for p2 in protein_list:

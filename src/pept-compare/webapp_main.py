@@ -13,8 +13,9 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output, State
+from dash import no_update
 
-from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, create_protein_list, protein_graphic_plotly, create_peptide_list, stacked_samples_peptide
+from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, create_protein_list, create_protein_df_fig, create_protein_fig , create_peptide_list, stacked_samples_peptide
 from methods import amino_acid_piecharts, common_family, all_sample_bar_chart
 from methods import apply_protein_cutoffs, apply_peptide_cutoffs, get_unique_and_common_proteins
 from methods import proteins_present_in_all_samples, create_protein_datatable, create_peptide_datatable, log_intensity, normalize_data, create_length_histogram
@@ -592,9 +593,9 @@ hidden_divs = html.Div([
     html.Div(id='peptide-lists-holder', style={'display': 'none'}),
     html.Div(id='df_g1-holder', style={'display':'none'}),
     html.Div(id='df_g2-holder', style={'display':'none'}),
-    html.Div(id='protein-data-holder', style={'display':'none'}),
+    html.Div(id='protein-datatable-holder', style={'display':'none'}),
     html.Div(id='peptide-data-holder', style={'display':'none'}),
-    html.Div(id='trivial-name-holder', style={'display':'none'})
+    html.Div(id='protein-fig-holder', style = {'display':'none'}),
 ])
 #---------------------------PAGES---------------------------------------------------------------
 main_page = dbc.Container([
@@ -690,12 +691,8 @@ def set_cutoffs(tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_
 
 protein_lists = []
 
-def create_protein_fig(n_clicks, checkbox_values, apply_cutoffs_button, protein_radioitems_value, normalization_radioitems, rows, selected_rows, housekeeping_protein, cutoff_values, df_g1, df_g2, protein_fig):
+def process_protein_data(n_clicks, apply_cutoffs_button, protein_radioitems_value, normalization_radioitems, housekeeping_protein, cutoff_values, df_g1, df_g2):
     
-    if selected_rows is not None:
-        df= pd.DataFrame(selected_rows)
-        print(df)
-
     if apply_cutoffs_button:
         tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS, present_in_all_samples = cutoff_values
 
@@ -713,36 +710,48 @@ def create_protein_fig(n_clicks, checkbox_values, apply_cutoffs_button, protein_
         protein_lists.append(protein_list)
         protein_list_cutoff = apply_peptide_cutoffs(protein_list, area=pep_intensity_co, spc=pep_spc_co, rt=RT, css=CSS)
         protein_list_cutoff = apply_protein_cutoffs(protein_list_cutoff, nbr_of_peptides=nbr_of_peptides_co, tot_area=tot_intensity_co, tot_spc=tot_spc_co)
+        df_fig = create_protein_df_fig(protein_list)
+        df_protein_info = create_protein_datatable(protein_list_cutoff, protein_radioitems_value)
+        df_protein_info.fillna(0, inplace=True)
         if present_in_all_samples:
             protein_list_cutoff = proteins_present_in_all_samples(protein_list_cutoff)
         if 'global-intensity' in normalization_radioitems:
             protein_list_cutoff = normalize_data(protein_list_cutoff, housekeeping_protein =False)
         if 'housekeeping-protein' in normalization_radioitems and housekeeping_protein != '':
             protein_list_cutoff = normalize_data(protein_list_cutoff, housekeeping_protein = housekeeping_protein)
-        unique_protein_list, common_protein_list = get_unique_and_common_proteins(protein_list_cutoff)
-        df_protein_info = create_protein_datatable(protein_list_cutoff, protein_radioitems_value)
-        df_protein_info.fillna(0, inplace=True)
-        protein_info_data = df_protein_info.to_dict('rows')
-        protein_info_columns=[{"name": str(i), "id": str(i)} for i in df_protein_info.columns]
-            
-        if len(common_protein_list) > 1:
+        if len(protein_list) > 1:
             for protein in protein_list_cutoff:
                 triv_names.append(html.Option(value=protein.get_trivial_name()))
-    if df_g1 and df_g2:
-        if checkbox_values and 'show-stdev' in checkbox_values and 'show-pfam' in checkbox_values:
-            protein_fig = protein_graphic_plotly(common_protein_list, difference_metric= protein_radioitems_value, show_pfam=True, show_stdev = True)
-        elif checkbox_values and 'show-stdev' in checkbox_values:
-            protein_fig = protein_graphic_plotly(common_protein_list, difference_metric=protein_radioitems_value, show_stdev = True)
-        elif checkbox_values and 'show-pfam' in checkbox_values:
-            protein_fig = protein_graphic_plotly(common_protein_list, difference_metric=protein_radioitems_value, show_pfam = True)
-        else:
+        return triv_names, df_fig.to_json(), df_protein_info.to_json()
 
-            protein_fig = protein_graphic_plotly(common_protein_list, difference_metric=protein_radioitems_value)
-        return protein_fig, triv_names, protein_info_data, protein_info_columns, df_protein_info.to_json()
-
-    
     else:
-        return {}, [], [], [], []
+        return [], [], [],
+
+def create_protein_figure_and_table(protein_radioitems_value, checkbox_values, df_fig, df_protein_info):
+    if df_fig and df_protein_info:
+        df_fig = pd.read_json(df_fig)
+        df_protein_info = pd.read_json(df_protein_info)
+        protein_info_data = df_protein_info.to_dict('rows')
+        protein_info_columns=[{"name": str(i), "id": str(i)} for i in df_protein_info.columns]
+        protein_list = protein_lists[-1]
+        x_label = 'Group 1 log(intensity)'
+        y_label = 'Group 2 log(intensity)'
+        if 'area' in protein_radioitems_value:
+            difference_metric = 'area'
+        else:
+            difference_metric = 'spc'
+        if checkbox_values and 'show-stdev' in checkbox_values and 'show-pfam' in checkbox_values:
+            protein_fig = create_protein_fig(df_fig, protein_list, show_pfam=True, show_stdev = True,  difference_metric = difference_metric)
+        elif checkbox_values and 'show-stdev' in checkbox_values:
+            protein_fig = create_protein_fig(df_fig, protein_list, show_stdev = True, difference_metric = difference_metric)
+        elif checkbox_values and 'show-pfam' in checkbox_values:
+            protein_fig = create_protein_fig(df_fig, protein_list, show_pfam=True, difference_metric = difference_metric)
+        else:
+            protein_fig = create_protein_fig(df_fig, protein_list, difference_metric = difference_metric)
+        return protein_fig, protein_info_data, protein_info_columns
+    else:
+        return {}, [], []
+
 
 peptide_lists=[]
 def create_peptide_fig(clickData, search_protein, n_clicks_sum, n_clicks_mean, cutoff_values, apply_cutoffs_button, peptide_radioitems_value,):
@@ -906,24 +915,29 @@ app.callback(
 )(update_file_list)
 
 app.callback(
-    Output('protein-fig', 'figure'),
     Output('protein-list', 'children'),
-    Output('protein-info-table','data'),
-    Output('protein-info-table','columns'),
-    Output('protein-data-holder', 'children'),
+    Output('protein-fig-holder', 'children'),
+    Output('protein-datatable-holder','children'),
     Input("close-modal-file", "n_clicks_timestamp"),
-    Input('protein-checklist','value'),
     Input('close-modal-cutoff', 'n_clicks'),
     Input('protein-radioitems', 'value'),
     Input('normalization-radioitems', 'value'),
     Input('housekeeping-protein-input','value'),
-    Input('protein-info-table', "derived_virtual_data"),
-    Input('protein-info-table', "derived_virtual_selected_rows"),
     State('cutoff-value-holder', 'children'),
     State('df_g1-holder', 'children'),
     State('df_g2-holder', 'children'),
-    State('protein-fig','figure'),
-    )(create_protein_fig)
+    )(process_protein_data)
+
+
+app.callback(
+    Output('protein-fig', 'figure'),
+    Output('protein-info-table', 'data'),
+    Output('protein-info-table', 'columns'),
+    Input('protein-radioitems','value'),
+    Input('protein-checklist', 'value'),
+    State('protein-fig-holder', 'children'),
+    State('protein-datatable-holder','children')
+)(create_protein_figure_and_table)
 
 app.callback(
     Output('cutoff-value-holder', 'children'),
