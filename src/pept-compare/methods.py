@@ -349,7 +349,7 @@ def create_protein_fig(df_fig, protein_list, **kwargs):
     fig.add_shape(type="line",x0=minimum, y0=minimum, x1=maximum, y1=maximum, line=dict(color="#919499",width=1, dash='dash'))
     fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}, coloraxis_colorbar=dict(title='Number of peptides'))
     if kwargs.get('show_stdev') == True:
-        fig.update_traces(error_x= dict(array=df_fig[g2_std].array, thickness=1), error_y=dict(array=df_fig[g2_intensity].array, thickness=1))
+        fig.update_traces(error_x= dict(array=df_fig[g2_std].array, thickness=1), error_y=dict(array=df_fig[g1_std].array, thickness=1))
     if kwargs.get('show_pfam') == True:
         for p1 in protein_list:
             for p2 in protein_list:
@@ -863,31 +863,20 @@ def create_peptide_datatable(peptide_list, peptide_radioitems_value):
         print('Error: Peptide Datatable')
         return None
 
-def create_protein_datatable(protein_list, protein_radioitems_value):
-    if 'area' in protein_radioitems_value:
-        protein_info_columns = ['Protein','UniProt id','#peptides g1','#peptides g2','Intensity_g1','Intensity_g2', 'Protein family','p-value']
-        df_protein_info = pd.DataFrame(columns=protein_info_columns)
-        for protein in protein_list:
-            df_protein_info = df_protein_info.append({'Protein': str(protein.get_trivial_name()), 'UniProt id': protein.get_id(),'#peptides g1': protein.get_nbr_of_peptides()[0], '#peptides g2': protein.get_nbr_of_peptides()[1], 
-            'Intensity_g1': protein.get_area_sum()[0], 'Intensity_g2': protein.get_area_sum()[2], 'Protein family':protein.get_protein_family(), 'p-value':protein.get_pvalue('area')},  ignore_index=True)
-        df_protein_info.sort_values(by=['Intensity_g1', 'Intensity_g2'], ascending=False, inplace=True)
-        return df_protein_info
-    elif 'spectral_count' in protein_radioitems_value:
-        protein_info_columns = ['Protein','UniProt id','#peptides g1','#peptides g2','spc_g1','spc_g2', 'Protein family','p-value']
-        df_protein_info = pd.DataFrame(columns=protein_info_columns)
-        for protein in protein_list:
-            df_protein_info = df_protein_info.append({'Protein': str(protein.get_trivial_name()), 'UniProt id': protein.get_id(),'#peptides g1': protein.get_nbr_of_peptides()[0], '#peptides g2': protein.get_nbr_of_peptides()[1], 
-            'spc_g1': protein.get_spectral_count_sum()[0], 'spc_g2': protein.get_spectral_count_sum()[2], 'Protein family':protein.get_protein_family(), 'p-value':protein.get_pvalue('spc')},  ignore_index=True)
-        df_protein_info.sort_values(by=['spc_g1', 'spc_g2'], ascending=False, inplace=True)
-        return df_protein_info
-    else:
-        print('Error: Protein Datatable')
-        return None
+def create_protein_datatable(protein_list):
+    protein_info_columns = ['Protein','UniProt id','#peptides g1','#peptides g2','intensity_g1','intensity_g2', 'spc_g1', 'spc_g2', 'Protein family','p-value_area', 'p-value_spc']
+    df_protein_info = pd.DataFrame(columns=protein_info_columns)
+    for protein in protein_list:
+        df_protein_info = df_protein_info.append({'Protein': str(protein.get_trivial_name()), 'UniProt id': protein.get_id(),'#peptides g1': protein.get_nbr_of_peptides()[0], '#peptides g2': protein.get_nbr_of_peptides()[1], 
+        'intensity_g1': protein.get_area_sum()[0], 'intensity_g2': protein.get_area_sum()[2], 'spc_g1': protein.get_spectral_count_sum()[0], 'spc_g2': protein.get_spectral_count_sum()[2], 
+        'Protein family':protein.get_protein_family(), 'p-value_area':protein.get_pvalue('area'), 'p-value_spc':protein.get_pvalue('spc')},  ignore_index=True)
+    return df_protein_info
+
     
     
 def normalize_data(protein_list, housekeeping_protein=False):
     new_protein_list = []
-    if not housekeeping_protein:
+    if housekeeping_protein == False:
         total_intensity_dict = protein_list[0].get_area_sum_all_samples()
         total_spc_dict = protein_list[0].get_spectral_count_sum_all_samples()
         for protein in protein_list[1:]:
@@ -907,7 +896,7 @@ def normalize_data(protein_list, housekeeping_protein=False):
         print('global Done')
         return new_protein_list
 
-    if housekeeping_protein != False and housekeeping_protein != '':
+    elif housekeeping_protein != False and housekeeping_protein != '':
         housekeeping_protein_intensity = {}
         housekeeping_protein_spc = {}
         for protein in protein_list:
