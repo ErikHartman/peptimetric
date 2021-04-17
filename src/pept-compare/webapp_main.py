@@ -738,26 +738,34 @@ def process_protein_data(apply_normalization_n_clicks, n_clicks_close_file, appl
     else:
         return [], [], [],
 
-def create_protein_figure_and_table(search_protein, clickData, protein_radioitems_value, checkbox_values, generate_protein_graph_n_clicks, df_fig, df_protein_info, protein_fig):
+def create_protein_figure_and_table(rows, derived_virtual_selected_rows, search_protein, clickData, protein_radioitems_value, checkbox_values, generate_protein_graph_n_clicks, df_fig, df_protein_info, protein_fig):
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
+    print(changed_id)
     highlighted_triv_names = 'Choose protein'
     disabled = True
     if df_protein_info:
         df_protein_info = pd.read_json(df_protein_info)
-    if clickData or search_protein:
+    if clickData or search_protein or derived_virtual_selected_rows:
         disabled = False
         protein_fig = go.Figure(protein_fig)
+        highlighted_triv_names = []
         triv_names_holder = df_protein_info['Protein'].array
-        if search_protein in triv_names_holder:
-            highlighted_triv_names = search_protein
-        elif clickData:
-            highlighted_triv_names = clickData['points'][0]['customdata'][0]
+        if str(changed_id) == 'search-protein.value' and search_protein in triv_names_holder:
+            highlighted_triv_names.append(search_protein)
+        elif str(changed_id) == 'protein-fig.clickData':
+            highlighted_triv_names.append(clickData['points'][0]['customdata'][0])
+        elif str(changed_id) == 'protein-info-table.derived_virtual_data' or str(changed_id) == 'protein-info-table.derived_virtual_selected_rows':
+            selected_rows_df = pd.DataFrame(rows)
+            highlighted_triv_names = list(selected_rows_df.iloc[derived_virtual_selected_rows, 0])
+            if not rows:
+                highlighted_triv_names = []
+
         marker_color_list = ['rgba(0,0,0,0)' for n in range(len(triv_names_holder))]
-        for i in range(len(triv_names_holder)):
-            if highlighted_triv_names == str(triv_names_holder[i]):
-                marker_color_list[i] = 'rgba(242, 89, 0,1)'
-                protein_fig.update_traces(marker=dict(line=dict(width=3, color=marker_color_list)),
-                    selector=dict(mode='markers'))
+        for triv_name in highlighted_triv_names:
+            for i in range(len(triv_names_holder)):
+                if triv_name == str(triv_names_holder[i]):
+                    marker_color_list[i] = 'rgba(242, 89, 0, 1)'
+        protein_fig.update_traces(marker=dict(line=dict(width=3, color=marker_color_list)),selector=dict(mode='markers'))
     if df_fig:
         df_fig = pd.read_json(df_fig)
         protein_list = protein_lists[-1]
@@ -776,7 +784,6 @@ def create_protein_figure_and_table(search_protein, clickData, protein_radioitem
         df_protein_info.sort_values(by=sort, ascending=False, inplace=True)
         protein_info_data = df_protein_info.to_dict('rows')
         protein_info_columns=[{"name": str(i), "id": str(i)} for i in columns]
-        print(df_protein_info)
         if str(changed_id) == 'generate-protein-graph.n_clicks' or str(changed_id) == 'protein-radioitems.value' or str(changed_id) == 'protein-checkbox.value':
             if checkbox_values and 'show-stdev' in checkbox_values and 'show-pfam' in checkbox_values:
                 protein_fig = create_protein_fig(df_fig, protein_list, show_pfam=True, show_stdev = True,  difference_metric = difference_metric)
@@ -981,6 +988,8 @@ app.callback(
     Output('protein-info-table', 'columns'),
     Output('generate-peptide-fig', 'disabled'),
     Output('generate-peptide-fig', 'children'),
+    Input('protein-info-table', "derived_virtual_data"),
+    Input('protein-info-table', 'derived_virtual_selected_rows'),
     Input('search-protein', 'value'),
     Input('protein-fig', 'clickData'),
     Input('protein-radioitems','value'),
