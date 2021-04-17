@@ -14,9 +14,10 @@ import plotly.express as px
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output, State
 from dash import no_update
+import plotly.graph_objects as go
 
 from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, create_protein_list, create_protein_df_fig, create_protein_fig , create_peptide_list, stacked_samples_peptide
-from methods import amino_acid_piecharts, common_family, all_sample_bar_chart
+from methods import amino_acid_piecharts, common_family, all_sample_bar_chart, create_peptide_list_from_trivname
 from methods import apply_protein_cutoffs, apply_peptide_cutoffs, get_unique_and_common_proteins
 from methods import proteins_present_in_all_samples, create_protein_datatable, create_peptide_datatable, log_intensity, normalize_data, create_length_histogram
 
@@ -434,18 +435,25 @@ peptide_fig_radioitems = html.Div([
     )
 ])
 
+peptide_fig_radioitems_sum_or_mean = html.Div([
+    dbc.Label("Sum or mean"),
+    dbc.RadioItems(
+        options=[
+        {'label': 'sum', 'value': False},
+        {'label': 'mean', 'value': True}
+        ],
+        value=False,
+        id='sum-or-mean-radio',
+        inline=True,
+    )
+])
+
 peptide_fig = html.Div([
         html.H3('Peptide View'),
         dbc.Row([
-            dbc.Col(
-            dbc.DropdownMenu(label='peptide dropdown',
-            children = [
-                dbc.DropdownMenuItem("Sum", id="peptide-dropdown-sum", n_clicks_timestamp=0),
-                dbc.DropdownMenuItem("Mean", id="peptide-dropdown-mean", n_clicks_timestamp=0),
-            ])),
-            dbc.Col(
-                peptide_fig_radioitems
-            )                 
+            dbc.Col(peptide_fig_radioitems_sum_or_mean),
+            dbc.Col(peptide_fig_radioitems)    ,
+            dbc.Col(dbc.Button('Choose a protein', disabled=True, id='generate-peptide-fig', color='success'))             
         ]),
         dcc.Loading(type='cube', color = '#76b382',
             children=dcc.Graph(id='peptide-fig', figure={}, config={'displaylogo': False})
@@ -555,8 +563,7 @@ protein_info = html.Div(dash_table.DataTable(
 )
 
 
-peptide_info = html.Div([dash_table.DataTable(
-            id='peptide-info-table',
+peptide_info = html.Div(dash_table.DataTable(id='peptide-info-table',
             sort_action='native',
             fixed_rows={'headers': True},
             #filter_action='native',
@@ -584,8 +591,8 @@ peptide_info = html.Div([dash_table.DataTable(
                 'fontSize':12,
             },
             style_table={'height': '400px', 'width':'500px', 'overflowY': 'auto','overflowX':'auto'}
-)]),
-
+    ),
+)
 
 
 hidden_divs = html.Div([
@@ -731,12 +738,29 @@ def process_protein_data(apply_normalization_n_clicks, n_clicks_close_file, appl
     else:
         return [], [], [],
 
-def create_protein_figure_and_table(protein_radioitems_value, checkbox_values, generate_protein_graph_n_clicks, df_fig, df_protein_info):
-    if generate_protein_graph_n_clicks and df_fig and df_protein_info:
-        df_fig = pd.read_json(df_fig)
+def create_protein_figure_and_table(search_protein, clickData, protein_radioitems_value, checkbox_values, generate_protein_graph_n_clicks, df_fig, df_protein_info, protein_fig):
+    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
+    highlighted_triv_names = 'Choose protein'
+    disabled = True
+    if df_protein_info:
         df_protein_info = pd.read_json(df_protein_info)
+    if clickData or search_protein:
+        disabled = False
+        protein_fig = go.Figure(protein_fig)
+        triv_names_holder = df_protein_info['Protein'].array
+        if search_protein in triv_names_holder:
+            highlighted_triv_names = search_protein
+        elif clickData:
+            highlighted_triv_names = clickData['points'][0]['customdata'][0]
+        marker_color_list = ['rgba(0,0,0,0)' for n in range(len(triv_names_holder))]
+        for i in range(len(triv_names_holder)):
+            if highlighted_triv_names == str(triv_names_holder[i]):
+                marker_color_list[i] = 'rgba(242, 89, 0,1)'
+                protein_fig.update_traces(marker=dict(line=dict(width=3, color=marker_color_list)),
+                    selector=dict(mode='markers'))
+    if df_fig:
+        df_fig = pd.read_json(df_fig)
         protein_list = protein_lists[-1]
-        
         if 'area' in protein_radioitems_value:
             difference_metric = 'area'
             columns = ['Protein','UniProt id','#peptides g1','#peptides g2', 'intensity_g1','intensity_g2', 'Protein family','p-value_area']
@@ -749,21 +773,22 @@ def create_protein_figure_and_table(protein_radioitems_value, checkbox_values, g
             sort = ['spc_g1','spc_g2']
             x_label = 'Group 1 spectral count'
             y_label = 'Group 2 spectral count'
-        
         df_protein_info.sort_values(by=sort, ascending=False, inplace=True)
         protein_info_data = df_protein_info.to_dict('rows')
         protein_info_columns=[{"name": str(i), "id": str(i)} for i in columns]
-        if checkbox_values and 'show-stdev' in checkbox_values and 'show-pfam' in checkbox_values:
-            protein_fig = create_protein_fig(df_fig, protein_list, show_pfam=True, show_stdev = True,  difference_metric = difference_metric)
-        elif checkbox_values and 'show-stdev' in checkbox_values:
-            protein_fig = create_protein_fig(df_fig, protein_list, show_stdev = True, difference_metric = difference_metric)
-        elif checkbox_values and 'show-pfam' in checkbox_values:
-            protein_fig = create_protein_fig(df_fig, protein_list, show_pfam=True, difference_metric = difference_metric)
-        else:
-            protein_fig = create_protein_fig(df_fig, protein_list, difference_metric = difference_metric)
-        return protein_fig, protein_info_data, protein_info_columns
+        print(df_protein_info)
+        if str(changed_id) == 'generate-protein-graph.n_clicks' or str(changed_id) == 'protein-radioitems.value' or str(changed_id) == 'protein-checkbox.value':
+            if checkbox_values and 'show-stdev' in checkbox_values and 'show-pfam' in checkbox_values:
+                protein_fig = create_protein_fig(df_fig, protein_list, show_pfam=True, show_stdev = True,  difference_metric = difference_metric)
+            elif checkbox_values and 'show-stdev' in checkbox_values:
+                protein_fig = create_protein_fig(df_fig, protein_list, show_stdev = True, difference_metric = difference_metric)
+            elif checkbox_values and 'show-pfam' in checkbox_values:
+                protein_fig = create_protein_fig(df_fig, protein_list, show_pfam=True, difference_metric = difference_metric)
+            else:
+                protein_fig = create_protein_fig(df_fig, protein_list, difference_metric = difference_metric)
+        return protein_fig, protein_info_data, protein_info_columns, disabled, str(highlighted_triv_names)
     else:
-        return {}, [], []
+        return {}, [], [], disabled, 'Choose protein'
 
 @app.callback(
     Output('normalization-holder', 'children'),
@@ -777,41 +802,38 @@ def get_normalization_data(radioitems_normalization, housekeeping_protein):
 
 
 peptide_lists=[]
-def create_peptide_fig(clickData, search_protein, n_clicks_sum, n_clicks_mean, cutoff_values, apply_cutoffs_button, peptide_radioitems_value,):
-    protein_accession = ''
-    search_text = ''
-    if apply_cutoffs_button:
-        tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS, present_in_all_samples = cutoff_values
+def create_peptide_fig(n_clicks_generate_peptide_fig, sum_or_mean_radio, peptide_radioitems_value, button_label):
+    if peptide_radioitems_value == 'area':
+        columns = ['Peptide','Start','End','Intensity_g1','Intensity_g2']
+        sort = ['Intensity_g1', 'Intensity_g2']
     else:
-        tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS, present_in_all_samples = 0,0,0,0,0,False,False, False
+        columns = ['Peptide','Start','End','spc_g1','spc_g2']
+        sort = ['spc_g1', 'spc_g2']
 
-    if len(protein_lists) > 0:
-        protein_list_cutoff = apply_peptide_cutoffs(protein_lists[-1], area=pep_intensity_co, spc=pep_spc_co, rt=RT, css=CSS)
-        protein_list_cutoff = apply_protein_cutoffs(protein_list_cutoff, nbr_of_peptides=nbr_of_peptides_co, tot_area=tot_intensity_co, tot_spc=tot_spc_co)
-    if search_protein != '' and len(protein_lists) > 0:
-        for protein in protein_list_cutoff:
-            if search_protein == protein.get_trivial_name():
-                protein_accession = protein.get_id()
-                search_text = ''
-    elif clickData:
-        protein_accession = clickData['points'][0]['customdata'][-1]
-        search_text=''
-
-    if protein_accession != '':
-        peptide_list = create_peptide_list(protein_list_cutoff, str(protein_accession))
+    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
+    if changed_id == 'generate-peptide-fig.n_clicks':
+        trivname = button_label.split(' ')[-1]
+        peptide_list = create_peptide_list_from_trivname(protein_lists[-1], str(trivname))
         peptide_lists.append(peptide_list)
-        if n_clicks_sum == 0 and n_clicks_mean == 0 or n_clicks_sum > n_clicks_mean:
-            peptide_fig = stacked_samples_peptide(peptide_list, show_difference='show', show_weight ='show', average=False, difference_metric=peptide_radioitems_value)
-        else:
-            peptide_fig = stacked_samples_peptide(peptide_list, show_difference='show', show_weight ='show', average=True, difference_metric=peptide_radioitems_value)
-        df_peptide_info = create_peptide_datatable(peptide_list, peptide_radioitems_value)
+        peptide_fig = stacked_samples_peptide(peptide_list, show_difference='show', show_weight ='show', average=sum_or_mean_radio, difference_metric=peptide_radioitems_value)
+        df_peptide_info = create_peptide_datatable(peptide_list)
         df_peptide_info.fillna(0, inplace=True)
-        peptide_table_data = df_peptide_info.to_dict('rows'),
-        peptide_table_columns=[{"name": str(i), "id": str(i)} for i in df_peptide_info.columns],
-        return peptide_fig, search_text,  peptide_table_data, peptide_table_columns, df_peptide_info.to_json()
+        df_peptide_info.sort_values(by=sort, ascending=False, inplace=True)
+        peptide_table_data = df_peptide_info.to_dict('rows')
+        peptide_table_columns=[{"name": str(i), "id": str(i)} for i in columns]
+        return peptide_fig,  peptide_table_data, peptide_table_columns
+    elif len(peptide_lists) > 1 and (changed_id == 'sum-or-mean-radio.value' or 'peptide-radioitems.value'):
+        peptide_list = peptide_lists[-1]
+        peptide_fig = stacked_samples_peptide(peptide_list, show_difference='show', show_weight ='show', average=sum_or_mean_radio, difference_metric=peptide_radioitems_value)
+        df_peptide_info = create_peptide_datatable(peptide_list)
+        df_peptide_info.fillna(0, inplace=True)
+        df_peptide_info.sort_values(by=sort, ascending=False, inplace=True)
+        peptide_table_data = df_peptide_info.to_dict('rows')
+        peptide_table_columns=[{"name": str(i), "id": str(i)} for i in columns]
+        return peptide_fig, peptide_table_data, peptide_table_columns
     
     else:
-        return {}, search_text, [], [], []
+        return {}, [], [],
 
 
 def amino_acid_dropdown(n_clicks_complete_proteome, n_clicks_selected_protein, radioitem_value):
@@ -871,6 +893,11 @@ def peptide_length_dropdown(length_dropdown_values):
 
 
 app.callback(
+    Output('generate-protein-graph', 'disabled'),
+    Input('protein-list', 'children')
+)(enable_input_search_protein)
+
+app.callback(
     Output('search-protein', 'disabled'),
     Input('protein-list', 'children')
 )(enable_input_search_protein)
@@ -908,19 +935,15 @@ app.callback(
     Input('peptide-length-dropdown', 'value'),
 )(peptide_length_dropdown)
 
+
 app.callback(
     Output('peptide-fig', 'figure'),
-    Output('search-protein', 'value'),
     Output('peptide-info-table', 'data'),
     Output('peptide-info-table', 'columns'),
-    Output('peptide-data-holder', 'children'),
-    Input('protein-fig', 'clickData'),
-    Input('search-protein', 'value'),
-    Input('peptide-dropdown-sum', 'n_clicks_timestamp'),
-    Input('peptide-dropdown-mean','n_clicks_timestamp'),
-    Input('cutoff-value-holder','children'),
-    Input('close-modal-cutoff', 'n_clicks'),
-    Input('peptide-radioitems', 'value')
+    Input('generate-peptide-fig', 'n_clicks'),
+    Input('sum-or-mean-radio', 'value'),
+    Input('peptide-radioitems', 'value'),
+    State('generate-peptide-fig', 'children')
 )(create_peptide_fig)
 
 app.callback(
@@ -956,11 +979,16 @@ app.callback(
     Output('protein-fig', 'figure'),
     Output('protein-info-table', 'data'),
     Output('protein-info-table', 'columns'),
+    Output('generate-peptide-fig', 'disabled'),
+    Output('generate-peptide-fig', 'children'),
+    Input('search-protein', 'value'),
+    Input('protein-fig', 'clickData'),
     Input('protein-radioitems','value'),
     Input('protein-checklist', 'value'),
     Input('generate-protein-graph', 'n_clicks'),
     State('protein-fig-holder', 'children'),
-    State('protein-datatable-holder','children')
+    State('protein-datatable-holder','children'),
+    State('protein-fig', 'figure')
 )(create_protein_figure_and_table)
 
 app.callback(

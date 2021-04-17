@@ -23,3 +23,13 @@ def create_peptide_list(protein_list, accession):
 
     return peptide_list
 
+def create_peptide_list_from_trivname(protein_list, trivname):
+    peptide_list = []
+    for protein in protein_list:
+        if protein.get_trivial_name() == trivname:
+            for seq in protein.df['Peptide']:
+                p = Peptide(protein, seq)
+                peptide_list.append(p)
+
+    return peptide_list
+

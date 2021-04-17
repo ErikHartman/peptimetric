@@ -360,7 +360,6 @@ def create_protein_fig(df_fig, protein_list, **kwargs):
                     y1 = p2.get_area_sum()[0]
                     fig.add_shape(type="line",x0=x0, y0=y0, x1=x1, y1=y1, line=dict(color="firebrick",width=1, dash='dash'))
 
-    fig = go.FigureWidget(fig.data, fig.layout)
     return fig
 
 def peptide_graphic_plotly(peptide_list, **kwargs):
@@ -718,8 +717,8 @@ def stacked_samples_peptide(peptide_list, **kwargs):
         for i in range(len(pos_intensity_sample[0])):
             pos_average = []
             pos_nbr_of_peptides_average = []
-            for sample in range(len(pos)):
-                pos_average.append(pos[sample][i])
+            for sample in range(len(pos_intensity_sample)):
+                pos_average.append(pos_intensity_sample[sample][i])
                 pos_nbr_of_peptides_average.append(pos_nbr_of_peptides[sample][i])
             pos_mean.append(statistics.mean(pos_average))
             color_pos.append(statistics.mean(pos_nbr_of_peptides_average))
@@ -731,8 +730,8 @@ def stacked_samples_peptide(peptide_list, **kwargs):
         for i in range(len(neg_intensity_sample[0])): 
             neg_average = []
             neg_nbr_of_peptides_average = []
-            for sample in range(len(neg)):
-                neg_average.append(neg[sample][i])
+            for sample in range(len(neg_intensity_sample)):
+                neg_average.append(neg_intensity_sample[sample][i])
                 neg_nbr_of_peptides_average.append(neg_nbr_of_peptides[sample][i])
             neg_mean.append(statistics.mean(neg_average))
             color_neg.append(statistics.mean(neg_nbr_of_peptides_average))
@@ -749,7 +748,8 @@ def stacked_samples_peptide(peptide_list, **kwargs):
         x=sample_dict['index']
         y_upper = [a + b for a, b in zip(pos_mean, pos_std)]
         y_lower = [a - b for a, b in zip(pos_mean, pos_std)]
-        fig.add_trace(go.Bar(x=x, y=pos_mean, name='g1_mean', marker=dict(line=dict(width=0), color=col_pos), width=1))
+        print(y_upper, y_lower)
+        fig.add_trace(go.Bar(x=x, y=pos_mean, name='g1_mean', marker=dict(line=dict(width=0), color=color_pos), width=1))
         fig.add_trace(go.Scatter(
                 x=x+x[::-1],
                 y=y_upper+y_lower[::-1],
@@ -762,7 +762,7 @@ def stacked_samples_peptide(peptide_list, **kwargs):
         
         y_upper = [a + b for a, b in zip(neg_mean, neg_std)]
         y_lower = [a - b for a, b in zip(neg_mean, neg_std)]
-        fig.add_trace(go.Bar(x=x, y=neg_mean, name='g2_mean', marker=dict(line=dict(width=0), color=col_neg), width=1))
+        fig.add_trace(go.Bar(x=x, y=neg_mean, name='g2_mean', marker=dict(line=dict(width=0), color=color_neg), width=1))
         fig.add_trace(go.Scatter(
                 x=x+x[::-1],
                 y=y_upper+y_lower[::-1],
@@ -842,26 +842,15 @@ def proteins_present_in_all_samples(protein_list):
             proteins_present_in_all_samples.append(protein)
     return proteins_present_in_all_samples
 
-def create_peptide_datatable(peptide_list, peptide_radioitems_value):
-    if 'area' in peptide_radioitems_value:
-        peptide_info_columns = ['Peptide','Start','End','Intensity_g1','Intensity_g2']
-        df_peptide_info = pd.DataFrame(columns=peptide_info_columns)
-        for peptide in peptide_list:
-            df_peptide_info = df_peptide_info.append({'Peptide': str(peptide.get_sequence()), 'Start': peptide.get_start(),'End': peptide.get_end(), 'Intensity_g1': peptide.get_area()[0], 
-            'Intensity_g2': peptide.get_area()[2]}, ignore_index=True)
-        df_peptide_info.sort_values(by=['Intensity_g1', 'Intensity_g2'], ascending=False, inplace=True)
-        return df_peptide_info
-    elif 'spectral_count' in peptide_radioitems_value:
-        peptide_info_columns = ['Peptide','Start','End','spc_g1','spc_g2']
-        df_peptide_info = pd.DataFrame(columns=peptide_info_columns)
-        for peptide in peptide_list:
-            df_peptide_info = df_peptide_info.append({'Peptide': str(peptide.get_sequence()), 'Start': peptide.get_start(),'End': peptide.get_end(), 'spc_g1':peptide.get_spectral_count()[0], 
-           'spc_g2':peptide.get_spectral_count()[2]}, ignore_index=True)
-        df_peptide_info.sort_values(by=['spc_g1', 'spc_g2'], ascending=False, inplace=True)
-        return df_peptide_info
-    else:
-        print('Error: Peptide Datatable')
-        return None
+def create_peptide_datatable(peptide_list):
+    peptide_info_columns = ['Peptide','Start','End','Intensity_g1','Intensity_g2', 'spc_g1','spc_g2']
+    df_peptide_info = pd.DataFrame(columns=peptide_info_columns)
+    for peptide in peptide_list:
+        df_peptide_info = df_peptide_info.append({'Peptide': str(peptide.get_sequence()), 'Start': peptide.get_start(),'End': peptide.get_end(), 'Intensity_g1': peptide.get_area()[0], 
+        'Intensity_g2': peptide.get_area()[2], 'spc_g1':peptide.get_spectral_count()[0], 
+        'spc_g2':peptide.get_spectral_count()[2]}, ignore_index=True)
+    return df_peptide_info
+
 
 def create_protein_datatable(protein_list):
     protein_info_columns = ['Protein','UniProt id','#peptides g1','#peptides g2','intensity_g1','intensity_g2', 'spc_g1', 'spc_g2', 'Protein family','p-value_area', 'p-value_spc']
