@@ -6,17 +6,19 @@ from methods import venn_bars, stacked_samples_peptide, get_unique_and_common_pr
 import numpy as np
 import json
 from json import JSONEncoder
+from protein import ProteinSchema
+
 
 
               
-
 if __name__  == "__main__":
     g1 = concatenate_dataframes(read_files_gui())
     g2 = concatenate_dataframes(read_files_gui())
     master = merge_dataframes(g1,g2)
     df_log = log_intensity(master)
     protein_list = create_protein_list(df_log)
-    json_list = [protein.to_json() for protein in protein_list]
+    json_list = [ProteinSchema().dump(protein) for protein in protein_list]
+    print(json_list)
     
 
     
