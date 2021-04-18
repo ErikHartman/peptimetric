@@ -9,6 +9,7 @@ import statistics
 import prody
 import json
 from scipy.stats import ttest_ind_from_stats
+from marshmallow import Schema, fields
 
 memory = Memory(".cache/", verbose=False)
 
@@ -27,6 +28,11 @@ def download_protein_family(protein_id):
     except:
         return None
 
+class ProteinSchema(Schema):
+        df = fields.Dict()
+        accession = fields.Str()
+        fasta = None
+
 
 class Protein:
 
@@ -36,7 +42,7 @@ class Protein:
         self.fasta = self.get_fasta()
 
     def to_json(self):
-        return json.dumps(self, indent = 4, default=lambda o: o.__dict__)
+        return json.dumps(self, indent = 4)#, default=lambda o: o.__dict__)
 
     def get_area_sum_all_samples(self):
         area_columns = [col for col in self.df if col.startswith('Area')]
