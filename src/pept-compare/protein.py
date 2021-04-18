@@ -35,6 +35,9 @@ class Protein:
         self.accession = accession
         self.fasta = self.get_fasta()
 
+    def to_json(self):
+        return json.dumps(self, indent = 4, default=lambda o: o.__dict__)
+
     def get_area_sum_all_samples(self):
         area_columns = [col for col in self.df if col.startswith('Area')]
         area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
