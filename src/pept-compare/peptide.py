@@ -63,17 +63,6 @@ class Peptide:
             return statistics.mean(area_mean_g1), statistics.stdev(area_mean_g1), statistics.mean(area_mean_g2), statistics.stdev(area_mean_g2)
         else: return statistics.mean(area_mean_g1), 0, statistics.mean(area_mean_g2), 0 
 
-    def get_area_log(self):
-        g1, g1_std, g2, g2_std = self.get_area()
-        if g1 != 0:
-            g1 = np.log10(g1)
-        else: g1 = 0
-        if g2 != 0:
-            g2 = np.log10(g2)
-        else:
-            g2 = 0
-        return g1, g2
-
 
     def get_area_all_samples(self):
         area_columns = [col for col in self.df if col.startswith('Area')]

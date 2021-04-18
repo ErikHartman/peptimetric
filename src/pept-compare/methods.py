@@ -59,7 +59,6 @@ def make_peptide_dfs(filenames: List):
                 accessions.append(row['Accession'])
         df['Accession'] = accessions
         dfs.append(df)
-        print(dfs[-1])
     return dfs
 
 
@@ -150,9 +149,7 @@ def amino_acid_frequency(p_list, **kwargs):
     first_aa_g2 = create_aa_dict()
     last_aa_g2 = create_aa_dict()
     if kwargs.get('peptide_or_protein_list') == 'peptide_list':
-        print('peptide_list')
-        if kwargs.get('difference_metric') == 'area':
-            print('area')
+        if kwargs.get('difference_metric') == 'area')
             for peptide in p_list:
                 first_aa_g1[peptide.get_sequence()[0]] += peptide.get_area()[0]
                 last_aa_g1[peptide.get_sequence()[-1]] += peptide.get_area()[0] 
@@ -195,7 +192,6 @@ def amino_acid_frequency(p_list, **kwargs):
                     for letter in peptide.get_sequence():
                         complete_seq_g1[letter] += peptide.get_spectral_count()[0]
                         complete_seq_g2[letter] += peptide.get_spectral_count()[2]
-    print(complete_seq_g1)
     return complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2    
 
 def amino_acid_piecharts(p_list, **kwargs):
@@ -748,7 +744,6 @@ def stacked_samples_peptide(peptide_list, **kwargs):
         x=sample_dict['index']
         y_upper = [a + b for a, b in zip(pos_mean, pos_std)]
         y_lower = [a - b for a, b in zip(pos_mean, pos_std)]
-        print(y_upper, y_lower)
         fig.add_trace(go.Bar(x=x, y=pos_mean, name='g1_mean', marker=dict(line=dict(width=0), color=color_pos), width=1))
         fig.add_trace(go.Scatter(
                 x=x+x[::-1],
@@ -805,9 +800,9 @@ def create_length_histogram(p_list, **kwargs):
     peptide_length_df_g2 = pd.DataFrame(columns=['Length'])
     if kwargs.get('peptide_or_protein_list') == 'peptide_list':
         for peptide in p_list:
-            if peptide.get_area()[0] != 0:
+            if peptide.get_area()[0] > 0:
                 peptide_length_df_g1 = peptide_length_df_g1.append({'Length': len(peptide.get_sequence())}, ignore_index=True)
-            if  peptide.get_area()[2] != 0:
+            if  peptide.get_area()[2] > 0:
                 peptide_length_df_g2 = peptide_length_df_g2.append({'Length': len(peptide.get_sequence())}, ignore_index=True)  
         fig1 = px.histogram(peptide_length_df_g1, x='Length', color_discrete_sequence=[green['mediumdark']], title= 'Group 1 - Peptide Length')
         fig2 = px.histogram(peptide_length_df_g2, x='Length', color_discrete_sequence=[green['mediumdark']], title= 'Group 2 - Peptide Length')
@@ -816,12 +811,20 @@ def create_length_histogram(p_list, **kwargs):
         for protein in p_list:
             peptide_list = create_peptide_list(p_list, protein.get_id())
             for peptide in peptide_list:
-                if peptide.get_area()[0] != 0:
+                if peptide.get_area()[0] > 0:
                     peptide_length_df_g1 = peptide_length_df_g1.append({'Length': len(peptide.get_sequence())}, ignore_index=True)
-                if peptide.get_area()[2] != 0:
+                if peptide.get_area()[2] > 0:
                     peptide_length_df_g2 = peptide_length_df_g2.append({'Length': len(peptide.get_sequence())}, ignore_index=True)
         fig1 = px.histogram(peptide_length_df_g1, x='Length', color_discrete_sequence=[green['mediumdark']], title= 'Group 1 - Peptide Length')
         fig2 = px.histogram(peptide_length_df_g2, x='Length', color_discrete_sequence=[green['mediumdark']], title= 'Group 2 - Peptide Length')
+    fig1.update_layout(
+        paper_bgcolor='rgb(255, 255, 255)',
+        plot_bgcolor='rgb(255, 255, 255)',
+        )
+    fig2.update_layout(
+        paper_bgcolor='rgb(255, 255, 255)',
+        plot_bgcolor='rgb(255, 255, 255)',
+        )
     return fig1, fig2
 
 
@@ -882,7 +885,6 @@ def normalize_data(protein_list, housekeeping_protein=False):
                 df[key] = df[key].apply(lambda x: x/value)
             p = Protein(df, protein.get_id())
             new_protein_list.append(p)
-        print('global Done')
         return new_protein_list
 
     elif housekeeping_protein != False and housekeeping_protein != '':
@@ -890,7 +892,6 @@ def normalize_data(protein_list, housekeeping_protein=False):
         housekeeping_protein_spc = {}
         for protein in protein_list:
             if protein.get_trivial_name() == housekeeping_protein:
-                print('found trivname')
                 housekeeping_protein_intensity = protein.get_area_sum_all_samples()
                 housekeeping_protein_spc = protein.get_spectral_count_sum_all_samples()
         for protein in protein_list:
@@ -902,7 +903,6 @@ def normalize_data(protein_list, housekeeping_protein=False):
 
                 p = Protein(df, protein.get_id())
                 new_protein_list.append(p)
-        print('housekeeping_protein Done')
         return new_protein_list
     else:
         print('Error: Data Normalization')
