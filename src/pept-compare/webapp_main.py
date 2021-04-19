@@ -374,13 +374,15 @@ sample_collapse = html.Div(
 )
 
 protein_fig_radioitems = html.Div([
-    dbc.Label("Select difference metric"),
+    dbc.Label("Select difference metric: "),
     dbc.RadioItems(
         options=[
-        {'label': 'Area', 'value': 'area'},
-        {'label': 'Spectral Count', 'value': 'spectral_count'}
+        {'label': 'Area Sum', 'value': 'area_sum'},
+        {'label': 'Area Mean', 'value': 'area_mean'},
+        {'label': 'Spectral Count Sum', 'value': 'spc_sum'},
+        {'label': 'Spectral Count Mean', 'value': 'spc_mean'}
         ],
-        value='area',
+        value='area_sum',
         id='protein-radioitems',
         inline=True,
     )
@@ -731,7 +733,6 @@ def process_protein_data(apply_normalization_n_clicks, n_clicks_close_file, appl
 
 def create_protein_figure_and_table(rows, derived_virtual_selected_rows, search_protein, clickData, protein_radioitems_value, checkbox_values, generate_protein_graph_n_clicks, df_fig, df_protein_info, protein_fig, protein_list_json):
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
-    print(changed_id)
     highlighted_triv_names = 'Choose protein'
     disabled = True
     if df_protein_info:
@@ -760,18 +761,30 @@ def create_protein_figure_and_table(rows, derived_virtual_selected_rows, search_
     if df_fig:
         df_fig = pd.read_json(df_fig)
         protein_list = json_to_protein_list(protein_list_json)
-        if 'area' in protein_radioitems_value:
-            difference_metric = 'area'
+        if 'area_sum' in protein_radioitems_value:
+            difference_metric = 'area_sum'
             columns = ['Protein','UniProt id','#peptides g1','#peptides g2', 'intensity_g1','intensity_g2', 'Protein family','p-value_area']
             sort = ['intensity_g1', 'intensity_g2']
             x_label = 'Group 1 log(intensity)'
             y_label = 'Group 2 log(intensity)'
-        else:
-            difference_metric = 'spc'
+        elif 'area_mean' in protein_radioitems_value:
+            difference_metric = 'area_mean'
+            columns = ['Protein','UniProt id','#peptides g1','#peptides g2', 'intensity_g1','intensity_g2', 'Protein family','p-value_area']
+            sort = ['intensity_g1', 'intensity_g2']
+            x_label = 'Group 1 log(intensity)'
+            y_label = 'Group 2 log(intensity)'
+        elif 'spc_sum' in protein_radioitems_value:
+            difference_metric = 'spc_sum'
             columns = ['Protein','UniProt id','#peptides g1','#peptides g2','spc_g1','spc_g2', 'Protein family','p-value_spc']
             sort = ['spc_g1','spc_g2']
-            x_label = 'Group 1 spectral count'
-            y_label = 'Group 2 spectral count'
+            x_label = 'Group 1 Spectral count'
+            y_label = 'Group 2 Spectral count'
+        else:
+            difference_metric = 'spc_mean'
+            columns = ['Protein','UniProt id','#peptides g1','#peptides g2','spc_g1','spc_g2', 'Protein family','p-value_spc']
+            sort = ['spc_g1','spc_g2']
+            x_label = 'Group 1 Spectral count'
+            y_label = 'Group 2 Spectral count'
         df_protein_info.sort_values(by=sort, ascending=False, inplace=True)
         protein_info_data = df_protein_info.to_dict('rows')
         protein_info_columns=[{"name": str(i), "id": str(i)} for i in columns]
@@ -796,7 +809,6 @@ def create_protein_figure_and_table(rows, derived_virtual_selected_rows, search_
 )
 def get_normalization_data(radioitems_normalization, housekeeping_protein):
     return radioitems_normalization, housekeeping_protein
-
 
 
 def create_peptide_fig(n_clicks_generate_peptide_fig, sum_or_mean_radio, peptide_radioitems_value, button_label, protein_list_json, peptide_list_json):

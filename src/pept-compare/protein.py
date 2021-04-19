@@ -110,7 +110,10 @@ class Protein:
             df_area = self.df.copy()
             df_area.fillna(0, inplace=True)
             area_mean_g2.append(df_area[a].mean())
-        return statistics.mean(area_mean_g1), statistics.mean(area_mean_g2)
+        if len(area_mean_g1) > 1 and len(area_mean_g2) > 1:
+            return statistics.mean(area_mean_g1), statistics.stdev(area_mean_g1), statistics.mean(area_mean_g2), statistics.stdev(area_mean_g2)
+        else:
+            return statistics.mean(area_mean_g1), 0, statistics.mean(area_mean_g2), 0
 
     def get_spectral_count_sum(self):
         spc_columns = [col for col in self.df if col.startswith('Spectral')]
@@ -145,7 +148,10 @@ class Protein:
             df_spc = self.df.copy()
             df_spc.fillna(0, inplace=True)
             spc_mean_g2.append(df_spc[a].mean())
-        return statistics.mean(spc_mean_g1), statistics.mean(spc_mean_g2)
+        if len(spc_mean_g1) > 1 and len(spc_mean_g2) > 1:
+            return statistics.mean(spc_mean_g1), statistics.stdev(spc_mean_g1), statistics.mean(spc_mean_g2), statistics.stdev(spc_mean_g2)
+        else:
+            return statistics.mean(spc_mean_g1), 0, statistics.mean(spc_mean_g2), 0
 
     def three_peptides(self):
         area_columns = [col for col in self.df if col.startswith('Area')]
