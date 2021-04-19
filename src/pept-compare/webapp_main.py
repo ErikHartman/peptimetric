@@ -45,13 +45,13 @@ modal_file = html.Div([
         dbc.Modal([
                 dbc.ModalHeader("Files", className="font-weight-bold"),
                     dbc.Row([
-                        dbc.Col(dbc.ModalBody('Group 1', className='ml-auto text-center')),
-                        dbc.Col(dbc.ModalBody('Group 2', className='ml-auto text-center')),
+                        dbc.Col(dbc.ModalBody('Group 1', className='ml-auto text-center font-weight-bold')),
+                        dbc.Col(dbc.ModalBody('Group 2', className='ml-auto text-center font-weight-bold')),
                         
                     ]),
                     dbc.Row([
-                        dbc.Col(dcc.Upload(id='upload-data-1', children=dbc.Button('Select files'), multiple=True), className="text-center ml-auto"),
-                        dbc.Col(dcc.Upload(id='upload-data-2', children=dbc.Button('Select files'), multiple=True), className="text-center ml-auto"),
+                        dbc.Col(dcc.Upload(id='upload-data-1', children=dbc.Button('Select files', style={'padding':10}), multiple=True), className="text-center ml-auto"),
+                        dbc.Col(dcc.Upload(id='upload-data-2', children=dbc.Button('Select files', style={'padding':10}), multiple=True), className="text-center ml-auto"),
                         
                     ]),    
                     dbc.Row([
@@ -60,37 +60,50 @@ modal_file = html.Div([
                                 columns=[{"name": i, "id": i} for i in file_columns],
                                 data=[],
                                 style_data_conditional = [{
-                                    'if' : {'row_index':'odd'},
-                                    'backgroundColor' : 'rgb(182, 224, 194)'}
-                                ],
-                                style_header={
-                                    'textAlign':'center',
-                                    'fontWeight': 'bold',
-                                },
-                                style_cell={
-                                    'textAlign':'center',
-                                },
+                                        'if' : {'row_index':'odd'},
+                                        'backgroundColor' : 'rgb(182, 224, 194)'
+                                    }
+                                    ],
+                                    style_header={
+                                        'textAlign':'center',
+                                        'fontWeight': 'bold',
+                                        'font-family':'Roboto'
+                                    },
+                                    style_cell={
+                                        'textAlign':'left',
+                                        'padding':'5px',
+                                        'font-family':'Roboto',
+                                        'fontSize':12,
+                                    },
+                                    style_table = {'padding':10}
                             )),
                         dbc.Col(dash_table.DataTable(
                                 id = 'output-filename-2',
                                 columns=[{"name": i, "id": i} for i in file_columns],
                                 data=[],
                                 style_data_conditional = [{
-                                    'if' : {'row_index':'odd'},
-                                    'backgroundColor' : 'rgb(182, 224, 194)'}
-                                ],
-                                style_header={
-                                    'textAlign':'center',
-                                    'fontWeight': 'bold',
-                                },
-                                style_cell={
-                                    'textAlign':'center',
-                                },
+                                        'if' : {'row_index':'odd'},
+                                        'backgroundColor' : 'rgb(182, 224, 194)'
+                                    }
+                                    ],
+                                    style_header={
+                                        'textAlign':'center',
+                                        'fontWeight': 'bold',
+                                        'font-family':'Roboto'
+                                    },
+                                    style_cell={
+                                        'textAlign':'left',
+                                        'padding':'5px',
+                                        'font-family':'Roboto',
+                                        'fontSize':12,
+                                    },
+                                    style_table = {'padding':10}
                             )),
                     ]),
-                dbc.ModalFooter(
+                dbc.ModalFooter([
+                    dbc.Label('*upload 3 or more files for statistical analysis'),
                     dbc.Button("Upload files", color = 'primary', id="close-modal-file", className="ml-auto", n_clicks_timestamp=0)
-                ),
+                ]),
             ],
             id="modal-file",
             centered=True,
@@ -329,8 +342,8 @@ sample_collapse = html.Div(
         dbc.Collapse(
             dbc.Card([
             dbc.Row([
-                dbc.Col('Group 1'),
-                dbc.Col('Group 2')
+                dbc.Col('Group 1', className='font-weight-bold text-center'),
+                dbc.Col('Group 2', className='font-weight-bold text-center')
                 ]),
             dbc.Row([
             dbc.Col(dash_table.DataTable(
@@ -338,32 +351,44 @@ sample_collapse = html.Div(
                                 columns=[{"name": i, "id": i} for i in file_columns],
                                 data=[],
                                 style_data_conditional = [{
-                                    'if' : {'row_index':'odd'},
-                                    'backgroundColor' : 'rgb(182, 224, 194)'}
-                                ],
-                                style_header={
-                                    'textAlign':'center',
-                                    'fontWeight': 'bold',
-                                },
-                                style_cell={
-                                    'textAlign':'center',
-                                },
+                                        'if' : {'row_index':'odd'},
+                                        'backgroundColor' : 'rgb(182, 224, 194)'
+                                    }
+                                    ],
+                                    style_header={
+                                        'textAlign':'center',
+                                        'fontWeight': 'bold',
+                                        'font-family':'Roboto'
+                                    },
+                                    style_cell={
+                                        'textAlign':'left',
+                                        'padding':'5px',
+                                        'font-family':'Roboto',
+                                        'fontSize':12,
+                                    },
+                                    style_table = {'padding':10}
                             )),
             dbc.Col(dash_table.DataTable(
                                 id = 'sample-collapse-2',
                                 columns=[{"name": i, "id": i} for i in file_columns],
                                 data=[],
                                 style_data_conditional = [{
-                                    'if' : {'row_index':'odd'},
-                                    'backgroundColor' : 'rgb(182, 224, 194)'}
-                                ],
-                                style_header={
-                                    'textAlign':'center',
-                                    'fontWeight': 'bold',
-                                },
-                                style_cell={
-                                    'textAlign':'center',
-                                },
+                                        'if' : {'row_index':'odd'},
+                                        'backgroundColor' : 'rgb(182, 224, 194)'
+                                    }
+                                    ],
+                                    style_header={
+                                        'textAlign':'center',
+                                        'fontWeight': 'bold',
+                                        'font-family':'Roboto'
+                                    },
+                                    style_cell={
+                                        'textAlign':'left',
+                                        'padding':'5px',
+                                        'font-family':'Roboto',
+                                        'fontSize':12,
+                                    },
+                                    style_table = {'padding':10}
                             )),
                 ]),
             ]),
@@ -525,16 +550,19 @@ peptide_length_figs = html.Div([
     )
 ])
 
+start_table_df = pd.DataFrame(columns=['No data'])
 protein_info = html.Div(dash_table.DataTable(
+            data=start_table_df.to_dict('records'), 
+            columns = [{'id': c, 'name': c} for c in start_table_df.columns],
             id='protein-info-table',
             sort_action='native',
             fixed_rows={'headers': True},
-            #filter_action='native',
+            filter_action='native',
             virtualization=True,
             row_selectable="multi",
             export_format='xlsx',
             selected_rows=[],
-            css=[{'selector':'.export','rule':'position:font-type:Roboto;color:black;background-color:#FAFAFA;border-color:#FAFAFA;border:1px solid transparent'}],
+            css=[{'selector':'.export','rule':'position:font-type:Roboto;color:black;background-color:#FAFAFA;border-color:#8c8c8c);border:1px solid'}],
             style_data_conditional = [{
                 'if' : {'row_index':'odd'},
                 'backgroundColor' : 'rgb(182, 224, 194)'
@@ -559,14 +587,16 @@ protein_info = html.Div(dash_table.DataTable(
 
 
 peptide_info = html.Div(dash_table.DataTable(id='peptide-info-table',
+            data=start_table_df.to_dict('records'), 
+            columns = [{'id': c, 'name': c} for c in start_table_df.columns],
             sort_action='native',
             fixed_rows={'headers': True},
-            #filter_action='native',
+            filter_action='native',
             virtualization=True,
             row_selectable="multi",
             export_format='xlsx',
             selected_rows=[],
-            css=[{'selector':'.export','rule':'position:font-type:Roboto;color:black;background-color:#FAFAFA;border-color:#FAFAFA;border:1px solid transparent'}],
+            css=[{'selector':'.export','rule':'position:font-type:Roboto;color:black;background-color:#FAFAFA;border-color:#8c8c8c;border:1px solid'}],
             style_data_conditional = [{
                 'if' : {'row_index':'odd'},
                 'backgroundColor' : 'rgb(182, 224, 194)'
@@ -765,26 +795,26 @@ def create_protein_figure_and_table(rows, derived_virtual_selected_rows, search_
             difference_metric = 'area_sum'
             columns = ['Protein','UniProt id','#peptides g1','#peptides g2', 'intensity_g1','intensity_g2', 'Protein family','p-value_area']
             sort = ['intensity_g1', 'intensity_g2']
-            x_label = 'Group 1 log(intensity)'
-            y_label = 'Group 2 log(intensity)'
+            x_label = 'Group 1 log(sum of peptide intensity)'
+            y_label = 'Group 2 log(sum of peptide intensity)'
         elif 'area_mean' in protein_radioitems_value:
             difference_metric = 'area_mean'
-            columns = ['Protein','UniProt id','#peptides g1','#peptides g2', 'intensity_g1','intensity_g2', 'Protein family','p-value_area']
+            columns = ['Protein','UniProt id','#peptides g1','#peptides g2', 'mean_intensity_g1','mean_intensity_g2', 'Protein family','p-value_area']
             sort = ['intensity_g1', 'intensity_g2']
-            x_label = 'Group 1 log(intensity)'
-            y_label = 'Group 2 log(intensity)'
+            x_label = 'Group 1 log(peptide intensity mean)'
+            y_label = 'Group 2 log(peptide intensity mean)'
         elif 'spc_sum' in protein_radioitems_value:
             difference_metric = 'spc_sum'
             columns = ['Protein','UniProt id','#peptides g1','#peptides g2','spc_g1','spc_g2', 'Protein family','p-value_spc']
-            sort = ['spc_g1','spc_g2']
-            x_label = 'Group 1 Spectral count'
-            y_label = 'Group 2 Spectral count'
+            sort = ['mean_spc_g1','mean_spc_g2']
+            x_label = 'Group 1 sum of spectral count'
+            y_label = 'Group 2 sum of spectral count'
         else:
             difference_metric = 'spc_mean'
-            columns = ['Protein','UniProt id','#peptides g1','#peptides g2','spc_g1','spc_g2', 'Protein family','p-value_spc']
-            sort = ['spc_g1','spc_g2']
-            x_label = 'Group 1 Spectral count'
-            y_label = 'Group 2 Spectral count'
+            columns = ['Protein','UniProt id','#peptides g1','#peptides g2','mean_spc_g1','mean_spc_g2', 'Protein family','p-value_spc']
+            sort = ['mean_spc_g1','mean_spc_g2']
+            x_label = 'Group 1 mean of spectral count'
+            y_label = 'Group 2 mean of spectral count'
         df_protein_info.sort_values(by=sort, ascending=False, inplace=True)
         protein_info_data = df_protein_info.to_dict('rows')
         protein_info_columns=[{"name": str(i), "id": str(i)} for i in columns]
@@ -799,7 +829,7 @@ def create_protein_figure_and_table(rows, derived_virtual_selected_rows, search_
                 protein_fig = create_protein_fig(df_fig, protein_list, difference_metric = difference_metric)
         return protein_fig, protein_info_data, protein_info_columns, disabled, str(highlighted_triv_names[0])
     else:
-        return {}, [], [], disabled, 'Choose protein'
+        return {}, start_table_df.to_dict('records'), [{'id': '', 'name': ''}], disabled, 'Choose protein'
 
 @app.callback(
     Output('normalization-holder', 'children'),
@@ -842,11 +872,10 @@ def create_peptide_fig(n_clicks_generate_peptide_fig, sum_or_mean_radio, peptide
         return peptide_fig, peptide_table_data, peptide_table_columns, peptide_list_json
     
     else:
-        return {}, [], [], []
+        return {}, start_table_df.to_dict('records'), [{'id': '', 'name': ''}], []
 
 
 def amino_acid_dropdown(dropdown_values, radioitem_value, protein_list_json, peptide_list_json):
-    
     if 'complete-proteome' in dropdown_values and protein_list_json:
         protein_list = json_to_protein_list(protein_list_json)
         complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2 = amino_acid_piecharts(protein_list, peptide_or_protein_list = 'protein_list', difference_metric = radioitem_value)
