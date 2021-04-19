@@ -559,11 +559,13 @@ def get_thresholds(lst):
 
 def all_sample_bar_chart(protein_list, accession, **kwargs):
     default_settings = {
-        'metric':'area'
+        'metric':'area_sum'
     }
     default_settings.update(kwargs)
     selected_protein = ''
     title=''
+    y = ''
+    color = ''
     for protein in protein_list:
         if protein.get_id() == accession:
             selected_protein = protein
@@ -571,17 +573,25 @@ def all_sample_bar_chart(protein_list, accession, **kwargs):
     
     if kwargs.get('metric') == 'area_sum':
         intensities = selected_protein.get_area_sum_all_samples()
-        df = pd.DataFrame(intensities.items(), columns=['sample', 'intensity'])
+        df = pd.DataFrame(intensities.items(), columns=['Sample', 'Intensity'])
+        y = 'Intensity'
+        color = 'Intensity'
     elif kwargs.get('metric') == 'spc_sum':
         intensities = selected_protein.get_spectral_count_sum_all_samples()
-        df = pd.DataFrame(intensities.items(), columns=['sample', 'Spectral count'])
+        df = pd.DataFrame(intensities.items(), columns=['Sample', 'Spectral Count'])
+        y = 'Spectral Count'
+        color = 'Spectral Count'
     elif kwargs.get('metric') == 'area_mean':
         intensities = selected_protein.get_area_mean_all_samples()
-        df = pd.DataFrame(intensities.items(), columns=['sample', 'intensity'])
+        df = pd.DataFrame(intensities.items(), columns=['Sample', 'Intensity'])
+        y = 'Intensity'
+        color = 'Intensity'
     elif kwargs.get('metric') == 'spc_mean':
-        intensities = selected_protein.get_spc_mean_all_samples()
-        df = pd.DataFrame(intensities.items(), columns=['sample', 'Spectral count'])
-    fig = px.bar(df, x = 'sample', y='intensity', color='intensity', color_continuous_scale=px.colors.sequential.algae, title=title)
+        intensities = selected_protein.get_spectral_count_mean_all_samples()
+        df = pd.DataFrame(intensities.items(), columns=['Sample', 'Spectral Count'])
+        y = 'Spectral Count'
+        color = 'Spectral Count'
+    fig = px.bar(df, x = 'Sample', y=y, color=color , color_continuous_scale=px.colors.sequential.algae, title=title)
     fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}, showlegend=False, coloraxis_showscale=False)
     return fig
 

@@ -56,8 +56,26 @@ class Protein:
         area_g2_dict = dict(zip(area_columns_g2, area_sum_g2))
         area_g1_dict.update(area_g2_dict)
         return area_g1_dict
-
     
+    def get_area_mean_all_samples(self):
+        area_columns = [col for col in self.df if col.startswith('Area')]
+        area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
+        area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
+        area_mean_g1 = []
+        area_mean_g2 = []
+        for a in area_columns_g1:
+            df_area = self.df.copy()
+            df_area.fillna(0, inplace=True)
+            area_mean_g1.append(df_area[a].mean())
+        for a in area_columns_g2:
+            df_area = self.df.copy()
+            df_area.fillna(0, inplace=True)
+            area_mean_g2.append(df_area[a].mean())
+        area_g1_dict = dict(zip(area_columns_g1, area_mean_g1))
+        area_g2_dict = dict(zip(area_columns_g2, area_mean_g2))
+        area_g1_dict.update(area_g2_dict)
+        return area_g1_dict
+
     def get_spectral_count_sum_all_samples(self):
         spc_columns = [col for col in self.df if col.startswith('Spectral')]
         spc_columns_g1 = [col for col in spc_columns if col.endswith('g1')]
@@ -74,6 +92,25 @@ class Protein:
             spc_sum_g2.append(df_spc[s].sum())
         spc_g1_dict = dict(zip(spc_columns_g1, spc_sum_g1))
         spc_g2_dict = dict(zip(spc_columns_g2, spc_sum_g2))
+        spc_g1_dict.update(spc_g2_dict)
+        return spc_g1_dict
+    
+    def get_spectral_count_mean_all_samples(self):
+        spc_columns = [col for col in self.df if col.startswith('Spectral')]
+        spc_columns_g1 = [col for col in spc_columns if col.endswith('g1')]
+        spc_columns_g2 = [col for col in spc_columns if col.endswith('g2')]
+        spc_mean_g1 = []
+        spc_mean_g2 = []
+        for s in spc_columns_g1:
+            df_spc = self.df.copy()
+            df_spc.fillna(0, inplace=True)
+            spc_mean_g1.append(df_spc[s].mean())
+        for s in spc_columns_g2:
+            df_spc = self.df.copy()
+            df_spc.fillna(0, inplace=True)
+            spc_mean_g2.append(df_spc[s].mean())
+        spc_g1_dict = dict(zip(spc_columns_g1, spc_mean_g1))
+        spc_g2_dict = dict(zip(spc_columns_g2, spc_mean_g2))
         spc_g1_dict.update(spc_g2_dict)
         return spc_g1_dict
 
