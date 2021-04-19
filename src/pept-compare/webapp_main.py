@@ -34,6 +34,15 @@ app.layout = html.Div([
 #---------------------------------------PAGE-ELEMENTS------------------------------------------------
 file_columns = ['Sample', 'File']
 
+modal_progress = dbc.Modal([
+    dbc.Row(
+        dbc.Col([
+            dcc.Interval(id="progress-interval", n_intervals=0, interval=500),
+            dbc.Progress(id = 'progress-bar', value=0, max=100, striped=True, color="success", style={"height": "20px"})
+                        ])
+                        ),
+                        dbc.ModalFooter(dbc.Button("Close", id='close-modal-progress', n_clicks=0))                       
+], id='modal-progress', is_open=False)
 
 modal_file = html.Div([
     dbc.Button("Files", id="open-modal-file", color='info', className="mr-1"),
@@ -402,10 +411,10 @@ protein_fig_radioitems = html.Div([
     dbc.Label("Select difference metric: "),
     dbc.RadioItems(
         options=[
-        {'label': 'Area Sum', 'value': 'area_sum'},
-        {'label': 'Area Mean', 'value': 'area_mean'},
-        {'label': 'Spectral Count Sum', 'value': 'spc_sum'},
-        {'label': 'Spectral Count Mean', 'value': 'spc_mean'}
+        {'label': 'Area sum', 'value': 'area_sum'},
+        {'label': 'Area mean', 'value': 'area_mean'},
+        {'label': 'SPC sum', 'value': 'spc_sum'},
+        {'label': 'SPC mean', 'value': 'spc_mean'}
         ],
         value='area_sum',
         id='protein-radioitems',
@@ -621,23 +630,25 @@ peptide_info = html.Div(dash_table.DataTable(id='peptide-info-table',
 
 
 hidden_divs = html.Div([
-    html.Div(id='cutoff-value-holder', style={'display': 'none'}),
-    html.Div(id='protein-list-df-holder', style={'display': 'none'}),
-    html.Div(id='peptide-list-df-holder', style={'display': 'none'}),
-    html.Div(id='df_g1-holder', style={'display':'none'}),
-    html.Div(id='df_g2-holder', style={'display':'none'}),
-    html.Div(id='protein-datatable-holder', style={'display':'none'}),
-    html.Div(id='peptide-data-holder', style={'display':'none'}),
-    html.Div(id='protein-fig-holder', style = {'display':'none'}),
-    html.Div(id='normalization-holder', style = {'display':'none'}),
-    html.Div(id='housekeeping-protein-holder', style = {'display':'none'})
+    dcc.Store(id='cutoff-value-holder'),
+    dcc.Store(id='protein-list-df-holder'),
+    dcc.Store(id='peptide-list-df-holder'),
+    dcc.Store(id='df_g1-holder'),
+    dcc.Store(id='df_g2-holder'),
+    dcc.Store(id='protein-datatable-holder'),
+    dcc.Store(id='peptide-data-holder'),
+    dcc.Store(id='protein-fig-holder'),
+    dcc.Store(id='normalization-holder'),
+    dcc.Store(id='housekeeping-protein-holder'),
+    
 ])
 #---------------------------PAGES---------------------------------------------------------------
 main_page = dbc.Container([
-
+    modal_progress,
     dbc.Row([
         dbc.Col(navbar, width={"size":12}, className="mb-4")
     ]),
+
     dbc.Row([
         dbc.Col(how_to_use_collapse , width={'size':8}),
         dbc.Col(sample_collapse, width={'size':4}),
@@ -667,12 +678,23 @@ main_page = dbc.Container([
 
 #-----------------DEFS AND CALLBACKS--------------------------------------------------------------
 
+@app.callback(
+    Output('progress-bar','value'),
+    Output('modal-progress', 'is_open'),
+    Input("close-modal-file", "n_clicks"),
+    Input('generate-protein-graph', 'disabled'),
+    State('modal-progress', 'is_open'),
+    State('progress-bar','value'),
+)
+def progress_bar_animation(n_clicks, disabled, is_open, value):
+    if disabled == False:
+        return 0, False
+    if n_clicks:
+        return 10, True
+    else:
+        return 0, False
+
 def display_page(pathname):
-    if pathname == '/FAQ':
-        return FAQ_page
-    elif pathname == '/Documentation':
-        return documentation_page
-    else: 
         return main_page
 
 def toggle_collapse(n, is_open):
@@ -731,7 +753,6 @@ def process_protein_data(apply_normalization_n_clicks, n_clicks_close_file, appl
     else:
         tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CCS, present_in_all_samples = 0,0,0,0,0,False,False, False
     triv_names = []
-    protein_fig = {}
     protein_list = []
     protein_list_cutoff = []
     if n_clicks_close_file and df_g1 and df_g2:
@@ -795,26 +816,18 @@ def create_protein_figure_and_table(rows, derived_virtual_selected_rows, search_
             difference_metric = 'area_sum'
             columns = ['Protein','UniProt id','#peptides g1','#peptides g2', 'intensity_g1','intensity_g2', 'Protein family','p-value_area']
             sort = ['intensity_g1', 'intensity_g2']
-            x_label = 'Group 1 log(sum of peptide intensity)'
-            y_label = 'Group 2 log(sum of peptide intensity)'
         elif 'area_mean' in protein_radioitems_value:
             difference_metric = 'area_mean'
             columns = ['Protein','UniProt id','#peptides g1','#peptides g2', 'mean_intensity_g1','mean_intensity_g2', 'Protein family','p-value_area']
             sort = ['intensity_g1', 'intensity_g2']
-            x_label = 'Group 1 log(peptide intensity mean)'
-            y_label = 'Group 2 log(peptide intensity mean)'
         elif 'spc_sum' in protein_radioitems_value:
             difference_metric = 'spc_sum'
             columns = ['Protein','UniProt id','#peptides g1','#peptides g2','spc_g1','spc_g2', 'Protein family','p-value_spc']
             sort = ['mean_spc_g1','mean_spc_g2']
-            x_label = 'Group 1 sum of spectral count'
-            y_label = 'Group 2 sum of spectral count'
         else:
             difference_metric = 'spc_mean'
             columns = ['Protein','UniProt id','#peptides g1','#peptides g2','mean_spc_g1','mean_spc_g2', 'Protein family','p-value_spc']
             sort = ['mean_spc_g1','mean_spc_g2']
-            x_label = 'Group 1 mean of spectral count'
-            y_label = 'Group 2 mean of spectral count'
         df_protein_info.sort_values(by=sort, ascending=False, inplace=True)
         protein_info_data = df_protein_info.to_dict('rows')
         protein_info_columns=[{"name": str(i), "id": str(i)} for i in columns]
@@ -829,7 +842,7 @@ def create_protein_figure_and_table(rows, derived_virtual_selected_rows, search_
                 protein_fig = create_protein_fig(df_fig, protein_list, difference_metric = difference_metric)
         return protein_fig, protein_info_data, protein_info_columns, disabled, str(highlighted_triv_names[0])
     else:
-        return {}, start_table_df.to_dict('records'), [{'id': '', 'name': ''}], disabled, 'Choose protein'
+        return {}, start_table_df.to_dict('records'), [{'id': '', 'name': ''}], disabled, ['Choose protein']
 
 @app.callback(
     Output('normalization-holder', 'children'),
@@ -909,7 +922,7 @@ def enable_input_search_protein(protein_list):
         else:
             return False
 
-def peptide_length_dropdown(length_dropdown_values, protein_list_json, peptide_list_json):
+def create_peptide_length_dropdown(length_dropdown_values, protein_list_json, peptide_list_json):
     
     if 'complete-proteome-length'  in length_dropdown_values and protein_list_json:
         protein_list = json_to_protein_list(protein_list_json)
@@ -921,6 +934,9 @@ def peptide_length_dropdown(length_dropdown_values, protein_list_json, peptide_l
         return length_fig_g1, length_fig_g2
     else:
         return {}, {}
+
+
+
 
 
 app.callback(
@@ -968,7 +984,7 @@ app.callback(
     Input('peptide-length-dropdown', 'value'),
     State('protein-list-df-holder', 'children'),
     State('peptide-list-df-holder', 'children'),
-)(peptide_length_dropdown)
+)(create_peptide_length_dropdown)
 
 
 app.callback(

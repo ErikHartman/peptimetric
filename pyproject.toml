@@ -28,6 +28,8 @@ prody = "^2.0"
 openpyxl = "^3.0.6"
 ipython = "^7.21.0"
 ipywidgets = "^7.6.3"
+rq = "^1.8.0"
+redis = "^3.5.3"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.7.2"
