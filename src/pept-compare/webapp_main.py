@@ -97,65 +97,49 @@ modal_file = html.Div([
             scrollable=True,
         )])
 
-modal_export_data = html.Div([
-    dbc.Button("Export Data", id="open-modal-export-data", color='info', className="mr-1"),
-    dbc.Modal([
-                dbc.ModalHeader("Export data", className="font-weight-bold"),
-                dbc.ModalBody([
-                    dbc.Row(dbc.Button('Download protein table', id='download-protein-info'), justify='center', className='mr-1'),
-                    dbc.Row(dbc.Button('Download peptide table', id='download-peptide-table'), justify='center', className='mr-1'),
-                ]),
-                dbc.ModalFooter(
-                    dbc.Button("Close", id="close-modal-export-data", className="ml-auto")
-                ),
-            ],
-            id="modal-export-data",
-            centered=True,
-              )
-])
 
 protein_tab = dbc.Form([
                     dbc.FormGroup([
-                    dbc.Label("Total intensity", className="mr-2"),
-                    dbc.Input(placeholder='0', type='number', className='ml-auto', min=0, id='tot-intensity-cutoff', value=0),
+                        dbc.Col(dbc.Label("Total intensity", className="mr-2", style={'padding':10}), width=8),
+                        dbc.Col(dbc.Input(placeholder='0', type='number', className='ml-auto', min=0, id='tot-intensity-cutoff', value=0, style={'padding':10}), width=2),
                     ], className="mr-3",),
                     dbc.FormGroup([
-                    dbc.Label('Total spectral count', className='mr-2'),
-                    dbc.Input(placeholder='0', type="number", className='ml-auto', min=0, id='tot-spc-cutoff', value=0),
+                        dbc.Col(dbc.Label('Total spectral count', className='mr-2', style={'padding':10}), width=8),
+                        dbc.Col(dbc.Input(placeholder='0', type="number", className='ml-auto', min=0, id='tot-spc-cutoff', value=0, style={'padding':10}), width=2),
                     ], className="mr-3",),
                     dbc.FormGroup([
-                    dbc.Label('Number of peptides', className='mr-2'),
-                    dbc.Input(placeholder='0', type="number", className='ml-auto', min=0, id='nbr-of-peptides-cutoff', value=0),
+                        dbc.Col(dbc.Label('Number of peptides', className='mr-2', style={'padding':10}), width=8),
+                        dbc.Col(dbc.Input(placeholder='0', type="number", className='ml-auto', min=0, id='nbr-of-peptides-cutoff', value=0, style={'padding':10}), width=2),
                     ], className="mr-3",),
                     dbc.FormGroup([
-                    dbc.Checklist(
+                        dbc.Col(dbc.Checklist(
                          options=[
                             {"label": "Only show proteins present in all samples", "value": 'present-in-all-samples'},
                             ],
                             value=[],
-                            id='proteins-present-in-all-samples-checkbox')],
-                     className="mr-3",)
+                            id='proteins-present-in-all-samples-checkbox'), width = 12)],
+                     className="mr-3") 
                 ],
                 inline=True),
 
 peptide_tab = dbc.Form([
                     dbc.FormGroup([
-                    dbc.Label("Intensity", className="mr-2"),
-                    dbc.Input(placeholder='0', type='number', className='ml-auto', min=0, id='peptide-intensity-cutoff', value=0),
+                        dbc.Col(dbc.Label("Intensity", style={'padding':10}), width=8),
+                        dbc.Col(dbc.Input(placeholder='0', type='number', className='ml-auto', min=0, id='peptide-intensity-cutoff', value=0, style={'padding':10}), width=2),
+                    ], className="mr-3", row=True),
+                    dbc.FormGroup([
+                        dbc.Col(dbc.Label('Spectral count', className='mr-2', style={'padding':10}), width=7),
+                        dbc.Col(dbc.Input(placeholder='0', type="number", className='ml-auto', min=0, id='peptide-spc-cutoff', value=0, style={'padding':10}), width=2),
                     ], className="mr-3",),
                     dbc.FormGroup([
-                    dbc.Label('Spectral count', className='mr-2'),
-                    dbc.Input(placeholder='0', type="number", className='ml-auto', min=0, id='peptide-spc-cutoff', value=0),
-                    ], className="mr-3",),
-                    dbc.FormGroup([
-                    dbc.Checklist(
-                         options=[
-                            {"label": "RT", "value": 'RT'},
-                            {"label": "CSS", "value": 'CSS'},
-                            ],
-                            value=[],
-                            id='RT-CSS-checkbox')],
-                     className="mr-3",)
+                        dbc.Col(dbc.Checklist(
+                            options=[
+                                {"label": "Remove RT outliers", "value": 'RT'},
+                                {"label": "Remove CCS outliers", "value": 'CCS'},
+                                ],
+                                value=[], style={'padding':10},
+                                id='RT-CCS-checkbox'), width=12)],
+                     className="mr-3")
                 ],
                 inline=True),
 
@@ -209,36 +193,40 @@ modal_feedback = html.Div([
               )])
 
 modal_normalization = dbc.Modal([
-                dbc.ModalHeader("Normalize data", className="font-weight-bold"),
+                dbc.ModalHeader("Normalize data", className="font-weight-bold", style={'padding':10}),
                 dbc.ModalBody([
                     dbc.FormGroup([
-                        dbc.Label('log10 area', className='ml-auto'),
-                        dbc.Checkbox(id='log-checkbox', checked=True)
-                    ]),
-                    dbc.FormGroup([
-                        dbc.Label('Normalize data', className='ml-auto'),
-                        dbc.RadioItems(
-                            options=[
-                            {'label': 'Normalize on global intensity', 'value': 'global-intensity'},
-                            {'label': 'Normalize on housekeeping protein', 'value': 'housekeeping-protein'}
-                            ],
-                            value='',
-                            id='normalization-radioitems',
-                        ),
-                        dbc.Input(
-                            id='housekeeping-protein-input',
-                            placeholder='Search protein...',
-                            name = 'text',
-                            debounce=True,
-                            inputMode='latin',
-                            minLength=0, maxLength=30,
-                            size = '10',
-                            list = 'protein-list',
-                            className="ml-auto",
-                            disabled=True
+                        dbc.Col(dbc.RadioItems(
+                                    options=[
+                                    {'label': 'Normalize on global intensity', 'value': 'global-intensity'},
+                                    {'label': 'Normalize on housekeeping protein', 'value': 'housekeeping-protein'}
+                                    ],
+                                    value='',
+                                    id='normalization-radioitems',
+                                    style={'padding':10}
+                        )),
+                        dbc.Col(dbc.Input(
+                                    id='housekeeping-protein-input',
+                                    placeholder='Search protein...',
+                                    name = 'text',
+                                    debounce=True,
+                                    inputMode='latin',
+                                    minLength=0, maxLength=30,
+                                    size = '10',
+                                    list = 'protein-list',
+                                    className="ml-auto",
+                                    disabled=True
+                                ), width=5,
                         )
                     ]),
+                dbc.FormGroup([
+                        dbc.Col([
+                            dbc.Label('Take the log10 of given intensity', className='ml-auto', style={'padding':10}),
+                            dbc.Checkbox(id='log-checkbox', checked=True),
+                        ]),
+                 ])
                 ]),
+                
                 dbc.ModalFooter(
                     dbc.Button("Apply", id="close-modal-normalization", className="ml-auto")
                 ),
@@ -252,7 +240,6 @@ navbar = dbc.Navbar(
     [
         dbc.NavbarBrand("Eriks och Simons kandidatarbete"),
         modal_file,
-        modal_export_data,
         dbc.DropdownMenu(label="Settings",
             children=[
                 dbc.DropdownMenuItem("Cutoffs", id="open-modal-cutoff"),
@@ -272,12 +259,17 @@ navbar = dbc.Navbar(
 )
             
 
-amino_acid_pie_dropdown = dbc.DropdownMenu(label='View', color="light",
-children= [
-    dbc.DropdownMenuItem('Complete proteome', id='complete-proteome', n_clicks_timestamp=0),
-    dbc.DropdownMenuItem('Selected protein', id='selected-protein', n_clicks_timestamp=0)
-]
-)
+amino_acid_pie_dropdown = dcc.Dropdown(
+    id= 'amino-acid-pie-dropdown',
+    placeholder='Select view',
+    value='',
+    options=[
+        {'label': 'Complete proteome', 'value': 'complete-proteome'},
+        {'label': 'Selected protein', 'value': 'selected-protein'},
+    ],
+    
+)   
+
 
 search_protein = html.Div([
     html.Div([
@@ -480,7 +472,7 @@ amino_acid_radioitems = html.Div([
 amino_acid_figs = html.Div([
         html.H3('Amino Acid Profile'),
         dbc.Row([
-            dbc.Col(amino_acid_pie_dropdown),
+            dbc.Col(amino_acid_pie_dropdown, width={'size':2}),
             dbc.Col(amino_acid_radioitems)
 
         ]),
@@ -690,24 +682,24 @@ def update_data_frame(contents, filename):
     return master_df
 
 
-def set_cutoffs(tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT_CSS_checkbox, proteins_present_in_all_samples):
+def set_cutoffs(tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT_CCS_checkbox, proteins_present_in_all_samples):
     RT = False
-    CSS = False
+    CCS = False
     present_in_all_samples = False
-    if 'RT' in RT_CSS_checkbox:
+    if 'RT' in RT_CCS_checkbox:
         RT=True
-    if 'CSS' in RT_CSS_checkbox:
-        CSS=True
+    if 'CCS' in RT_CCS_checkbox:
+        CCS=True
     if 'present-in-all-samples' in proteins_present_in_all_samples:
         proteins_present_in_all_samples = True
-    return [tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS, present_in_all_samples]
+    return [tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CCS, present_in_all_samples]
 
 
 def process_protein_data(apply_normalization_n_clicks, n_clicks_close_file, apply_cutoffs_button, cutoff_values, df_g1, df_g2, radioitems_normalization, housekeeping_protein):
     if apply_cutoffs_button:
-        tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS, present_in_all_samples = cutoff_values
+        tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CCS, present_in_all_samples = cutoff_values
     else:
-        tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CSS, present_in_all_samples = 0,0,0,0,0,False,False, False
+        tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CCS, present_in_all_samples = 0,0,0,0,0,False,False, False
     triv_names = []
     protein_fig = {}
     protein_list = []
@@ -717,7 +709,7 @@ def process_protein_data(apply_normalization_n_clicks, n_clicks_close_file, appl
         g2 = pd.read_json(df_g2)
         master = merge_dataframes(g1,g2)
         protein_list = create_protein_list(master)
-        protein_list_cutoff = apply_peptide_cutoffs(protein_list, area=pep_intensity_co, spc=pep_spc_co, rt=RT, css=CSS)
+        protein_list_cutoff = apply_peptide_cutoffs(protein_list, area=pep_intensity_co, spc=pep_spc_co, rt=RT, ccs=CCS)
         protein_list_cutoff = apply_protein_cutoffs(protein_list_cutoff, nbr_of_peptides=nbr_of_peptides_co, tot_area=tot_intensity_co, tot_spc=tot_spc_co)
         
         if present_in_all_samples:
@@ -853,13 +845,13 @@ def create_peptide_fig(n_clicks_generate_peptide_fig, sum_or_mean_radio, peptide
         return {}, [], [], []
 
 
-def amino_acid_dropdown(n_clicks_complete_proteome, n_clicks_selected_protein, radioitem_value, protein_list_json, peptide_list_json):
+def amino_acid_dropdown(dropdown_values, radioitem_value, protein_list_json, peptide_list_json):
     
-    if n_clicks_complete_proteome > n_clicks_selected_protein and protein_list_json:
+    if 'complete-proteome' in dropdown_values and protein_list_json:
         protein_list = json_to_protein_list(protein_list_json)
         complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2 = amino_acid_piecharts(protein_list, peptide_or_protein_list = 'protein_list', difference_metric = radioitem_value)
         return complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2, 'Complete proteome'
-    elif n_clicks_selected_protein > n_clicks_complete_proteome and peptide_list_json:
+    elif 'selected-protein' in dropdown_values and peptide_list_json:
         peptide_list = json_to_peptide_list(peptide_list_json)
         complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2 = amino_acid_piecharts(peptide_list, peptide_or_protein_list = 'peptide_list', difference_metric = radioitem_value)
         return complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2, 'Selected Protein'
@@ -935,8 +927,7 @@ app.callback(
     Output('first-aa-fig-g2', 'figure'),
     Output('last-aa-fig-g2', 'figure'),
     Output('complete-or-selected', 'children'),
-    Input('complete-proteome', 'n_clicks_timestamp'),
-    Input('selected-protein','n_clicks_timestamp'),
+    Input('amino-acid-pie-dropdown', 'value'),
     Input('aa-radioitems', 'value'),
     State('protein-list-df-holder', 'children'),
     State('peptide-list-df-holder', 'children'),
@@ -1020,7 +1011,7 @@ app.callback(
     Input('nbr-of-peptides-cutoff', 'value'),
     Input('peptide-intensity-cutoff', 'value'),
     Input('peptide-spc-cutoff', 'value'),
-    Input('RT-CSS-checkbox', 'value'),
+    Input('RT-CCS-checkbox', 'value'),
     Input('proteins-present-in-all-samples-checkbox', 'value')
 )(set_cutoffs)
 
