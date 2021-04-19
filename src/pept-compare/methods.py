@@ -149,7 +149,7 @@ def amino_acid_frequency(p_list, **kwargs):
     first_aa_g2 = create_aa_dict()
     last_aa_g2 = create_aa_dict()
     if kwargs.get('peptide_or_protein_list') == 'peptide_list':
-        if kwargs.get('difference_metric') == 'area')
+        if kwargs.get('difference_metric') == 'area':
             for peptide in p_list:
                 first_aa_g1[peptide.get_sequence()[0]] += peptide.get_area()[0]
                 last_aa_g1[peptide.get_sequence()[-1]] += peptide.get_area()[0] 
@@ -281,14 +281,22 @@ def create_protein_df_fig(protein_list, **kwargs):
     }
     default_settings.update(**kwargs)
     color = green
-    g1_area = []
-    g2_area = []
-    g1_spc =[]
-    g2_spc = []
-    g1_area_stdev = []
-    g2_area_stdev = []
-    g1_spc_stdev = []
-    g2_spc_stdev = []
+    g1_area_sum = []
+    g2_area_sum = []
+    g1_area_mean = []
+    g2_area_mean = []
+    g1_spc_sum =[]
+    g2_spc_sum = []
+    g1_spc_mean =[]
+    g2_spc_mean = []
+    g1_area_sum_stdev = []
+    g2_area_sum_stdev = []
+    g1_area_mean_stdev = []
+    g2_area_mean_stdev = []
+    g1_spc_sum_stdev = []
+    g2_spc_sum_stdev = []
+    g1_spc_mean_stdev = []
+    g2_spc_mean_stdev = []
     trivial_name = []
     accession = []
     nbr_of_peptides = []
@@ -299,21 +307,35 @@ def create_protein_df_fig(protein_list, **kwargs):
         accession.append(protein.get_id())
         nbr_of_peptides.append(sum(protein.get_nbr_of_peptides()))
         pfam.append(protein.get_protein_family())
-        g1_area.append(protein.get_area_sum()[0])
-        g1_area_stdev.append(protein.get_area_sum()[1])
-        g2_area.append(protein.get_area_sum()[2])
-        g2_area_stdev.append(protein.get_area_sum()[3])
-        g1_spc.append(protein.get_spectral_count_sum()[0])
-        g1_spc_stdev.append(protein.get_spectral_count_sum()[1])
-        g2_spc.append(protein.get_spectral_count_sum()[2])
-        g2_spc_stdev.append(protein.get_spectral_count_sum()[3])
+        
+        g1_area_sum.append(protein.get_area_sum()[0])
+        g1_area_sum_stdev.append(protein.get_area_sum()[1])
+        g2_area_sum.append(protein.get_area_sum()[2])
+        g2_area_sum_stdev.append(protein.get_area_sum()[3])
+        
+        g1_area_mean.append(protein.get_area_mean()[0])
+        g1_area_mean_stdev.append(protein.get_area_mean()[1])
+        g2_area_mean.append(protein.get_area_mean()[2])
+        g2_area_mean_stdev.append(protein.get_area_mean()[3])
+
+        g1_spc_sum.append(protein.get_spectral_count_sum()[0])
+        g1_spc_sum_stdev.append(protein.get_spectral_count_sum()[1])
+        g2_spc_sum.append(protein.get_spectral_count_sum()[2])
+        g2_spc_sum_stdev.append(protein.get_spectral_count_sum()[3])
+
+        g1_spc_mean.append(protein.get_spectral_count_mean()[0])
+        g1_spc_mean_stdev.append(protein.get_spectral_count_mean()[1])
+        g2_spc_mean.append(protein.get_spectral_count_mean()[2])
+        g2_spc_mean_stdev.append(protein.get_spectral_count_mean()[3])
+
     color_thresholds = get_thresholds(nbr_of_peptides)
     col, size = set_color_and_size(nbr_of_peptides, color_thresholds)
     for s in size:
         s *= 4
-    df_fig = pd.DataFrame(list(zip(g1_area,g2_area, g1_spc,g2_spc, nbr_of_peptides, trivial_name, pfam, col, accession, g1_area_stdev, g2_area_stdev,
-    g1_spc_stdev, g2_spc_stdev)),
-        columns=['g1_area','g2_area','g1_spc','g2_spc','nbr_of_peptides','trivial_name','pfam','col','accession', 'g1_area_stdev', 'g2_area_stdev', 'g1_spc_stdev', 'g2_spc_stdev'])
+    df_fig = pd.DataFrame(list(zip(g1_area_sum, g2_area_sum, g1_area_mean, g2_area_mean, g1_spc_sum, g2_spc_sum, g1_spc_mean, g2_spc_mean, nbr_of_peptides, trivial_name, pfam, col, accession, g1_area_sum_stdev, g2_area_sum_stdev,
+    g1_area_mean_stdev, g2_area_mean_stdev, g1_spc_sum_stdev, g2_spc_sum_stdev, g1_spc_mean_stdev, g2_spc_mean_stdev)),
+        columns=['g1_area_sum','g2_area_sum','g1_area_mean','g2_area_mean', 'g1_spc_sum','g2_spc_sum', 'g1_spc_mean','g2_spc_mean','nbr_of_peptides','trivial_name','pfam','col','accession', 'g1_area_sum_stdev', 'g2_area_sum_stdev', 'g1_area_mean_stdev', 'g2_area_mean_stdev', 
+        'g1_spc_sum_stdev', 'g2_spc_sum_stdev', 'g1_spc_mean_stdev', 'g2_spc_mean_stdev'])
     
     return df_fig
 
@@ -324,16 +346,27 @@ def create_protein_fig(df_fig, protein_list, **kwargs):
         'difference_metric':'',
     }
     default_settings.update(kwargs)
-    if kwargs.get('difference_metric') == 'area':
-        g1_intensity, g2_intensity = 'g1_area','g2_area'
-        g1_std, g2_std = 'g1_area_stdev', 'g2_area_stdev'
+    if kwargs.get('difference_metric') == 'area_sum':
+        g1_intensity, g2_intensity = 'g1_area_sum','g2_area_sum'
+        g1_std, g2_std = 'g1_area_sum_stdev', 'g2_area_sum_stdev'
         x_label = 'Group 2 log(intensity)'
         y_label = 'Group 1 log(intensity)'
-    else:
-        g1_intensity, g2_intensity = 'g1_spc', 'g2_spc'
-        g1_std, g2_std = 'g1_spc_stdev', 'g2_spc_stdev'
+    elif kwargs.get('difference_metric') == 'area_mean':
+        g1_intensity, g2_intensity = 'g1_area_mean','g2_area_mean'
+        g1_std, g2_std = 'g1_area_mean_stdev', 'g2_area_mean_stdev'
+        x_label = 'Group 2 log(intensity)'
+        y_label = 'Group 1 log(intensity)'
+    elif kwargs.get('difference_metric') == 'spc_sum':
+        g1_intensity, g2_intensity = 'g1_spc_sum', 'g2_spc_sum'
+        g1_std, g2_std = 'g1_spc_sum_stdev', 'g2_spc_sum_stdev'
         x_label = 'Group 2 SPC'
         y_label = 'Group 1 SPC'
+    elif kwargs.get('difference_metric') == 'spc_mean':
+        g1_intensity, g2_intensity = 'g1_spc_mean', 'g2_spc_mean'
+        g1_std, g2_std = 'g1_spc_mean_stdev', 'g2_spc_mean_stdev'
+        x_label = 'Group 2 SPC'
+        y_label = 'Group 1 SPC'
+
     fig = px.scatter(df_fig, x=g2_intensity, y=g1_intensity,
         color='nbr_of_peptides', color_continuous_scale=px.colors.diverging.PiYG, 
         size='nbr_of_peptides', hover_data=['trivial_name','nbr_of_peptides','pfam','accession'])
@@ -536,12 +569,18 @@ def all_sample_bar_chart(protein_list, accession, **kwargs):
             selected_protein = protein
             title = protein.get_trivial_name()
     
-    if kwargs.get('metric') == 'area':
+    if kwargs.get('metric') == 'area_sum':
         intensities = selected_protein.get_area_sum_all_samples()
         df = pd.DataFrame(intensities.items(), columns=['sample', 'intensity'])
-    elif kwargs.get('metric') == 'spectral_count':
+    elif kwargs.get('metric') == 'spc_sum':
         intensities = selected_protein.get_spectral_count_sum_all_samples()
+        df = pd.DataFrame(intensities.items(), columns=['sample', 'Spectral count'])
+    elif kwargs.get('metric') == 'area_mean':
+        intensities = selected_protein.get_area_mean_all_samples()
         df = pd.DataFrame(intensities.items(), columns=['sample', 'intensity'])
+    elif kwargs.get('metric') == 'spc_mean':
+        intensities = selected_protein.get_spc_mean_all_samples()
+        df = pd.DataFrame(intensities.items(), columns=['sample', 'Spectral count'])
     fig = px.bar(df, x = 'sample', y='intensity', color='intensity', color_continuous_scale=px.colors.sequential.algae, title=title)
     fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}, showlegend=False, coloraxis_showscale=False)
     return fig
