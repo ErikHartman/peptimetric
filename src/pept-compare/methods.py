@@ -149,7 +149,7 @@ def amino_acid_frequency(p_list, **kwargs):
     first_aa_g2 = create_aa_dict()
     last_aa_g2 = create_aa_dict()
     if kwargs.get('peptide_or_protein_list') == 'peptide_list':
-        if kwargs.get('difference_metric') == 'area')
+        if kwargs.get('difference_metric') == 'area':
             for peptide in p_list:
                 first_aa_g1[peptide.get_sequence()[0]] += peptide.get_area()[0]
                 last_aa_g1[peptide.get_sequence()[-1]] += peptide.get_area()[0] 
@@ -463,10 +463,10 @@ def rt_check(df):
     else:
         return df
 
-def css_check(df):
-    css_cols = df[[col for col in df if col.startswith('CSS')]]
-    if len(css_cols) > 0:
-        return df[(np.abs(stats.zscore(css_cols)) < 3).all(axis=1)]
+def ccs_check(df):
+    ccs_cols = df[[col for col in df if col.startswith('CCS')]]
+    if len(ccs_cols) > 0:
+        return df[(np.abs(stats.zscore(ccs_cols)) < 3).all(axis=1)]
     else:
         return df
 
@@ -477,7 +477,7 @@ def apply_peptide_cutoffs(protein_list, **kwargs):
         'area',
         'spc',
         'rt',
-        'css',
+        'ccs',
     }
     default_settings.update(kwargs)
     area_limit = kwargs.get('area')
@@ -491,8 +491,8 @@ def apply_peptide_cutoffs(protein_list, **kwargs):
         df[area_columns] = df[area_columns].apply(lambda x: [y if y > area_limit else 0 for y in x])
         if kwargs.get('rt') == True:
             df = rt_check(df)
-        if kwargs.get('css') == True:
-            df = css_check(df)
+        if kwargs.get('ccs') == True:
+            df = ccs_check(df)
         df.replace(0, np.nan, inplace=True)
         df = df.dropna(axis=0, how='all', subset=area_columns)
         df = df.dropna(axis=0, how='all', subset=spc_columns)
@@ -849,9 +849,9 @@ def create_peptide_datatable(peptide_list):
     peptide_info_columns = ['Peptide','Start','End','Intensity_g1','Intensity_g2', 'spc_g1','spc_g2']
     df_peptide_info = pd.DataFrame(columns=peptide_info_columns)
     for peptide in peptide_list:
-        df_peptide_info = df_peptide_info.append({'Peptide': str(peptide.get_sequence()), 'Start': peptide.get_start(),'End': peptide.get_end(), 'Intensity_g1': peptide.get_area()[0], 
-        'Intensity_g2': peptide.get_area()[2], 'spc_g1':peptide.get_spectral_count()[0], 
-        'spc_g2':peptide.get_spectral_count()[2]}, ignore_index=True)
+        df_peptide_info = df_peptide_info.append({'Peptide': str(peptide.get_sequence()), 'Start': peptide.get_start(),'End': peptide.get_end(), 'Intensity_g1': f'{peptide.get_area()[0]} +- {peptide.get_area()[1]}', 
+        'Intensity_g2': f'{peptide.get_area()[2]} +- {peptide.get_area()[3]}', 'spc_g1': f'{peptide.get_spectral_count()[0]} +- {peptide.get_spectral_count()[1]}', 
+        'spc_g2':f'{peptide.get_spectral_count()[2]} +- {peptide.get_spectral_count()[3]}'}, ignore_index=True)
     return df_peptide_info
 
 
@@ -860,7 +860,8 @@ def create_protein_datatable(protein_list):
     df_protein_info = pd.DataFrame(columns=protein_info_columns)
     for protein in protein_list:
         df_protein_info = df_protein_info.append({'Protein': str(protein.get_trivial_name()), 'UniProt id': protein.get_id(),'#peptides g1': protein.get_nbr_of_peptides()[0], '#peptides g2': protein.get_nbr_of_peptides()[1], 
-        'intensity_g1': protein.get_area_sum()[0], 'intensity_g2': protein.get_area_sum()[2], 'spc_g1': protein.get_spectral_count_sum()[0], 'spc_g2': protein.get_spectral_count_sum()[2], 
+        'intensity_g1': f'{protein.get_area_sum()[0]} +- {protein.get_area_sum()[1]}', 'intensity_g2': f'{protein.get_area_sum()[2]} +- {protein.get_area_sum()[3]}', 'spc_g1': f'{protein.get_spectral_count_sum()[0]} +- {protein.get_spectral_count_sum()[1]}', 
+        'spc_g2': f'{protein.get_spectral_count_sum()[2]} +- {protein.get_spectral_count_sum()[3]}', 
         'Protein family':protein.get_protein_family(), 'p-value_area':protein.get_pvalue('area'), 'p-value_spc':protein.get_pvalue('spc')},  ignore_index=True)
     return df_protein_info
 
