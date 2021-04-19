@@ -905,12 +905,12 @@ def create_peptide_datatable(peptide_list):
 
 
 def create_protein_datatable(protein_list):
-    protein_info_columns = ['Protein','UniProt id','#peptides g1','#peptides g2','intensity_g1','intensity_g2', 'spc_g1', 'spc_g2', 'Protein family','p-value_area', 'p-value_spc']
+    protein_info_columns = ['Protein','UniProt id','#peptides g1','#peptides g2','intensity_g1','intensity_g2', 'mean_intensity_g1', 'mean_intensity_g2' 'spc_g1', 'spc_g2','mean_spc_g1','mean_spc_g2', 'Protein family','p-value_area', 'p-value_spc']
     df_protein_info = pd.DataFrame(columns=protein_info_columns)
     for protein in protein_list:
         df_protein_info = df_protein_info.append({'Protein': str(protein.get_trivial_name()), 'UniProt id': protein.get_id(),'#peptides g1': protein.get_nbr_of_peptides()[0], '#peptides g2': protein.get_nbr_of_peptides()[1], 
-        'intensity_g1': f'{protein.get_area_sum()[0]} +- {protein.get_area_sum()[1]}', 'intensity_g2': f'{protein.get_area_sum()[2]} +- {protein.get_area_sum()[3]}', 'spc_g1': f'{protein.get_spectral_count_sum()[0]} +- {protein.get_spectral_count_sum()[1]}', 
-        'spc_g2': f'{protein.get_spectral_count_sum()[2]} +- {protein.get_spectral_count_sum()[3]}', 
+        'intensity_g1': f'{protein.get_area_sum()[0]} +- {protein.get_area_sum()[1]}', 'intensity_g2': f'{protein.get_area_sum()[2]} +- {protein.get_area_sum()[3]}', 'mean_intensity_g1': f'{protein.get_area_mean()[0]} +- {protein.get_area_mean()[1]}', 'mean_intensity_g2': f'{protein.get_area_mean()[2]} +- {protein.get_area_mean()[3]}', 'spc_g1': f'{protein.get_spectral_count_sum()[0]} +- {protein.get_spectral_count_sum()[1]}', 
+        'spc_g2': f'{protein.get_spectral_count_sum()[2]} +- {protein.get_spectral_count_sum()[3]}', 'mean_spc_g1': f'{protein.get_spectral_count_mean()[0]} +- {protein.get_spectral_count_mean()[1]}', 'mean_spc_g2': f'{protein.get_spectral_count_mean()[2]} +- {protein.get_spectral_count_mean()[3]}',
         'Protein family':protein.get_protein_family(), 'p-value_area':protein.get_pvalue('area'), 'p-value_spc':protein.get_pvalue('spc')},  ignore_index=True)
     return df_protein_info
 
