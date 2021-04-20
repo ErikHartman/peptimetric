@@ -280,7 +280,6 @@ def create_protein_df_fig(protein_list, **kwargs):
         'color': 'green',
     }
     default_settings.update(**kwargs)
-    color = green
     g1_area_sum = []
     g2_area_sum = []
     g1_area_mean = []
@@ -349,23 +348,23 @@ def create_protein_fig(df_fig, protein_list, **kwargs):
     if kwargs.get('difference_metric') == 'area_sum':
         g1_intensity, g2_intensity = 'g1_area_sum','g2_area_sum'
         g1_std, g2_std = 'g1_area_sum_stdev', 'g2_area_sum_stdev'
-        x_label = 'Group 2 log(intensity)'
-        y_label = 'Group 1 log(intensity)'
+        x_label = 'Group 1 log(sum of peptide intensity)'
+        y_label = 'Group 2 log(sum of peptide intensity)'
     elif kwargs.get('difference_metric') == 'area_mean':
         g1_intensity, g2_intensity = 'g1_area_mean','g2_area_mean'
         g1_std, g2_std = 'g1_area_mean_stdev', 'g2_area_mean_stdev'
-        x_label = 'Group 2 log(intensity)'
-        y_label = 'Group 1 log(intensity)'
+        x_label = 'Group 1 log(peptide intensity mean)'
+        y_label = 'Group 2 log(peptide intensity mean)'
     elif kwargs.get('difference_metric') == 'spc_sum':
         g1_intensity, g2_intensity = 'g1_spc_sum', 'g2_spc_sum'
         g1_std, g2_std = 'g1_spc_sum_stdev', 'g2_spc_sum_stdev'
-        x_label = 'Group 2 SPC'
-        y_label = 'Group 1 SPC'
+        x_label = 'Group 1 sum of spectral count'
+        y_label = 'Group 2 sum of spectral count'
     elif kwargs.get('difference_metric') == 'spc_mean':
         g1_intensity, g2_intensity = 'g1_spc_mean', 'g2_spc_mean'
         g1_std, g2_std = 'g1_spc_mean_stdev', 'g2_spc_mean_stdev'
-        x_label = 'Group 2 SPC'
-        y_label = 'Group 1 SPC'
+        x_label = 'Group 1 mean of spectral count'
+        y_label = 'Group 2 mean of spectral count'
 
     fig = px.scatter(df_fig, x=g2_intensity, y=g1_intensity,
         color='nbr_of_peptides', color_continuous_scale=px.colors.diverging.PiYG, 
@@ -559,13 +558,11 @@ def get_thresholds(lst):
 
 def all_sample_bar_chart(protein_list, accession, **kwargs):
     default_settings = {
-        'metric':'area_sum'
+        'metric':'area'
     }
     default_settings.update(kwargs)
     selected_protein = ''
     title=''
-    y = ''
-    color = ''
     for protein in protein_list:
         if protein.get_id() == accession:
             selected_protein = protein
@@ -573,25 +570,17 @@ def all_sample_bar_chart(protein_list, accession, **kwargs):
     
     if kwargs.get('metric') == 'area_sum':
         intensities = selected_protein.get_area_sum_all_samples()
-        df = pd.DataFrame(intensities.items(), columns=['Sample', 'Intensity'])
-        y = 'Intensity'
-        color = 'Intensity'
+        df = pd.DataFrame(intensities.items(), columns=['sample', 'intensity'])
     elif kwargs.get('metric') == 'spc_sum':
         intensities = selected_protein.get_spectral_count_sum_all_samples()
-        df = pd.DataFrame(intensities.items(), columns=['Sample', 'Spectral Count'])
-        y = 'Spectral Count'
-        color = 'Spectral Count'
+        df = pd.DataFrame(intensities.items(), columns=['sample', 'Spectral count'])
     elif kwargs.get('metric') == 'area_mean':
         intensities = selected_protein.get_area_mean_all_samples()
-        df = pd.DataFrame(intensities.items(), columns=['Sample', 'Intensity'])
-        y = 'Intensity'
-        color = 'Intensity'
+        df = pd.DataFrame(intensities.items(), columns=['sample', 'intensity'])
     elif kwargs.get('metric') == 'spc_mean':
-        intensities = selected_protein.get_spectral_count_mean_all_samples()
-        df = pd.DataFrame(intensities.items(), columns=['Sample', 'Spectral Count'])
-        y = 'Spectral Count'
-        color = 'Spectral Count'
-    fig = px.bar(df, x = 'Sample', y=y, color=color , color_continuous_scale=px.colors.sequential.algae, title=title)
+        intensities = selected_protein.get_spc_mean_all_samples()
+        df = pd.DataFrame(intensities.items(), columns=['sample', 'Spectral count'])
+    fig = px.bar(df, x = 'sample', y='intensity', color='intensity', color_continuous_scale=px.colors.sequential.algae, title=title)
     fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}, showlegend=False, coloraxis_showscale=False)
     return fig
 
@@ -934,10 +923,12 @@ def normalize_data(protein_list, housekeeping_protein=False):
             for key, value in total_spc_dict.items():
                 df[key] = df[key].apply(lambda x: x/value)
             p = Protein(df, protein.get_id())
+            print('housekeepin false')
             new_protein_list.append(p)
         return new_protein_list
 
     elif housekeeping_protein != False and housekeeping_protein != '':
+        i=0
         housekeeping_protein_intensity = {}
         housekeeping_protein_spc = {}
         for protein in protein_list:
@@ -950,9 +941,9 @@ def normalize_data(protein_list, housekeeping_protein=False):
                 df[key] = df[key].apply(lambda x: x/value)
             for key, value in housekeeping_protein_spc.items():
                 df[key] = df[key].apply(lambda x: x/value)
-
-                p = Protein(df, protein.get_id())
-                new_protein_list.append(p)
+                
+            p = Protein(df, protein.get_id())
+            new_protein_list.append(p)
         return new_protein_list
     else:
         print('Error: Data Normalization')

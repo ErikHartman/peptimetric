@@ -602,9 +602,7 @@ peptide_info = html.Div(dash_table.DataTable(id='peptide-info-table',
             fixed_rows={'headers': True},
             filter_action='native',
             virtualization=True,
-            row_selectable="multi",
             export_format='xlsx',
-            selected_rows=[],
             css=[{'selector':'.export','rule':'position:font-type:Roboto;color:black;background-color:#FAFAFA;border-color:#8c8c8c;border:1px solid'}],
             style_data_conditional = [{
                 'if' : {'row_index':'odd'},
@@ -784,7 +782,7 @@ def process_protein_data(apply_normalization_n_clicks, n_clicks_close_file, appl
 
 def create_protein_figure_and_table(rows, derived_virtual_selected_rows, search_protein, clickData, protein_radioitems_value, checkbox_values, generate_protein_graph_n_clicks, df_fig, df_protein_info, protein_fig, protein_list_json):
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
-    highlighted_triv_names = 'Choose protein'
+    highlighted_triv_names = ['Choose protein']
     disabled = True
     if df_protein_info:
         df_protein_info = pd.read_json(df_protein_info)
@@ -840,6 +838,9 @@ def create_protein_figure_and_table(rows, derived_virtual_selected_rows, search_
                 protein_fig = create_protein_fig(df_fig, protein_list, show_pfam=True, difference_metric = difference_metric)
             else:
                 protein_fig = create_protein_fig(df_fig, protein_list, difference_metric = difference_metric)
+        if len(highlighted_triv_names) < 1:
+            highlighted_triv_names = ['Choose protein']
+            disabled = True
         return protein_fig, protein_info_data, protein_info_columns, disabled, str(highlighted_triv_names[0])
     else:
         return {}, start_table_df.to_dict('records'), [{'id': '', 'name': ''}], disabled, ['Choose protein']

@@ -14,13 +14,9 @@ if __name__  == "__main__":
     master = merge_dataframes(g1,g2)
     df_log = log_intensity(master)
     protein_list = create_protein_list(df_log)
+    protein_list = normalize_data(protein_list, housekeeping_protein = 'ALBU_HUMAN')
     json_df = protein_list_to_json(protein_list)
-    protein_list = json_to_protein_list(json_df)
-    peptide_list = create_peptide_list(protein_list, protein_list[0].get_id())
-    json_df = peptide_list_to_json(peptide_list)
-    peptide_list = json_to_peptide_list(json_df)
-    for peptide in peptide_list:
-        print(peptide.df)
+    
 
 
     
