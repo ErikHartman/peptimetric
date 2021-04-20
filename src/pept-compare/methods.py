@@ -153,11 +153,11 @@ def amino_acid_frequency(p_list, **kwargs):
             for peptide in p_list:
                 first_aa_g1[peptide.get_sequence()[0]] += peptide.get_area()[0]
                 last_aa_g1[peptide.get_sequence()[-1]] += peptide.get_area()[0] 
-                first_aa_g2[peptide.get_sequence()[0]] += peptide.get_area()[1] 
-                last_aa_g2[peptide.get_sequence()[-1]] += peptide.get_area()[1] 
+                first_aa_g2[peptide.get_sequence()[0]] += peptide.get_area()[2] 
+                last_aa_g2[peptide.get_sequence()[-1]] += peptide.get_area()[2] 
                 for letter in peptide.get_sequence():
                     complete_seq_g1[letter] += peptide.get_area()[0] 
-                    complete_seq_g2[letter] += peptide.get_area()[1] 
+                    complete_seq_g2[letter] += peptide.get_area()[2] 
                     
 
         elif kwargs.get('difference_metric') == 'spectral_count':
@@ -177,12 +177,12 @@ def amino_acid_frequency(p_list, **kwargs):
                 for peptide in peptide_list:
                     first_aa_g1[peptide.get_sequence()[0]] += peptide.get_area()[0] 
                     last_aa_g1[peptide.get_sequence()[-1]] += peptide.get_area()[0] 
-                    first_aa_g2[peptide.get_sequence()[0]] += peptide.get_area()[1] 
-                    last_aa_g2[peptide.get_sequence()[-1]] += peptide.get_area()[1] 
+                    first_aa_g2[peptide.get_sequence()[0]] += peptide.get_area()[2] 
+                    last_aa_g2[peptide.get_sequence()[-1]] += peptide.get_area()[2] 
                     
                     for letter in peptide.get_sequence():
                         complete_seq_g1[letter] += peptide.get_area()[0] 
-                        complete_seq_g2[letter] += peptide.get_area()[1] 
+                        complete_seq_g2[letter] += peptide.get_area()[2] 
             elif kwargs.get('difference_metric') == 'spectral_count':
                 for peptide in peptide_list:
                     first_aa_g1[peptide.get_sequence()[0]] += peptide.get_spectral_count()[0] 
@@ -925,7 +925,6 @@ def normalize_data(protein_list, housekeeping_protein=False):
             for key, value in total_spc_dict.items():
                 df[key] = df[key].apply(lambda x: x/value)
             p = Protein(df, protein.get_id())
-            print('housekeepin false')
             new_protein_list.append(p)
         return new_protein_list
 

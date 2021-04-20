@@ -122,11 +122,11 @@ modal_file = html.Div([
 protein_tab = dbc.Form([
                     dbc.FormGroup([
                         dbc.Col(dbc.Label("Total intensity", className="mr-2", style={'padding':10}), width=8),
-                        dbc.Col(dbc.Input(placeholder='0', type='number', className='ml-auto', min=0, id='tot-intensity-cutoff', value=0, style={'padding':10}), width=2),
+                        dbc.Col(dbc.Input(placeholder='0', type='number', className='ml-auto', min=0, step=0.001, id='tot-intensity-cutoff', value=0, style={'padding':10}), width=2),
                     ], className="mr-3",),
                     dbc.FormGroup([
                         dbc.Col(dbc.Label('Total spectral count', className='mr-2', style={'padding':10}), width=8),
-                        dbc.Col(dbc.Input(placeholder='0', type="number", className='ml-auto', min=0, id='tot-spc-cutoff', value=0, style={'padding':10}), width=2),
+                        dbc.Col(dbc.Input(placeholder='0', type="number", className='ml-auto', min=0, step=0.001, id='tot-spc-cutoff', value=0, style={'padding':10}), width=2),
                     ], className="mr-3",),
                     dbc.FormGroup([
                         dbc.Col(dbc.Label('Number of peptides', className='mr-2', style={'padding':10}), width=8),
@@ -146,11 +146,11 @@ protein_tab = dbc.Form([
 peptide_tab = dbc.Form([
                     dbc.FormGroup([
                         dbc.Col(dbc.Label("Intensity", style={'padding':10}), width=8),
-                        dbc.Col(dbc.Input(placeholder='0', type='number', className='ml-auto', min=0, id='peptide-intensity-cutoff', value=0, style={'padding':10}), width=2),
+                        dbc.Col(dbc.Input(placeholder='0', type='number', className='ml-auto', min=0, step=0.001, id='peptide-intensity-cutoff', value=0, style={'padding':10}), width=2),
                     ], className="mr-3", row=True),
                     dbc.FormGroup([
                         dbc.Col(dbc.Label('Spectral count', className='mr-2', style={'padding':10}), width=7),
-                        dbc.Col(dbc.Input(placeholder='0', type="number", className='ml-auto', min=0, id='peptide-spc-cutoff', value=0, style={'padding':10}), width=2),
+                        dbc.Col(dbc.Input(placeholder='0', type="number", className='ml-auto', min=0, step=0.001, id='peptide-spc-cutoff', value=0, style={'padding':10}), width=2),
                     ], className="mr-3",),
                     dbc.FormGroup([
                         dbc.Col(dbc.Checklist(
@@ -503,8 +503,6 @@ amino_acid_figs = html.Div([
             dbc.Col(amino_acid_radioitems)
 
         ]),
-        html.P(id='complete-or-selected'),
-        
         dcc.Loading(type='cube', color = '#76b382',
             children=[ dbc.Row([
                 dbc.Col([
@@ -734,16 +732,17 @@ def process_protein_data(apply_normalization_n_clicks, n_clicks_close_file, appl
         g2 = pd.read_json(df_g2)
         master = merge_dataframes(g1,g2)
         protein_list = create_protein_list(master)
+        if 'global-intensity' in radioitems_normalization:
+            protein_list = normalize_data(protein_list, housekeeping_protein=False)
+        elif 'housekeeping-protein' in radioitems_normalization and housekeeping_protein != '':
+            protein_list = normalize_data(protein_list, housekeeping_protein = housekeeping_protein)
         protein_list_cutoff = apply_peptide_cutoffs(protein_list, area=pep_intensity_co, spc=pep_spc_co, rt=RT, ccs=CCS)
         protein_list_cutoff = apply_protein_cutoffs(protein_list_cutoff, nbr_of_peptides=nbr_of_peptides_co, tot_area=tot_intensity_co, tot_spc=tot_spc_co)
-        
+        if len(protein_list_cutoff) < 1:
+            return [], [], [], []
         if present_in_all_samples:
             protein_list_cutoff = proteins_present_in_all_samples(protein_list_cutoff)
-        if apply_normalization_n_clicks:
-            if 'global-intensity' in radioitems_normalization:
-                protein_list_cutoff = normalize_data(protein_list_cutoff, housekeeping_protein=False)
-            elif 'housekeeping-protein' in radioitems_normalization and housekeeping_protein != '':
-                protein_list_cutoff = normalize_data(protein_list_cutoff, housekeeping_protein = housekeeping_protein)
+        
         protein_list_json = protein_list_to_json(protein_list_cutoff)
         df_fig = create_protein_df_fig(protein_list_cutoff)
         df_protein_info = create_protein_datatable(protein_list_cutoff)
@@ -866,16 +865,16 @@ def create_peptide_fig(n_clicks_generate_peptide_fig, sum_or_mean_radio, peptide
 
 
 def amino_acid_dropdown(dropdown_values, radioitem_value, protein_list_json, peptide_list_json):
-    if 'complete-proteome' in dropdown_values and protein_list_json:
+    if dropdown_values and 'complete-proteome' in dropdown_values and protein_list_json:
         protein_list = json_to_protein_list(protein_list_json)
         complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2 = amino_acid_piecharts(protein_list, peptide_or_protein_list = 'protein_list', difference_metric = radioitem_value)
-        return complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2, 'Complete proteome'
-    elif 'selected-protein' in dropdown_values and peptide_list_json:
+        return complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2
+    elif dropdown_values and 'selected-protein' in dropdown_values and peptide_list_json:
         peptide_list = json_to_peptide_list(peptide_list_json)
         complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2 = amino_acid_piecharts(peptide_list, peptide_or_protein_list = 'peptide_list', difference_metric = radioitem_value)
-        return complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2, 'Selected Protein'
+        return complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2
     else:
-        return  {},{},{}, {},{},{}, ''
+        return  {},{},{}, {},{},{}
 
 
 def generate_hover_graphs(hoverData, protein_radioitems_value, protein_list_json):
@@ -901,11 +900,11 @@ def enable_input_search_protein(protein_list):
 
 def create_peptide_length_dropdown(length_dropdown_values, protein_list_json, peptide_list_json):
     
-    if 'complete-proteome-length'  in length_dropdown_values and protein_list_json:
+    if length_dropdown_values and 'complete-proteome-length'  in length_dropdown_values and protein_list_json:
         protein_list = json_to_protein_list(protein_list_json)
         length_fig_g1, length_fig_g2 = create_length_histogram(protein_list, peptide_or_protein_list='protein_list')
         return length_fig_g1, length_fig_g2
-    elif 'selected-protein-length' in length_dropdown_values and peptide_list_json:
+    elif length_dropdown_values and 'selected-protein-length' in length_dropdown_values and peptide_list_json:
         peptide_list = json_to_peptide_list(peptide_list_json)
         length_fig_g1, length_fig_g2 = create_length_histogram(peptide_list, peptide_or_protein_list='peptide_list')
         return length_fig_g1, length_fig_g2
@@ -948,7 +947,6 @@ app.callback(
     Output('complete-aa-seq-fig-g2', 'figure'),
     Output('first-aa-fig-g2', 'figure'),
     Output('last-aa-fig-g2', 'figure'),
-    Output('complete-or-selected', 'children'),
     Input('amino-acid-pie-dropdown', 'value'),
     Input('aa-radioitems', 'value'),
     State('protein-list-df-holder', 'children'),
