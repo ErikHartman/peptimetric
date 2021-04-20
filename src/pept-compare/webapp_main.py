@@ -24,7 +24,7 @@ from methods import proteins_present_in_all_samples, create_protein_datatable, c
 
 
 
-app = dash.Dash(__name__,external_stylesheets=[dbc.themes.SANDSTONE], suppress_callback_exceptions=True)
+app = dash.Dash(__name__,external_stylesheets=[dbc.themes.SANDSTONE, '.assets/style.css'], suppress_callback_exceptions=True)
 
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
@@ -618,7 +618,7 @@ hidden_divs = html.Div([
     dcc.Store(id='peptide-data-holder'),
     dcc.Store(id='protein-fig-holder'),
     dcc.Store(id='normalization-holder'),
-    dcc.Loading(fullscreen = True, type = 'dot', id='process-data-loading', children = [dcc.Store(id='protein-datatable-holder')]),
+    dcc.Loading(color = '#76b382', style={'backgroundColor': 'transparent'}, className = 'loader-wrapper', fullscreen = True, type = 'default', id='process-data-loading', children = [dcc.Store(id='protein-datatable-holder')]),
     dcc.Store(id='housekeeping-protein-holder'),
     
 ])
