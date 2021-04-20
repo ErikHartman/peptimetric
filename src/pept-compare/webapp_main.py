@@ -34,15 +34,6 @@ app.layout = html.Div([
 #---------------------------------------PAGE-ELEMENTS------------------------------------------------
 file_columns = ['Sample', 'File']
 
-collapse_progress = dbc.Collapse([
-    dbc.Row(
-        dbc.Col([
-            dcc.Interval(id="progress-interval", n_intervals=0, interval=500),
-            dbc.Progress(id = 'progress-bar', value=0, max=100, striped=True, color="success", style={"height": "10px", 'padding':'10px'})
-                        ], width={'size': 6, 'offset':1})
-                        ),                      
-], id='collapse-progress', is_open=False)
-
 modal_file = html.Div([
     dbc.Button("Files", id="open-modal-file", color='info', className="mr-1"),
     dbc.Tooltip(
@@ -624,10 +615,10 @@ hidden_divs = html.Div([
     dcc.Store(id='peptide-list-df-holder'),
     dcc.Store(id='df_g1-holder'),
     dcc.Store(id='df_g2-holder'),
-    dcc.Store(id='protein-datatable-holder'),
     dcc.Store(id='peptide-data-holder'),
     dcc.Store(id='protein-fig-holder'),
     dcc.Store(id='normalization-holder'),
+    dcc.Loading(fullscreen = True, type = 'dot', id='process-data-loading', children = [dcc.Store(id='protein-datatable-holder')]),
     dcc.Store(id='housekeeping-protein-holder'),
     
 ])
@@ -637,7 +628,6 @@ main_page = dbc.Container([
     dbc.Row([
         dbc.Col(navbar, width={"size":12}, className="mb-4")
     ]),
-    collapse_progress,
     dbc.Row([
         dbc.Col(how_to_use_collapse , width={'size':8}),
         dbc.Col(sample_collapse, width={'size':4}),
@@ -898,6 +888,12 @@ def enable_input_search_protein(protein_list):
         else:
             return False
 
+def enable_generate_protein_graph(protein_list):
+        if not protein_list:
+            return True
+        else:
+            return False
+
 def create_peptide_length_dropdown(length_dropdown_values, protein_list_json, peptide_list_json):
     
     if length_dropdown_values and 'complete-proteome-length'  in length_dropdown_values and protein_list_json:
@@ -918,7 +914,7 @@ def create_peptide_length_dropdown(length_dropdown_values, protein_list_json, pe
 app.callback(
     Output('generate-protein-graph', 'disabled'),
     Input('protein-list', 'children')
-)(enable_input_search_protein)
+)(enable_generate_protein_graph)
 
 app.callback(
     Output('search-protein', 'disabled'),
@@ -1087,6 +1083,8 @@ app.callback(
     [Input("sample-collapse-button", "n_clicks")],
     [State("sample-collapse", "is_open")],
 )(toggle_collapse)
+
+
 
 
 
