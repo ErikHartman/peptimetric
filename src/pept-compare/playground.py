@@ -9,13 +9,7 @@ import numpy as np
               
 
 if __name__  == "__main__":
-    g1 = concatenate_dataframes(read_files_gui())
-    g2 = concatenate_dataframes(read_files_gui())
-    master = merge_dataframes(g1,g2)
-    df_log = log_intensity(master)
-    protein_list = create_protein_list(df_log)
-    protein_list = normalize_data(protein_list, housekeeping_protein = 'ALBU_HUMAN')
-    json_df = protein_list_to_json(protein_list)
+    print('%.3f'%(1324343032.324325235))
     
 
 

@@ -34,15 +34,14 @@ app.layout = html.Div([
 #---------------------------------------PAGE-ELEMENTS------------------------------------------------
 file_columns = ['Sample', 'File']
 
-modal_progress = dbc.Modal([
+collapse_progress = dbc.Collapse([
     dbc.Row(
         dbc.Col([
             dcc.Interval(id="progress-interval", n_intervals=0, interval=500),
-            dbc.Progress(id = 'progress-bar', value=0, max=100, striped=True, color="success", style={"height": "20px"})
-                        ])
-                        ),
-                        dbc.ModalFooter(dbc.Button("Close", id='close-modal-progress', n_clicks=0))                       
-], id='modal-progress', is_open=False)
+            dbc.Progress(id = 'progress-bar', value=0, max=100, striped=True, color="success", style={"height": "10px", 'padding':'10px'})
+                        ], width={'size': 6, 'offset':1})
+                        ),                      
+], id='collapse-progress', is_open=False)
 
 modal_file = html.Div([
     dbc.Button("Files", id="open-modal-file", color='info', className="mr-1"),
@@ -241,12 +240,6 @@ modal_normalization = dbc.Modal([
                                 ), width=5,
                         )
                     ]),
-                dbc.FormGroup([
-                        dbc.Col([
-                            dbc.Label('Take the log10 of given intensity', className='ml-auto', style={'padding':10}),
-                            dbc.Checkbox(id='log-checkbox', checked=True),
-                        ]),
-                 ])
                 ]),
                 
                 dbc.ModalFooter(
@@ -642,11 +635,11 @@ hidden_divs = html.Div([
 ])
 #---------------------------PAGES---------------------------------------------------------------
 main_page = dbc.Container([
-    modal_progress,
+    
     dbc.Row([
         dbc.Col(navbar, width={"size":12}, className="mb-4")
     ]),
-
+    collapse_progress,
     dbc.Row([
         dbc.Col(how_to_use_collapse , width={'size':8}),
         dbc.Col(sample_collapse, width={'size':4}),
@@ -675,23 +668,6 @@ main_page = dbc.Container([
 
 
 #-----------------DEFS AND CALLBACKS--------------------------------------------------------------
-
-@app.callback(
-    Output('progress-bar','value'),
-    Output('modal-progress', 'is_open'),
-    Input("close-modal-file", "n_clicks"),
-    Input('generate-protein-graph', 'disabled'),
-    State('modal-progress', 'is_open'),
-    State('progress-bar','value'),
-)
-def progress_bar_animation(n_clicks, disabled, is_open, value):
-    if disabled == False:
-        return 0, False
-    if n_clicks:
-        return 10, True
-    else:
-        return 0, False
-
 def display_page(pathname):
         return main_page
 
@@ -1106,6 +1082,7 @@ app.callback(
     [Input("how-to-use-collapse-button", "n_clicks")],
     [State("how-to-use-collapse", "is_open")],
 )(toggle_collapse)
+
 
 app.callback(
     Output("sample-collapse", "is_open"),

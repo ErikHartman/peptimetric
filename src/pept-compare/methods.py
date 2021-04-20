@@ -94,22 +94,22 @@ def set_color_and_size(nbr_of_peptides, color_thresholds):
     for n in nbr_of_peptides:
         if n > color_thresholds[4]:
             col.append(color['dark'])
-            size.append(color_thresholds[4])
+            size.append(5)
         elif n >= color_thresholds[3]:
             col.append(color['mediumdark'])
-            size.append(color_thresholds[3])
+            size.append(4)
         elif n >= color_thresholds[2]:
             col.append(color['medium'])
-            size.append(color_thresholds[2])
+            size.append(3)
         elif n >= color_thresholds[1]:
             col.append(color['mediumlight'])
             size.append(color_thresholds[1])
         elif n == 1:
             col.append(color['grey'])
-            size.append(color_thresholds[0])
+            size.append(2)
         else:
             col.append(color['light'])
-            size.append(color_thresholds[0])
+            size.append(1)
     return col, size
 
 def amino_acid_frequency(p_list, **kwargs):
@@ -330,10 +330,11 @@ def create_protein_df_fig(protein_list, **kwargs):
     color_thresholds = get_thresholds(nbr_of_peptides)
     col, size = set_color_and_size(nbr_of_peptides, color_thresholds)
     for s in size:
-        s *= 4
+        s *= 2
     df_fig = pd.DataFrame(list(zip(g1_area_sum, g2_area_sum, g1_area_mean, g2_area_mean, g1_spc_sum, g2_spc_sum, g1_spc_mean, g2_spc_mean, nbr_of_peptides, trivial_name, pfam, col, accession, g1_area_sum_stdev, g2_area_sum_stdev,
     g1_area_mean_stdev, g2_area_mean_stdev, g1_spc_sum_stdev, g2_spc_sum_stdev, g1_spc_mean_stdev, g2_spc_mean_stdev)),
-        columns=['g1_area_sum','g2_area_sum','g1_area_mean','g2_area_mean', 'g1_spc_sum','g2_spc_sum', 'g1_spc_mean','g2_spc_mean','nbr_of_peptides','trivial_name','pfam','col','accession', 'g1_area_sum_stdev', 'g2_area_sum_stdev', 'g1_area_mean_stdev', 'g2_area_mean_stdev', 
+        columns=['g1_area_sum','g2_area_sum','g1_area_mean','g2_area_mean', 'g1_spc_sum','g2_spc_sum', 'g1_spc_mean','g2_spc_mean','nbr_of_peptides','trivial_name','pfam','col','accession',
+         'g1_area_sum_stdev', 'g2_area_sum_stdev', 'g1_area_mean_stdev', 'g2_area_mean_stdev', 
         'g1_spc_sum_stdev', 'g2_spc_sum_stdev', 'g1_spc_mean_stdev', 'g2_spc_mean_stdev'])
     
     return df_fig
@@ -571,16 +572,20 @@ def all_sample_bar_chart(protein_list, accession, **kwargs):
     if kwargs.get('metric') == 'area_sum':
         intensities = selected_protein.get_area_sum_all_samples()
         df = pd.DataFrame(intensities.items(), columns=['sample', 'intensity'])
+        y='intensity'
     elif kwargs.get('metric') == 'spc_sum':
         intensities = selected_protein.get_spectral_count_sum_all_samples()
-        df = pd.DataFrame(intensities.items(), columns=['sample', 'Spectral count'])
+        df = pd.DataFrame(intensities.items(), columns=['sample', 'spectral count'])
+        y='spectral count'
     elif kwargs.get('metric') == 'area_mean':
         intensities = selected_protein.get_area_mean_all_samples()
         df = pd.DataFrame(intensities.items(), columns=['sample', 'intensity'])
+        y='intensity'
     elif kwargs.get('metric') == 'spc_mean':
-        intensities = selected_protein.get_spc_mean_all_samples()
-        df = pd.DataFrame(intensities.items(), columns=['sample', 'Spectral count'])
-    fig = px.bar(df, x = 'sample', y='intensity', color='intensity', color_continuous_scale=px.colors.sequential.algae, title=title)
+        intensities = selected_protein.get_spectral_count_mean_all_samples()
+        df = pd.DataFrame(intensities.items(), columns=['sample', 'spectral count'])
+        y='spectral count'
+    fig = px.bar(df, x = 'sample', y=y, color=y, color_continuous_scale=px.colors.sequential.algae, title=title)
     fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}, showlegend=False, coloraxis_showscale=False)
     return fig
 
@@ -624,7 +629,6 @@ def stacked_samples_peptide(peptide_list, **kwargs):
         
     }
     default_settings.update(**kwargs)
-    color=green
     if kwargs.get('color') == 'green':
         color = green
     fasta = peptide_list[0].fasta
@@ -632,8 +636,6 @@ def stacked_samples_peptide(peptide_list, **kwargs):
     trivial_name =  peptide_list[0].protein.get_trivial_name()
     start = []
     end = []
-    start_neg = []
-    end_neg = []
     intensity_pos = []
     intensity_neg = []
     for peptide in peptide_list:
@@ -928,7 +930,6 @@ def normalize_data(protein_list, housekeeping_protein=False):
         return new_protein_list
 
     elif housekeeping_protein != False and housekeeping_protein != '':
-        i=0
         housekeeping_protein_intensity = {}
         housekeeping_protein_spc = {}
         for protein in protein_list:
