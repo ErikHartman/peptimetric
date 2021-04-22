@@ -38,6 +38,15 @@ red = {
 
 }
 
+column_names_dict = {
+    'Peptide' : ['Sequence', 'sequence', 'Sequences', 'sequences' 'peptide', 'peptides'],
+    'Accession': ['Protein', 'protein','accession','uniprot id', 'UniProt id', 'Uniprot id'],
+    'Area': ['Intensity', 'area', 'intensity', 'intensities'],
+    'RT': ['retention time', 'Retention time'],
+    'CCS': ['collision cross section', 'Collision Cross Section', 'Collision cross section'],
+    'Spectral count': ['SPC', 'spectral count', '#Feature', 'spectral counts', '#Features']
+}
+
 def read_files_gui():
     root = tk.Tk()
     root.withdraw()
@@ -50,6 +59,12 @@ def make_peptide_dfs(filenames: List):
     for filename in filenames:
         print("opening", filename)
         df = pd.read_excel(filename, engine='openpyxl')
+        columns_to_keep = []
+        for column_name in df.columns:
+            for key, val in zip(column_names_dict.keys(), column_names_dict.values()):
+                if column_name in val:
+                    df.rename(columns = {column_name : key}, inplace=True)
+                    columns_to_keep.append(key)
         df.dropna(subset=['Accession'], inplace=True)
         accessions = []
         for index, row in df.iterrows():
@@ -58,6 +73,7 @@ def make_peptide_dfs(filenames: List):
             else:
                 accessions.append(row['Accession'])
         df['Accession'] = accessions
+        df = df[columns_to_keep]
         dfs.append(df)
     return dfs
 
@@ -378,7 +394,7 @@ def create_protein_fig(df_fig, protein_list, **kwargs):
     fig.add_shape(type="line",x0=minimum, y0=minimum, x1=maximum, y1=maximum, line=dict(color="#919499",width=1, dash='dash'))
     fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}, coloraxis_colorbar=dict(title='Number of peptides'))
     if kwargs.get('show_stdev') == True:
-        fig.update_traces(error_x= dict(array=df_fig[g2_std].array, thickness=1), error_y=dict(array=df_fig[g1_std].array, thickness=1))
+        fig.update_traces(error_x= dict(array=df_fig[g1_std].array, thickness=1), error_y=dict(array=df_fig[g2_std].array, thickness=1))
     if kwargs.get('show_pfam') == True:
         for p1 in protein_list:
             for p2 in protein_list:
