@@ -14,7 +14,7 @@ if __name__  == "__main__":
     master = merge_dataframes(g1,g2)
     protein_list = create_protein_list(master)
     peptide_list = create_peptide_list_from_trivname(protein_list, "HBB_HUMAN")
-    fig = create_length_histogram(peptide_list, peptide_or_protein_list='peptide_list')
+    fig = amino_acid_piecharts(peptide_list, peptide_or_protein_list = 'peptide_list', difference_metric = 'spectral_count')
     fig.show()
     
     

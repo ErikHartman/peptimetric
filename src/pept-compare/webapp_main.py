@@ -270,8 +270,8 @@ amino_acid_pie_dropdown = dcc.Dropdown(
     placeholder='Select view',
     value='',
     options=[
-        {'label': 'Complete proteome', 'value': 'complete-proteome'},
         {'label': 'Selected protein', 'value': 'selected-protein'},
+        {'label': 'Complete proteome', 'value': 'complete-proteome'},
     ],
     
 )   
@@ -489,23 +489,12 @@ amino_acid_radioitems = html.Div([
 
 amino_acid_figs = html.Div([
         html.H3('Amino Acid Profile'),
+        dbc.Row(dbc.Col(amino_acid_radioitems)),
         dcc.Loading(type='cube', color = '#76b382',
             children=[ dbc.Row([
-                dbc.Col([
-                    dcc.Graph(id='complete-aa-seq-fig-g1', figure={},  config={'displayModeBar': False})]),
-                dbc.Col([
-                    dcc.Graph(id='first-aa-fig-g1', figure={},  config={'displayModeBar': False})]),
-                dbc.Col([
-                    dcc.Graph(id='last-aa-fig-g1', figure={}, config={'displayModeBar': False})]),
-            ]),
-            dbc.Row([
-                dbc.Col([
-                    dcc.Graph(id='complete-aa-seq-fig-g2', figure={},config={'displayModeBar': False})]),
-                dbc.Col([
-                    dcc.Graph(id='first-aa-fig-g2', figure={}, config={'displayModeBar': False})]),
-                dbc.Col([
-                    dcc.Graph(id='last-aa-fig-g2', figure={}, config={'displayModeBar': False})]),
-            ])]
+                dbc.Col(dcc.Graph(id='aa-fig', figure={}, style={'height': '700px'}, config={'displayModeBar': False})),
+            ]) 
+            ]
         )
     ])
 
@@ -634,10 +623,7 @@ main_page = dbc.Container([
     dbc.Row([
         html.H2('General characteristics'),
     ]),
-    dbc.Row([dbc.Col(amino_acid_pie_dropdown, width=2),
-            dbc.Col(amino_acid_radioitems)]),
-
-
+    dbc.Row([dbc.Col(amino_acid_pie_dropdown, width=2)]),
     dbc.Row([
         dbc.Col(peptide_length_fig, width={'size':8}),
         dbc.Col(venn_bar_fig, width={'size':4}),
@@ -849,14 +835,14 @@ def create_peptide_fig(n_clicks_generate_peptide_fig, sum_or_mean_radio, peptide
 def amino_acid_dropdown(dropdown_values, radioitem_value, protein_list_json, peptide_list_json):
     if dropdown_values and 'complete-proteome' in dropdown_values and protein_list_json:
         protein_list = json_to_protein_list(protein_list_json)
-        complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2 = amino_acid_piecharts(protein_list, peptide_or_protein_list = 'protein_list', difference_metric = radioitem_value)
-        return complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2
+        fig = amino_acid_piecharts(protein_list, peptide_or_protein_list = 'protein_list', difference_metric = radioitem_value)
+        return fig
     elif dropdown_values and 'selected-protein' in dropdown_values and peptide_list_json:
         peptide_list = json_to_peptide_list(peptide_list_json)
-        complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2 = amino_acid_piecharts(peptide_list, peptide_or_protein_list = 'peptide_list', difference_metric = radioitem_value)
-        return complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2
+        fig = amino_acid_piecharts(peptide_list, peptide_or_protein_list = 'peptide_list', difference_metric = radioitem_value)
+        return fig
     else:
-        return  {},{},{}, {},{},{}
+        return  {}
 
 
 def generate_hover_graphs(hoverData, protein_radioitems_value, protein_list_json):
@@ -902,11 +888,11 @@ def create_peptide_length_dropdown(length_dropdown_values, protein_list_json, pe
 def create_venn_bar_fig(length_dropdown_values, protein_list_json, peptide_list_json):
     if length_dropdown_values and 'complete-proteome'  in length_dropdown_values and protein_list_json:
         protein_list = json_to_protein_list(protein_list_json)
-        venn_bar = create_venn_bar(protein_list)
+        venn_bar = create_venn_bar(protein_list, complete_proteome=True)
         return venn_bar
     elif length_dropdown_values and 'selected-protein' in length_dropdown_values and peptide_list_json:
         peptide_list = json_to_peptide_list(peptide_list_json)
-        venn_bar= create_venn_bar(peptide_list)
+        venn_bar= create_venn_bar(peptide_list, complete_proteome=False)
         return venn_bar
     else:
         return {}
@@ -941,12 +927,8 @@ app.callback(
 )(generate_hover_graphs)
 
 app.callback(
-    Output('complete-aa-seq-fig-g1', 'figure'),
-    Output('first-aa-fig-g1', 'figure'),
-    Output('last-aa-fig-g1', 'figure'),
-    Output('complete-aa-seq-fig-g2', 'figure'),
-    Output('first-aa-fig-g2', 'figure'),
-    Output('last-aa-fig-g2', 'figure'),
+    Output('aa-fig', 'figure'),
+
     Input('amino-acid-pie-dropdown', 'value'),
     Input('aa-radioitems', 'value'),
     State('protein-list-df-holder', 'children'),

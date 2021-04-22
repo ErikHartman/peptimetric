@@ -7,6 +7,7 @@ import copy
 from collections import Counter
 
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import plotly.figure_factory as ff
 from IPython.display import display
 import plotly.express as px
@@ -214,26 +215,26 @@ def amino_acid_frequency(p_list, **kwargs):
 def amino_acid_piecharts(p_list, **kwargs):
     color=green
     color_dict = [
-            color['light'],
-            color['light'],
-            color['light'],
-            color['light'],
-            color['light'],
-            color['light'],
-            color['light'],
-            color['light'],
-            color['light'],
-            color['medium'],
-            color['medium'],
-            color['medium'],
-            color['medium'],
-            color['medium'],
-            color['medium'],
-            color['mediumdark'],
-            color['mediumdark'],
-            color['mediumdark'],
-            color['dark'],
-            color['dark'],
+            'rgb(230,222,122)',
+            'rgb(230,222,122)',
+            'rgb(230,222,122)',
+            'rgb(230,222,122)',
+            'rgb(230,222,122)',
+            'rgb(230,222,122)',
+            'rgb(230,222,122)',
+            'rgb(230,222,122)',
+            'rgb(230,222,122)',
+            'rgb(77,172,38)',
+            'rgb(77,172,38)',
+            'rgb(77,172,38)',
+            'rgb(77,172,38)',
+            'rgb(77,172,38)',
+            'rgb(77,172,38)',
+            'rgb(145, 173, 196)',
+            'rgb(145, 173, 196)',
+            'rgb(145, 173, 196)',
+            'rgb(208,28,139)',
+            'rgb(208,28,139)',
     ]
     default_settings = {
         'peptide_or_protein_list'
@@ -244,31 +245,22 @@ def amino_acid_piecharts(p_list, **kwargs):
         complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2 = amino_acid_frequency(p_list, peptide_or_protein_list = 'peptide_list', difference_metric=kwargs.get('difference_metric'))
     elif kwargs.get('peptide_or_protein_list') == 'protein_list':
         complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2 = amino_acid_frequency(p_list, peptide_or_protein_list = 'protein_list', difference_metric=kwargs.get('difference_metric'))
-    complete_seq_fig_g1 = go.Figure(data=[go.Pie(labels=list(complete_seq_g1.keys()), values=list(complete_seq_g1.values())
-        , textinfo='label', marker_colors=color_dict)])
-    first_aa_fig_g1 = go.Figure(data=[go.Pie(labels=list(first_aa_g1.keys()), values=list(first_aa_g1.values())
-        , textinfo='label', marker_colors=color_dict)])
-    last_aa_fig_g1 = go.Figure(data=[go.Pie(labels=list(last_aa_g1.keys()), values=list(last_aa_g1.values())
-        , textinfo='label', marker_colors=color_dict)])
-    complete_seq_fig_g2 = go.Figure(data=[go.Pie(labels=list(complete_seq_g2.keys()), values=list(complete_seq_g2.values())
-        , textinfo='label', marker_colors=color_dict)])
-    first_aa_fig_g2 = go.Figure(data=[go.Pie(labels=list(first_aa_g2.keys()), values=list(first_aa_g2.values())
-        , textinfo='label', marker_colors=color_dict)])
-    last_aa_fig_g2 = go.Figure(data=[go.Pie(labels=list(last_aa_g2.keys()), values=list(last_aa_g2.values())
-        , textinfo='label', marker_colors=color_dict)])
-    complete_seq_fig_g1.update(layout_title_text='Complete amino acid sequence',
-            layout_showlegend=False)
-    last_aa_fig_g1.update(layout_title_text='Last amino acid',
-            layout_showlegend=False)
-    first_aa_fig_g1.update(layout_title_text='First amino acid',
-            layout_showlegend=False)
-    complete_seq_fig_g2.update(layout_title_text='Complete amino acid sequence',
-            layout_showlegend=False)
-    last_aa_fig_g2.update(layout_title_text='Last amino acid',
-            layout_showlegend=False)
-    first_aa_fig_g2.update(layout_title_text='First amino acid',
-            layout_showlegend=False)
-    return complete_seq_fig_g1, first_aa_fig_g1, last_aa_fig_g1, complete_seq_fig_g2, first_aa_fig_g2, last_aa_fig_g2
+    print(complete_seq_g1)
+    fig = make_subplots(rows=2, cols=3, specs=[[{"type": "pie"}, {"type": "pie"}, {"type": "pie"}],
+           [{"type": "pie"}, {"type": "pie"}, {"type": "pie"}]])
+    fig.add_trace(go.Pie(labels=list(complete_seq_g1.keys()), values=list(complete_seq_g1.values())
+        , textinfo='label', marker_colors=color_dict, sort=False, title_text = 'Complete amino acid sequence'), row=1, col= 1)
+    fig.add_trace(go.Pie(labels=list(first_aa_g1.keys()), values=list(first_aa_g1.values())
+        , textinfo='label', marker_colors=color_dict, sort=False, title_text = 'First amino acid'), row=1, col=2)
+    fig.add_trace(go.Pie(labels=list(last_aa_g1.keys()), values=list(last_aa_g1.values())
+        , textinfo='label', marker_colors=color_dict, sort=False, title_text = 'Last amino acid'), row=1, col=3)
+    fig.add_trace(go.Pie(labels=list(complete_seq_g2.keys()), values=list(complete_seq_g2.values())
+        , textinfo='label', marker_colors=color_dict, sort=False, title_text = 'Complete amino acid sequence'), row=2, col=1)
+    fig.add_trace(go.Pie(labels=list(first_aa_g2.keys()), values=list(first_aa_g2.values())
+        , textinfo='label', marker_colors=color_dict, sort=False, title_text = 'First amino acid'), row=2, col=2)
+    fig.add_trace(go.Pie(labels=list(last_aa_g2.keys()), values=list(last_aa_g2.values())
+        , textinfo='label', marker_colors=color_dict, sort=False, title_text = 'Last amino acid'), row=2, col=3)
+    return fig
 
 def group_amino_acids(peptide_list):
     grouped = []
