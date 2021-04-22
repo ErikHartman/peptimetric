@@ -777,19 +777,19 @@ def create_protein_figure_and_table(rows, derived_virtual_selected_rows, search_
         protein_list = json_to_protein_list(protein_list_json)
         if 'area_sum' in protein_radioitems_value:
             difference_metric = 'area_sum'
-            columns = ['Protein','UniProt id','#peptides g1','#peptides g2', 'intensity_g1','intensity_g2', 'Protein family','p-value_area']
+            columns = ['Protein','UniProt id','#peptides g1','#peptides g2', 'intensity_g1','intensity_g2','intensity_sum_stdev_g1', 'intensity_sum_stdev_g2','Protein family','p-value_area']
             sort = ['intensity_g1', 'intensity_g2']
         elif 'area_mean' in protein_radioitems_value:
             difference_metric = 'area_mean'
-            columns = ['Protein','UniProt id','#peptides g1','#peptides g2', 'mean_intensity_g1','mean_intensity_g2', 'Protein family','p-value_area']
+            columns = ['Protein','UniProt id','#peptides g1','#peptides g2', 'mean_intensity_g1','mean_intensity_g2', 'intensity_mean_stdev_g1', 'intensity_mean_stdev_g2', 'Protein family','p-value_area']
             sort = ['intensity_g1', 'intensity_g2']
         elif 'spc_sum' in protein_radioitems_value:
             difference_metric = 'spc_sum'
-            columns = ['Protein','UniProt id','#peptides g1','#peptides g2','spc_g1','spc_g2', 'Protein family','p-value_spc']
+            columns = ['Protein','UniProt id','#peptides g1','#peptides g2','spc_g1','spc_g2','spc_sum_stdev_g1','spc_sum-stdev_g2','Protein family','p-value_spc']
             sort = ['mean_spc_g1','mean_spc_g2']
         else:
             difference_metric = 'spc_mean'
-            columns = ['Protein','UniProt id','#peptides g1','#peptides g2','mean_spc_g1','mean_spc_g2', 'Protein family','p-value_spc']
+            columns = ['Protein','UniProt id','#peptides g1','#peptides g2','mean_spc_g1','mean_spc_g2','spc_mean_stdev_g1', 'spc_mean_stdev_g2','Protein family','p-value_spc']
             sort = ['mean_spc_g1','mean_spc_g2']
         df_protein_info.sort_values(by=sort, ascending=False, inplace=True)
         protein_info_data = df_protein_info.to_dict('rows')
@@ -822,10 +822,10 @@ def get_normalization_data(radioitems_normalization, housekeeping_protein):
 
 def create_peptide_fig(n_clicks_generate_peptide_fig, sum_or_mean_radio, peptide_radioitems_value, button_label, protein_list_json, peptide_list_json):
     if peptide_radioitems_value == 'area':
-        columns = ['Peptide','Start','End','Intensity_g1','Intensity_g2']
+        columns = ['Peptide','Start','End','Intensity_g1','Intensity_g2', 'Intensity_stdev_g1', 'Intensity_stdev_g2']
         sort = ['Intensity_g1', 'Intensity_g2']
     else:
-        columns = ['Peptide','Start','End','spc_g1','spc_g2']
+        columns = ['Peptide','Start','End','spc_g1','spc_g2','spc-stdev_g1', 'spc_stdev_g2']
         sort = ['spc_g1', 'spc_g2']
 
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
