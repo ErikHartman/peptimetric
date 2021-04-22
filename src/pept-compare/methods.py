@@ -39,12 +39,12 @@ red = {
 }
 
 column_names_dict = {
-    'Peptide' : ['Sequence', 'sequence', 'Sequences', 'sequences' 'peptide', 'peptides'],
-    'Accession': ['Protein', 'protein','accession','uniprot id', 'UniProt id', 'Uniprot id'],
-    'Area': ['Intensity', 'area', 'intensity', 'intensities'],
-    'RT': ['retention time', 'Retention time'],
-    'CCS': ['collision cross section', 'Collision Cross Section', 'Collision cross section'],
-    'Spectral count': ['SPC', 'spectral count', '#Feature', 'spectral counts', '#Features']
+    'Peptide' : ['Peptide','Sequence', 'sequence', 'Sequences', 'sequences' 'peptide', 'peptides'],
+    'Accession': ['Accession','Protein', 'protein','accession','uniprot id', 'UniProt id', 'Uniprot id'],
+    'Area': ['Area','Intensity', 'area', 'intensity', 'intensities'],
+    'RT': ['RT','retention time', 'Retention time'],
+    'CCS': ['CCS','collision cross section', 'Collision Cross Section', 'Collision cross section'],
+    'Spectral count': ['Spectral count','SPC', 'spectral count', '#Feature', 'spectral counts', '#Features']
 }
 
 def read_files_gui():
@@ -96,7 +96,7 @@ def merge_dataframes(g1, g2):
     g1 = g1.rename(index=str, columns={'Peptide_g1':'Peptide', 'Accession_g1':'Accession'})
     g2 = g2.add_suffix('_g2')
     g2 = g2.rename(index=str, columns={'Peptide_g2':'Peptide', 'Accession_g2':'Accession'})
-    return g1.merge(g2, on=['Peptide', 'Accession'], how='outer', suffixes=['_g1', '_g2'])
+    return g1.merge(g2, on=['Peptide', 'Accession'], how='outer', suffixes=['_g1','_g2'])
 
 def log_intensity(df):
     area_columns = [col for col in df if col.startswith('Area')]

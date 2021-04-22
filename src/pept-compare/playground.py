@@ -11,6 +11,8 @@ import numpy as np
 if __name__  == "__main__":
     g1 = concatenate_dataframes(read_files_gui())
     g2 = concatenate_dataframes(read_files_gui())
+    maste = merge_dataframes(g1,g2, suffix1='infected', suffix2='non-infected')
+    print(maste.columns)
     
     
 
