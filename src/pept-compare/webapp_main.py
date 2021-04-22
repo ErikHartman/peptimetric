@@ -19,7 +19,7 @@ import plotly.graph_objects as go
 from methods import protein_list_to_json, json_to_protein_list, peptide_list_to_json, json_to_peptide_list
 from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, create_protein_list, create_protein_df_fig, create_protein_fig , create_peptide_list, stacked_samples_peptide
 from methods import amino_acid_piecharts, common_family, all_sample_bar_chart, create_peptide_list_from_trivname
-from methods import apply_protein_cutoffs, apply_peptide_cutoffs, get_unique_and_common_proteins, venn_bars
+from methods import apply_protein_cutoffs, apply_peptide_cutoffs, get_unique_and_common_proteins, create_venn_bar
 from methods import proteins_present_in_all_samples, create_protein_datatable, create_peptide_datatable, log_intensity, normalize_data, create_length_histogram
 
 
@@ -489,42 +489,33 @@ amino_acid_radioitems = html.Div([
 
 amino_acid_figs = html.Div([
         html.H3('Amino Acid Profile'),
-        dbc.Row([
-            dbc.Col(amino_acid_pie_dropdown, width={'size':2}),
-            dbc.Col(amino_acid_radioitems)
-
-        ]),
         dcc.Loading(type='cube', color = '#76b382',
             children=[ dbc.Row([
                 dbc.Col([
-                    dcc.Graph(id='complete-aa-seq-fig-g1', figure={}, style={'width': '10vh', 'height': '20vh'}, config={'displaylogo': False})]),
+                    dcc.Graph(id='complete-aa-seq-fig-g1', figure={},  config={'displayModeBar': False})]),
                 dbc.Col([
-                    dcc.Graph(id='first-aa-fig-g1', figure={}, style={'width': '10vh', 'height': '10vh'}, config={'displaylogo': False})]),
+                    dcc.Graph(id='first-aa-fig-g1', figure={},  config={'displayModeBar': False})]),
                 dbc.Col([
-                    dcc.Graph(id='last-aa-fig-g1', figure={}, style={'width': '10vh', 'height': '10vh'},config={'displaylogo': False})]),
+                    dcc.Graph(id='last-aa-fig-g1', figure={}, config={'displayModeBar': False})]),
             ]),
             dbc.Row([
                 dbc.Col([
-                    dcc.Graph(id='complete-aa-seq-fig-g2', figure={}, style={'width': '20vh', 'height': '20vh'},config={'displaylogo': False})]),
+                    dcc.Graph(id='complete-aa-seq-fig-g2', figure={},config={'displayModeBar': False})]),
                 dbc.Col([
-                    dcc.Graph(id='first-aa-fig-g2', figure={}, style={'width': '20vh', 'height': '20vh'},config={'displaylogo': False})]),
+                    dcc.Graph(id='first-aa-fig-g2', figure={}, config={'displayModeBar': False})]),
                 dbc.Col([
-                    dcc.Graph(id='last-aa-fig-g2', figure={}, style={'width': '20vh', 'height': '20vh'},config={'displaylogo': False})]),
+                    dcc.Graph(id='last-aa-fig-g2', figure={}, config={'displayModeBar': False})]),
             ])]
         )
     ])
 
-peptide_length_figs = html.Div([
+peptide_length_fig = html.Div([
     html.H3('Peptide Length'),
     dcc.Loading(type='cube', color = '#76b382',
         children=[    
         dbc.Row([
-            dbc.Col([
-                dcc.Graph(id='peptide-length-fig-g1', figure={}, config={'displaylogo': False})], width={'size':2}),
-            dbc.Col([
-                dcc.Graph(id='peptide-length-fig-g2', figure={}, config={'displaylogo':False})], width={'size':2}),
-        ])]
-    )
+            dbc.Col(dcc.Graph(id='peptide-length-fig', figure={}, config={'displayModeBar': False}))
+        ]),])
 ])
 
 venn_bar_fig = html.Div([
@@ -533,7 +524,7 @@ venn_bar_fig = html.Div([
         children=[    
         dbc.Row([
             dbc.Col([
-                dcc.Graph(id='venn-bar', figure={}, config={'displaylogo': False})], width={'size':2}),
+                dcc.Graph(id='venn-bar', figure={}, config={'displaylogo': False})]),
         ])]
     )
 ])
@@ -641,10 +632,17 @@ main_page = dbc.Container([
         dbc.Col(peptide_info, width={'size':4})
     ]),
     dbc.Row([
-        dbc.Col(peptide_length_figs),
-        dbc.Col(amino_acid_figs),
-        dbc.Col(venn_bar_fig),
+        html.H2('General characteristics'),
+    ]),
+    dbc.Row([dbc.Col(amino_acid_pie_dropdown, width=2),
+            dbc.Col(amino_acid_radioitems)]),
+
+
+    dbc.Row([
+        dbc.Col(peptide_length_fig, width={'size':8}),
+        dbc.Col(venn_bar_fig, width={'size':4}),
     ]),  
+    dbc.Row(dbc.Col(amino_acid_figs)),
     hidden_divs,
 ], fluid=True)
 
@@ -890,16 +888,28 @@ def enable_generate_protein_graph(protein_list):
 
 def create_peptide_length_dropdown(length_dropdown_values, protein_list_json, peptide_list_json):
     
-    if length_dropdown_values and 'complete-proteome-length'  in length_dropdown_values and protein_list_json:
+    if length_dropdown_values and 'complete-proteome'  in length_dropdown_values and protein_list_json:
         protein_list = json_to_protein_list(protein_list_json)
-        length_fig_g1, length_fig_g2 = create_length_histogram(protein_list, peptide_or_protein_list='protein_list')
-        return length_fig_g1, length_fig_g2
-    elif length_dropdown_values and 'selected-protein-length' in length_dropdown_values and peptide_list_json:
+        length_fig = create_length_histogram(protein_list, peptide_or_protein_list='protein_list')
+        return length_fig
+    elif length_dropdown_values and 'selected-protein' in length_dropdown_values and peptide_list_json:
         peptide_list = json_to_peptide_list(peptide_list_json)
-        length_fig_g1, length_fig_g2 = create_length_histogram(peptide_list, peptide_or_protein_list='peptide_list')
-        return length_fig_g1, length_fig_g2
+        length_fig= create_length_histogram(peptide_list, peptide_or_protein_list='peptide_list')
+        return length_fig
     else:
-        return {}, {}
+        return {}
+
+def create_venn_bar_fig(length_dropdown_values, protein_list_json, peptide_list_json):
+    if length_dropdown_values and 'complete-proteome'  in length_dropdown_values and protein_list_json:
+        protein_list = json_to_protein_list(protein_list_json)
+        venn_bar = create_venn_bar(protein_list)
+        return venn_bar
+    elif length_dropdown_values and 'selected-protein' in length_dropdown_values and peptide_list_json:
+        peptide_list = json_to_peptide_list(peptide_list_json)
+        venn_bar= create_venn_bar(peptide_list)
+        return venn_bar
+    else:
+        return {}
 
 
 
@@ -944,12 +954,18 @@ app.callback(
 )(amino_acid_dropdown)
 
 app.callback(
-    Output('peptide-length-fig-g1', 'figure'),
-    Output('peptide-length-fig-g2', 'figure'),
-    Input('amino-acid-dropdown', 'value'),
+    Output('peptide-length-fig', 'figure'),
+    Input('amino-acid-pie-dropdown', 'value'),
     State('protein-list-df-holder', 'children'),
     State('peptide-list-df-holder', 'children'),
 )(create_peptide_length_dropdown)
+
+app.callback(
+    Output('venn-bar', 'figure'),
+    Input('amino-acid-pie-dropdown', 'value'),
+    State('protein-list-df-holder', 'children'),
+    State('peptide-list-df-holder', 'children'),
+)(create_venn_bar_fig)
 
 
 app.callback(

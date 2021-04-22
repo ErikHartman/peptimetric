@@ -7,6 +7,7 @@ import copy
 from collections import Counter
 
 import plotly.graph_objects as go
+import plotly.figure_factory as ff
 from IPython.display import display
 import plotly.express as px
 import numpy as np
@@ -488,7 +489,7 @@ def peptide_graphic_plotly(peptide_list, **kwargs):
         difference = []
         for i in list(range(len(fasta_dict["index"]))):
             difference.append(fasta_dict['intensity_pos'][i] - fasta_dict['intensity_neg'][i])
-        fig.add_trace(go.Scatter(x=fasta_dict["index"], y=difference, mode='lines', line=dict(color='firebrick', width=2), opacity=0.5))
+        fig.add_trace(go.Scatter(x=fasta_dict["index"], y=difference, mode='lines', line=dict(color='rgb(208,28,139)', width=2), opacity=0.5))
     
     return fig
     
@@ -605,13 +606,13 @@ def all_sample_bar_chart(protein_list, accession, **kwargs):
     fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}, showlegend=False, coloraxis_showscale=False)
     return fig
 
-def venn_bars(protein_list, complete_proteome = True, selected_protein = ''):
+def create_venn_bar(p_list, complete_proteome = True):
     group_1_unique = []
     group_2_unique = []
     common = []
     if complete_proteome:
-        for protein in protein_list:
-            peptide_list = create_peptide_list(protein_list, protein.get_id())
+        for protein in p_list:
+            peptide_list = create_peptide_list(p_list, protein.get_id())
             for peptide in peptide_list:
                 g1, g2 = peptide.unique_or_common()
                 if g1 != 0 and g2 != 0:
@@ -621,17 +622,14 @@ def venn_bars(protein_list, complete_proteome = True, selected_protein = ''):
                 elif g2 != 0:
                     group_2_unique.append(peptide.get_sequence())
     else:
-        for protein in protein_list:
-            if selected_protein == protein.get_id():
-                peptide_list = create_peptide_list(protein_list, protein.get_id())
-            for peptide in peptide_list:
-                g1, g2 = peptide.unique_or_common()
-                if g1 != 0 and g2 != 0:
-                    common.append(peptide.get_sequence())
-                elif g1 != 0:
-                    group_1_unique.append(peptide.get_sequence())
-                elif g2 != 0:
-                    group_2_unique.append(peptide.get_sequence())
+        for peptide in p_list:
+            g1, g2 = peptide.unique_or_common()
+            if g1 != 0 and g2 != 0:
+                common.append(peptide.get_sequence())
+            elif g1 != 0:
+                group_1_unique.append(peptide.get_sequence())
+            elif g2 != 0:
+                group_2_unique.append(peptide.get_sequence())
 
 
     top_labels = ['Group 1', 'Common', 'Group 2']
@@ -755,7 +753,7 @@ def stacked_samples_peptide(peptide_list, **kwargs):
         difference = []
         for i in list(range(len(fasta_dict["index"]))):
             difference.append(fasta_dict['intensity_pos'][i] + fasta_dict['intensity_neg'][i])
-        fig.add_trace(go.Scatter(name='difference', x=fasta_dict["index"], y=difference, mode='lines', line=dict(color='firebrick', width=2), opacity=0.5))
+        fig.add_trace(go.Scatter(name='difference', x=fasta_dict["index"], y=difference, mode='lines', line=dict(color='rgb(208,28,139)', width=2), opacity=0.5))
         maximum_intensity = max(fasta_dict['intensity_pos'] + np.abs(fasta_dict['intensity_neg']))
         
     if kwargs.get('average') == True:
@@ -842,7 +840,7 @@ def stacked_samples_peptide(peptide_list, **kwargs):
         difference = []
         for i in range(len(pos_mean)):
             difference.append(pos_mean[i] + neg_mean[i])
-        fig.add_trace(go.Scatter(name='difference', x=x, y=difference, mode='lines', line=dict(color='firebrick', width=2), opacity=0.5))
+        fig.add_trace(go.Scatter(name='difference', x=x, y=difference, mode='lines', line=dict(color='rgb(208,28,139)', width=2), opacity=0.5))
 
         maximum_intensity = max(pos_mean + np.abs(neg_mean))
     
@@ -862,36 +860,39 @@ def create_length_histogram(p_list, **kwargs):
         'peptide_or_protein_list'
     }
     default_settings.update(kwargs)
-    peptide_length_df_g1 = pd.DataFrame(columns=['Length'])
-    peptide_length_df_g2 = pd.DataFrame(columns=['Length'])
+    length_g1 = [] 
+    length_g2 = []
+    colors = ['rgb(208,28,139)','rgb(77,172,38)']
     if kwargs.get('peptide_or_protein_list') == 'peptide_list':
         for peptide in p_list:
             if peptide.get_area()[0] > 0:
-                peptide_length_df_g1 = peptide_length_df_g1.append({'Length': len(peptide.get_sequence())}, ignore_index=True)
+                length_g1.append(len(peptide.get_sequence()))
             if  peptide.get_area()[2] > 0:
-                peptide_length_df_g2 = peptide_length_df_g2.append({'Length': len(peptide.get_sequence())}, ignore_index=True)  
-        fig1 = px.histogram(peptide_length_df_g1, x='Length', color_discrete_sequence=[green['mediumdark']], title= 'Group 1 - Peptide Length')
-        fig2 = px.histogram(peptide_length_df_g2, x='Length', color_discrete_sequence=[green['mediumdark']], title= 'Group 2 - Peptide Length')
+               length_g2.append(len(peptide.get_sequence())) 
+        df =pd.DataFrame(dict(
+            series=np.concatenate((["g1"]*len(length_g1), ["g2"]*len(length_g2))), 
+            data  =np.concatenate((length_g1,length_g2))))
 
     elif kwargs.get('peptide_or_protein_list') == 'protein_list':
+        length_g1 = [] 
+        length_g2 = []
         for protein in p_list:
             peptide_list = create_peptide_list(p_list, protein.get_id())
             for peptide in peptide_list:
                 if peptide.get_area()[0] > 0:
-                    peptide_length_df_g1 = peptide_length_df_g1.append({'Length': len(peptide.get_sequence())}, ignore_index=True)
+                    length_g1.append(len(peptide.get_sequence()))
                 if peptide.get_area()[2] > 0:
-                    peptide_length_df_g2 = peptide_length_df_g2.append({'Length': len(peptide.get_sequence())}, ignore_index=True)
-        fig1 = px.histogram(peptide_length_df_g1, x='Length', color_discrete_sequence=[green['mediumdark']], title= 'Group 1 - Peptide Length')
-        fig2 = px.histogram(peptide_length_df_g2, x='Length', color_discrete_sequence=[green['mediumdark']], title= 'Group 2 - Peptide Length')
-    fig1.update_layout(
+                    length_g2.append(len(peptide.get_sequence())) 
+        df =pd.DataFrame(dict(
+            series=np.concatenate((["g1"]*len(length_g1), ["g2"]*len(length_g2))), 
+            data  =np.concatenate((length_g1,length_g2))))
+    fig = px.histogram(df, x="data", color="series", barmode="overlay",  marginal="box",
+    color_discrete_sequence=colors)
+    fig.update_layout(
         paper_bgcolor='rgb(255, 255, 255)',
         plot_bgcolor='rgb(255, 255, 255)',
         )
-    fig2.update_layout(
-        paper_bgcolor='rgb(255, 255, 255)',
-        plot_bgcolor='rgb(255, 255, 255)',
-        )
-    return fig1, fig2
+    return fig
 
 
 def get_unique_and_common_proteins(protein_list):
