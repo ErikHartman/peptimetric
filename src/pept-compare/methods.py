@@ -605,22 +605,34 @@ def all_sample_bar_chart(protein_list, accession, **kwargs):
     fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}, showlegend=False, coloraxis_showscale=False)
     return fig
 
-def venn_bars(protein_list):
+def venn_bars(protein_list, complete_proteome = True, selected_protein = ''):
     group_1_unique = []
     group_2_unique = []
     common = []
+    if complete_proteome:
+        for protein in protein_list:
+            peptide_list = create_peptide_list(protein_list, protein.get_id())
+            for peptide in peptide_list:
+                g1, g2 = peptide.unique_or_common()
+                if g1 != 0 and g2 != 0:
+                    common.append(peptide.get_sequence())
+                elif g1 != 0:
+                    group_1_unique.append(peptide.get_sequence())
+                elif g2 != 0:
+                    group_2_unique.append(peptide.get_sequence())
+    else:
+        for protein in protein_list:
+            if selected_protein == protein.get_id():
+                peptide_list = create_peptide_list(protein_list, protein.get_id())
+            for peptide in peptide_list:
+                g1, g2 = peptide.unique_or_common()
+                if g1 != 0 and g2 != 0:
+                    common.append(peptide.get_sequence())
+                elif g1 != 0:
+                    group_1_unique.append(peptide.get_sequence())
+                elif g2 != 0:
+                    group_2_unique.append(peptide.get_sequence())
 
-    for protein in protein_list:
-        peptide_list = create_peptide_list(protein_list, protein.get_id())
-        for peptide in peptide_list:
-            g1, g2 = peptide.unique_or_common()
-            if g1 != 0 and g2 != 0:
-                common.append(peptide.get_sequence())
-            elif g1 != 0:
-                group_1_unique.append(peptide.get_sequence())
-            elif g2 != 0:
-                group_2_unique.append(peptide.get_sequence())
-    
 
     top_labels = ['Group 1', 'Common', 'Group 2']
 
@@ -633,8 +645,6 @@ def venn_bars(protein_list):
     fig.add_trace(go.Bar(x=['1'], y=[len(group_1_unique)], name='group_1_unique', marker=dict(color=green['light'])))
     fig.add_trace(go.Bar(x=['1'], y=[len(common)], name='common', marker=dict(color=green['medium'])))
     fig.add_trace(go.Bar(x=['1'], y=[len(group_2_unique)], name='group_2_unique', marker=dict(color=green['dark'])))
-
-    
     return fig
 
 def stacked_samples_peptide(peptide_list, **kwargs):

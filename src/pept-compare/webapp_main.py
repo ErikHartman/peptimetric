@@ -19,7 +19,7 @@ import plotly.graph_objects as go
 from methods import protein_list_to_json, json_to_protein_list, peptide_list_to_json, json_to_peptide_list
 from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, create_protein_list, create_protein_df_fig, create_protein_fig , create_peptide_list, stacked_samples_peptide
 from methods import amino_acid_piecharts, common_family, all_sample_bar_chart, create_peptide_list_from_trivname
-from methods import apply_protein_cutoffs, apply_peptide_cutoffs, get_unique_and_common_proteins
+from methods import apply_protein_cutoffs, apply_peptide_cutoffs, get_unique_and_common_proteins, venn_bars
 from methods import proteins_present_in_all_samples, create_protein_datatable, create_peptide_datatable, log_intensity, normalize_data, create_length_histogram
 
 
@@ -497,46 +497,43 @@ amino_acid_figs = html.Div([
         dcc.Loading(type='cube', color = '#76b382',
             children=[ dbc.Row([
                 dbc.Col([
-                    dcc.Graph(id='complete-aa-seq-fig-g1', figure={}, config={'displaylogo': False})], width={'size':3}),
+                    dcc.Graph(id='complete-aa-seq-fig-g1', figure={}, style={'width': '10vh', 'height': '20vh'}, config={'displaylogo': False})]),
                 dbc.Col([
-                    dcc.Graph(id='first-aa-fig-g1', figure={}, config={'displaylogo': False})], width={'size':3}),
+                    dcc.Graph(id='first-aa-fig-g1', figure={}, style={'width': '10vh', 'height': '10vh'}, config={'displaylogo': False})]),
                 dbc.Col([
-                    dcc.Graph(id='last-aa-fig-g1', figure={}, config={'displaylogo': False})], width={'size':3}),
+                    dcc.Graph(id='last-aa-fig-g1', figure={}, style={'width': '10vh', 'height': '10vh'},config={'displaylogo': False})]),
             ]),
             dbc.Row([
                 dbc.Col([
-                    dcc.Graph(id='complete-aa-seq-fig-g2', figure={}, config={'displaylogo': False})], width={'size':3}),
+                    dcc.Graph(id='complete-aa-seq-fig-g2', figure={}, style={'width': '20vh', 'height': '20vh'},config={'displaylogo': False})]),
                 dbc.Col([
-                    dcc.Graph(id='first-aa-fig-g2', figure={}, config={'displaylogo': False})], width={'size':3}),
+                    dcc.Graph(id='first-aa-fig-g2', figure={}, style={'width': '20vh', 'height': '20vh'},config={'displaylogo': False})]),
                 dbc.Col([
-                    dcc.Graph(id='last-aa-fig-g2', figure={}, config={'displaylogo': False})], width={'size':3}),
+                    dcc.Graph(id='last-aa-fig-g2', figure={}, style={'width': '20vh', 'height': '20vh'},config={'displaylogo': False})]),
             ])]
         )
     ])
 
-peptide_length_dropdown = dcc.Dropdown(
-    id= 'peptide-length-dropdown',
-    placeholder='Select view',
-    value='',
-    options=[
-        {'label': 'Complete proteome', 'value': 'complete-proteome-length'},
-        {'label': 'Selected protein', 'value': 'selected-protein-length'},
-    ],
-    
-)    
-
 peptide_length_figs = html.Div([
     html.H3('Peptide Length'),
-    dbc.Row([
-        dbc.Col(peptide_length_dropdown, width={'size':2})
-    ]),
     dcc.Loading(type='cube', color = '#76b382',
         children=[    
         dbc.Row([
             dbc.Col([
-                dcc.Graph(id='peptide-length-fig-g1', figure={}, config={'displaylogo': False})], width={'size':5}),
+                dcc.Graph(id='peptide-length-fig-g1', figure={}, config={'displaylogo': False})], width={'size':2}),
             dbc.Col([
-                dcc.Graph(id='peptide-length-fig-g2', figure={}, config={'displaylogo':False})], width={'size':5}),
+                dcc.Graph(id='peptide-length-fig-g2', figure={}, config={'displaylogo':False})], width={'size':2}),
+        ])]
+    )
+])
+
+venn_bar_fig = html.Div([
+    html.H3('Peptide overlap'),
+    dcc.Loading(type='cube', color = '#76b382',
+        children=[    
+        dbc.Row([
+            dbc.Col([
+                dcc.Graph(id='venn-bar', figure={}, config={'displaylogo': False})], width={'size':2}),
         ])]
     )
 ])
@@ -643,13 +640,10 @@ main_page = dbc.Container([
         dbc.Col(peptide_fig, width={'size': 8}),
         dbc.Col(peptide_info, width={'size':4})
     ]),
-
-    dbc.Row([
-        dbc.Col(amino_acid_figs),
-    ]),
-
     dbc.Row([
         dbc.Col(peptide_length_figs),
+        dbc.Col(amino_acid_figs),
+        dbc.Col(venn_bar_fig),
     ]),  
     hidden_divs,
 ], fluid=True)
@@ -952,7 +946,7 @@ app.callback(
 app.callback(
     Output('peptide-length-fig-g1', 'figure'),
     Output('peptide-length-fig-g2', 'figure'),
-    Input('peptide-length-dropdown', 'value'),
+    Input('amino-acid-dropdown', 'value'),
     State('protein-list-df-holder', 'children'),
     State('peptide-list-df-holder', 'children'),
 )(create_peptide_length_dropdown)
