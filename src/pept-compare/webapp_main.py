@@ -205,7 +205,27 @@ modal_feedback = html.Div([
             centered=True,
               )])
 
-modal_normalization = dbc.Modal([
+navbar = dbc.Navbar(
+    [
+        dbc.NavbarBrand("Eriks och Simons kandidatarbete"),
+        modal_file,
+        dbc.Button("Cutoffs", id="open-modal-cutoff", color='info', className='mr-1'),
+            dbc.Modal([
+                dbc.ModalHeader("Cutoff settings", className="font-weight-bold"),
+                dbc.Tabs([
+                    dbc.Tab(protein_tab, label='Protein'),
+                    dbc.Tab(peptide_tab, label='Peptide')
+                ]),
+                dbc.ModalFooter(
+                    dbc.Button("Apply", id="close-modal-cutoff", className="ml-auto")
+                ),
+            ],
+            id="modal-cutoff",
+            size='m',
+            centered=True,
+              ),
+        dbc.Button('Normalization', id="open-modal-normalization", color='info', className='mr-1'),
+            dbc.Modal([
                 dbc.ModalHeader("Normalize data", className="font-weight-bold", style={'padding':10}),
                 dbc.ModalBody([
                     dbc.FormGroup([
@@ -241,30 +261,15 @@ modal_normalization = dbc.Modal([
             id="modal-normalization",
             size='m',
             centered=True,
-              )
-
-navbar = dbc.Navbar(
-    [
-        dbc.NavbarBrand("Eriks och Simons kandidatarbete"),
-        modal_file,
-        dbc.DropdownMenu(label="Settings",
-            children=[
-                dbc.DropdownMenuItem("Cutoffs", id="open-modal-cutoff"),
-                dbc.DropdownMenuItem("Normalization", id="open-modal-normalization"),
-                modal_cutoff,
-                modal_normalization,
-            ]
-        ),
+              ),
         dbc.Nav([
         modal_FAQ,
         modal_feedback,
         ],
         navbar=True,
         className="ml-auto",)
-    ],
-    
+    ],   
 )
-            
 
 amino_acid_pie_dropdown = dcc.Dropdown(
     id= 'amino-acid-pie-dropdown',
