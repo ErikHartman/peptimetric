@@ -21,7 +21,7 @@ from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, 
 from methods import amino_acid_piecharts, common_family, all_sample_bar_chart, create_peptide_list_from_trivname
 from methods import apply_protein_cutoffs, apply_peptide_cutoffs, get_unique_and_common_proteins, create_venn_bar
 from methods import proteins_present_in_all_samples, create_protein_datatable, create_peptide_datatable, log_intensity, normalize_data, create_length_histogram
-
+from texts_for_webapp import how_to_use
 
 
 app = dash.Dash(__name__,external_stylesheets=[dbc.themes.SANDSTONE, '.assets/style.css'], suppress_callback_exceptions=True)
@@ -101,7 +101,7 @@ modal_file = html.Div([
                     ]),
                 dbc.ModalFooter([
                     dbc.Label('*upload 3 or more files for statistical analysis'),
-                    dbc.Button("Upload files", color = 'primary', id="close-modal-file", className="ml-auto", n_clicks_timestamp=0)
+                    dbc.Button("Upload my files", color = 'primary', id="close-modal-file", className="ml-auto", n_clicks_timestamp=0)
                 ]),
             ],
             id="modal-file",
@@ -304,11 +304,15 @@ how_to_use_collapse = html.Div(
         ),
         dbc.Collapse(
             dbc.Card([
-            dbc.CardHeader("How to use!"),
-            dbc.CardBody("This will display steps and links on how to use the app."),
+            dbc.CardBody(
+                dcc.Markdown(how_to_use)
+            ),
+            dbc.CardFooter(dbc.Button('Load example data', id='load-example-data', color='primary')
+            )
             ]),
             id="how-to-use-collapse",
-            className="mb-4"
+            className="mb-4",
+            is_open=True,
         ),
         dbc.Tooltip(
             "View guideline on how to use (NAMN)",
