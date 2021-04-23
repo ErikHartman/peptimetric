@@ -124,5 +124,23 @@ class Peptide:
 
         return rt
 
-    def print(self):
-        print(self.df)
+    def get_number_of_samples(self):
+        area_columns = [col for col in self.df if col.startswith('Area')]
+        area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
+        area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
+        return len(area_columns_g1), len(area_columns_g2)
+
+    def get_pvalue(self, spc_or_area):
+        if spc_or_area == 'spc':
+            g1_mean, g1_std, g2_mean, g2_std = self.get_spectral_count()
+        else:
+            g1_mean, g1_std, g2_mean, g2_std = self.get_area()
+        n1, n2 = self.get_number_of_samples()
+        nbr_of_peptides_g1, nbr_of_peptides_g2 = self.get_nbr_of_peptides()
+        if n1 < 2 or n2 < 2:
+            return np.nan
+        elif nbr_of_peptides_g1 < 2 or nbr_of_peptides_g2 < 2:
+            return np.nan
+        else:
+            ttest, pvalue = ttest_ind_from_stats(g1_mean, g1_std, n1, g2_mean, g2_std, n2)
+            return pvalue
