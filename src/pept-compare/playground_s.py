@@ -1,6 +1,6 @@
 from methods import concatenate_dataframes
 from lists import create_protein_list
-from methods import read_files_gui, merge_dataframes, protein_graphic_plotly, create_peptide_list, peptide_graphic_plotly, amino_acid_piecharts
+from methods import read_files_gui, merge_dataframes, create_peptide_list, peptide_graphic_plotly, amino_acid_piecharts
 from methods import stacked_samples_peptide, create_length_histogram
 
 if __name__  == "__main__":
@@ -10,9 +10,9 @@ if __name__  == "__main__":
     protein_list = create_protein_list(master)
     peptide_list = create_peptide_list(protein_list, "P69905")
     fig = create_length_histogram(protein_list, peptide_or_protein_list= 'protein_list')
-    fig1, fig2 = create_length_histogram(peptide_list, peptide_or_protein_list='peptide_list')
+    fig1 = create_length_histogram(peptide_list, peptide_or_protein_list='peptide_list')
     fig1.show()
-    fig2.show()
+   
 
     
     #fig = protein_graphic_plotly(protein_list, difference_metric='area')

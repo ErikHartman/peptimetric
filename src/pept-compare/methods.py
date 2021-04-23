@@ -611,9 +611,9 @@ def create_venn_bar(p_list, complete_proteome = True):
         paper_bgcolor='rgb(255, 255, 255)',
         plot_bgcolor='rgb(255, 255, 255)',
         )
-    fig.add_trace(go.Bar(x=['1'], y=[len(group_1_unique)], name='group_1_unique', marker=dict(color=green['light'])))
-    fig.add_trace(go.Bar(x=['1'], y=[len(common)], name='common', marker=dict(color=green['medium'])))
-    fig.add_trace(go.Bar(x=['1'], y=[len(group_2_unique)], name='group_2_unique', marker=dict(color=green['dark'])))
+    fig.add_trace(go.Bar(x=['1'], y=[len(group_1_unique)], name='Group 1: Unique', marker=dict(color=green['light'])))
+    fig.add_trace(go.Bar(x=['1'], y=[len(common)], name='Common', marker=dict(color=green['medium'])))
+    fig.add_trace(go.Bar(x=['1'], y=[len(group_2_unique)], name='Group 2: Unique', marker=dict(color=green['dark'])))
     return fig
 
 def stacked_samples_peptide(peptide_list, **kwargs):
@@ -715,7 +715,7 @@ def stacked_samples_peptide(peptide_list, **kwargs):
                 fasta_dict['intensity_neg'][i] += sample_dict_neg['intensity'][i]
             
         weight = (sum(fasta_dict['intensity_pos']) + sum(fasta_dict['intensity_neg'])) / len(fasta)
-        fig.add_trace(go.Scatter( x=[0, len(fasta)], y=[weight, weight], mode='lines', name='weight', line=dict(
+        fig.add_trace(go.Scatter( x=[0, len(fasta)], y=[weight, weight], mode='lines', name='Weight', line=dict(
         color="#182773",
         width=2,
         dash="dash",
@@ -724,7 +724,7 @@ def stacked_samples_peptide(peptide_list, **kwargs):
         difference = []
         for i in list(range(len(fasta_dict["index"]))):
             difference.append(fasta_dict['intensity_pos'][i] + fasta_dict['intensity_neg'][i])
-        fig.add_trace(go.Scatter(name='difference', x=fasta_dict["index"], y=difference, mode='lines', line=dict(color='rgb(208,28,139)', width=2), opacity=0.5))
+        fig.add_trace(go.Scatter(name='Difference', x=fasta_dict["index"], y=difference, mode='lines', line=dict(color='rgb(208,28,139)', width=2), opacity=0.5))
         maximum_intensity = max(fasta_dict['intensity_pos'] + np.abs(fasta_dict['intensity_neg']))
         
     if kwargs.get('average') == True:
@@ -841,8 +841,8 @@ def create_length_histogram(p_list, **kwargs):
             if  peptide.get_area()[2] > 0:
                length_g2.append(len(peptide.get_sequence())) 
         df =pd.DataFrame(dict(
-            series=np.concatenate((["g1"]*len(length_g1), ["g2"]*len(length_g2))), 
-            data  =np.concatenate((length_g1,length_g2))))
+            Groups=np.concatenate((["Group 1"]*len(length_g1), ["Group 2"]*len(length_g2))), 
+            Length  =np.concatenate((length_g1,length_g2))))
 
     elif kwargs.get('peptide_or_protein_list') == 'protein_list':
         length_g1 = [] 
@@ -855,9 +855,9 @@ def create_length_histogram(p_list, **kwargs):
                 if peptide.get_area()[2] > 0:
                     length_g2.append(len(peptide.get_sequence())) 
         df =pd.DataFrame(dict(
-            series=np.concatenate((["g1"]*len(length_g1), ["g2"]*len(length_g2))), 
-            data  =np.concatenate((length_g1,length_g2))))
-    fig = px.histogram(df, x="data", color="series", barmode="overlay",  marginal="box",
+            Groups=np.concatenate((["Group 1"]*len(length_g1), ["Group 2"]*len(length_g2))), 
+            Length  =np.concatenate((length_g1,length_g2))))
+    fig = px.histogram(df, x="Length", color="Groups", barmode="overlay",  marginal="box",
     color_discrete_sequence=colors)
     fig.update_layout(
         paper_bgcolor='rgb(255, 255, 255)',
