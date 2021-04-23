@@ -195,9 +195,10 @@ modal_feedback = html.Div([
                         ), 
                         align='center', justify='center'),
                 
-                dbc.ModalFooter(
-                    dbc.Button("Close", id="close-modal-feedback", className="ml-auto")
-                ),
+                dbc.ModalFooter([
+                    dbc.Button("Send feedback", id="send-feedback", className="ml-auto"),
+                     dbc.Button("Close", id="close-modal-feedback", className="ml-auto")
+                ]),
             ],
             id="modal-feedback",
             size='m',
