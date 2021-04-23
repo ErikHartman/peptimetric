@@ -398,10 +398,10 @@ protein_fig_radioitems = html.Div([
     dbc.Label("Select difference metric: "),
     dbc.RadioItems(
         options=[
-        {'label': 'Area sum', 'value': 'area_sum'},
-        {'label': 'Area mean', 'value': 'area_mean'},
-        {'label': 'SPC sum', 'value': 'spc_sum'},
-        {'label': 'SPC mean', 'value': 'spc_mean'}
+        {'label': 'Intensity sum', 'value': 'area_sum'},
+        {'label': 'Intensity mean', 'value': 'area_mean'},
+        {'label': 'SpC sum', 'value': 'spc_sum'},
+        {'label': 'SpC mean', 'value': 'spc_mean'}
         ],
         value='area_sum',
         id='protein-radioitems',
@@ -442,7 +442,7 @@ peptide_fig_radioitems = html.Div([
     dbc.Label("Select difference metric: "),
     dbc.RadioItems(
         options=[
-        {'label': 'Area', 'value': 'area'},
+        {'label': 'Intensity', 'value': 'area'},
         {'label': 'Spectral Count', 'value': 'spectral_count'}
         ],
         value='area',
@@ -480,7 +480,7 @@ amino_acid_radioitems = html.Div([
         dbc.Label("Select difference metric"), 
         dbc.RadioItems(
             options=[
-                {"label": "Area", "value": 'area'},
+                {"label": "intensity", "value": 'area'},
                 {"label": "Spectral Count", "value": 'spectral_count'}, 
             ], 
             value='area',
@@ -769,21 +769,20 @@ def create_protein_figure_and_table(rows, derived_virtual_selected_rows, search_
         protein_list = json_to_protein_list(protein_list_json)
         if 'area_sum' in protein_radioitems_value:
             difference_metric = 'area_sum'
-
-            columns = ['Protein','UniProt ID','Nbr Peptides G1','Nbr Peptides G2','Intensity G1','Intensity G2','Intens.sum SD G1', 'Intens.sum SD G2', 'Intensity P-value']
-            sort = ['Intensity G1','Intensity G2']
+            columns = ['Protein','UniProt ID','Nbr Peptides G1','Nbr Peptides G2','Intensity sum G1','Intensity sum G2','Int.sum SD G1', 'Int.sum SD G2', 'Int.sum p-value']
+            sort = ['Intensity sum G1','Intensity sum G2']
         elif 'area_mean' in protein_radioitems_value:
             difference_metric = 'area_mean'
-            columns = ['Protein','UniProt ID','Nbr Peptides G1','Nbr Peptides G2', 'Intens.mean G1', 'Intens.mean G2', 'Intens.mean SD G1', 'Intens.mean SD G2','Intensity P-value']
-            sort = ['Intens.mean G1', 'Intens.mean G2']
+            columns = ['Protein','UniProt ID','Nbr Peptides G1','Nbr Peptides G2', 'Intensity mean G1', 'Intensity mean G2', 'Int.mean SD G1', 'Int.mean SD G2','Int.mean p-value']
+            sort = ['Intensity mean G1', 'Intensity mean G2']
         elif 'spc_sum' in protein_radioitems_value:
             difference_metric = 'spc_sum'
-            columns = ['Protein','UniProt ID','Nbr Peptides G1','Nbr Peptides G2','Spc G1','SpC G2','SpC.sum SD G1 ','SpC.sum SD G2', 'SpC P-value']
-            sort = ['Spc G1','SpC G2']
+            columns = ['Protein','UniProt ID','Nbr Peptides G1','Nbr Peptides G2','SpC sum G1','SpC sum G2','SpC.sum SD G1', 'SpC.sum SD G2', 'SpC.sum p-value']
+            sort = ['SpC sum G1','SpC sum G2']
         else:
             difference_metric = 'spc_mean'
-            columns = ['Protein','UniProt ID','Nbr Peptides G1','Nbr Peptides G2','SpC.mean G1','SpC.mean G2','SpC.mean SD G1', 'SpC.mean SD G2', 'SpC P-value']
-            sort = ['SpC.mean G1','SpC.mean G2']
+            columns = ['Protein','UniProt ID','Nbr Peptides G1','Nbr Peptides G2','SpC mean G1','SpC mean G2','SpC.mean SD G1', 'SpC.mean SD G2', 'SpC.mean p-value']
+            sort = ['SpC mean G1','SpC mean G2']
         df_protein_info.sort_values(by=sort, ascending=False, inplace=True)
         protein_info_data = df_protein_info.to_dict('rows')
         protein_info_columns=[{"name": str(i), "id": str(i)} for i in columns]

@@ -896,8 +896,8 @@ def create_peptide_datatable(peptide_list):
 
 
 def create_protein_datatable(protein_list):
-    protein_info_columns = ['Protein','UniProt ID','Nbr Peptides G1','Nbr Peptides G2','Intensity G1','Intensity G2','Intens.sum SD G1', 'Intens.sum SD G2', 'Intens.mean G1', 'Intens.mean G2', 'Intens.mean SD G1', 'Intens.mean SD G2',
-    'Spc G1','SpC G2','SpC.sum SD G1 ','SpC.sum SD G2', 'SpC.mean G1','SpC.mean G2','SpC.mean SD G1', 'SpC.mean SD G2', 'Intensity P-value', 'SpC P-value']
+    protein_info_columns = ['Protein','UniProt ID','Nbr Peptides G1','Nbr Peptides G2','Intensity sum G1','Intensity sum G2','Int.sum SD G1', 'Int.sum SD G2', 'Intensity mean G1', 'Intensity mean G2', 'Int.mean SD G1', 'Int.mean SD G2',
+    'SpC sum G1','SpC sum G2','SpC.sum SD G1 ','SpC.sum SD G2', 'SpC mean G1','SpC mean G2','SpC.mean SD G1', 'SpC.mean SD G2', 'Intensity P-value', 'SpC P-value']
     df_protein_info = pd.DataFrame(columns=protein_info_columns)
     for protein in protein_list:
         df_protein_info = df_protein_info.append({'Protein': str(protein.get_trivial_name()), 'UniProt id': protein.get_id(),'Nbr Peptides G1': protein.get_nbr_of_peptides()[0], 'Nbr Peptides G2': protein.get_nbr_of_peptides()[1], 
