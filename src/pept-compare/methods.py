@@ -46,7 +46,7 @@ column_names_dict = {
     'Area': ['Area','Intensity', 'area', 'intensity', 'intensities'],
     'RT': ['RT','retention time', 'Retention time'],
     'CCS': ['CCS','collision cross section', 'Collision Cross Section', 'Collision cross section'],
-    'Spectral count': ['Spectral count','SPC', 'spectral count', '#Feature', 'spectral counts', '#Features']
+    'Spectral count': ['Spectral count','SPC', 'SpC', 'spc', 'sc', 'SC', 'spectral count', '#Feature', 'spectral counts', '#Features']
 }
 
 def read_files_gui():

@@ -205,27 +205,8 @@ modal_feedback = html.Div([
             centered=True,
               )])
 
-navbar = dbc.Navbar(
-    [
-        dbc.NavbarBrand("Eriks och Simons kandidatarbete"),
-        modal_file,
-        dbc.Button("Cutoffs", id="open-modal-cutoff", color='info', className='mr-1'),
-            dbc.Modal([
-                dbc.ModalHeader("Cutoff settings", className="font-weight-bold"),
-                dbc.Tabs([
-                    dbc.Tab(protein_tab, label='Protein'),
-                    dbc.Tab(peptide_tab, label='Peptide')
-                ]),
-                dbc.ModalFooter(
-                    dbc.Button("Apply", id="close-modal-cutoff", className="ml-auto")
-                ),
-            ],
-            id="modal-cutoff",
-            size='m',
-            centered=True,
-              ),
-        dbc.Button('Normalization', id="open-modal-normalization", color='info', className='mr-1'),
-            dbc.Modal([
+
+normalization_modal = dbc.Modal([
                 dbc.ModalHeader("Normalize data", className="font-weight-bold", style={'padding':10}),
                 dbc.ModalBody([
                     dbc.FormGroup([
@@ -261,10 +242,22 @@ navbar = dbc.Navbar(
             id="modal-normalization",
             size='m',
             centered=True,
-              ),
+              )
+
+
+navbar = dbc.Navbar(
+    [
+        dbc.NavbarBrand("PepViz", className='font-weight-bold'),
+        modal_file,
+        dbc.Button("Cutoffs", id="open-modal-cutoff", color='info', className='mr-1'),
+        modal_cutoff,
+        dbc.Button('Normalization', id="open-modal-normalization", color='info', className='mr-1'),
+        normalization_modal,
         dbc.Nav([
         modal_FAQ,
         modal_feedback,
+        dbc.NavLink('Documentation', href='/documentation'),
+        dbc.NavLink('Home', href='/')
         ],
         navbar=True,
         className="ml-auto",)
@@ -311,7 +304,7 @@ how_to_use_collapse = html.Div(
         dbc.Collapse(
             dbc.Card([
             dbc.CardBody(
-                dcc.Markdown(how_to_use)
+                dcc.Markdown(how_to_use), style={"maxHeight": "300px", "overflowY": "scroll"}
             ),
             dbc.CardFooter(dbc.Button('Load example data', id='load-example-data', color='primary')
             )
@@ -642,9 +635,20 @@ main_page = dbc.Container([
     hidden_divs,
 ], fluid=True)
 
+documentation_page = dbc.Container([
+    dbc.Row([
+        dbc.Col(navbar, width={"size":12}, className="mb-4")
+    ]),
+    dbc.Row(html.H1('Documentation')),
+], fluid=True)
 
 #-----------------DEFS AND CALLBACKS--------------------------------------------------------------
 def display_page(pathname):
+    if pathname == '/':
+        return main_page
+    elif pathname == '/documentation':
+        return documentation_page
+    else:
         return main_page
 
 def toggle_collapse(n, is_open):
@@ -765,6 +769,7 @@ def create_protein_figure_and_table(rows, derived_virtual_selected_rows, search_
         protein_list = json_to_protein_list(protein_list_json)
         if 'area_sum' in protein_radioitems_value:
             difference_metric = 'area_sum'
+
             columns = ['Protein','UniProt ID','Nbr Peptides G1','Nbr Peptides G2','Intensity G1','Intensity G2','Intens.sum SD G1', 'Intens.sum SD G2', 'Intensity P-value']
             sort = ['Intensity G1','Intensity G2']
         elif 'area_mean' in protein_radioitems_value:
@@ -811,6 +816,7 @@ def create_peptide_fig(n_clicks_generate_peptide_fig, sum_or_mean_radio, peptide
     else:
         columns = ['Peptide','Start','End','SpC G1','SpC G2', 'SpC SD G1', 'SpC SD G2']
         sort = ['SpC G1','SpC G2']
+
 
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
     if changed_id == 'generate-peptide-fig.n_clicks':
