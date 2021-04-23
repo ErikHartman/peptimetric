@@ -427,7 +427,7 @@ all_samples_protein_fig = html.Div([
 )])
 
 peptide_fig_radioitems = html.Div([
-    dbc.Label("Select difference metric"),
+    dbc.Label("Select difference metric: "),
     dbc.RadioItems(
         options=[
         {'label': 'Area', 'value': 'area'},
@@ -439,12 +439,12 @@ peptide_fig_radioitems = html.Div([
     )
 ])
 
-peptide_fig_radioitems_sum_or_mean = html.Div([
-    dbc.Label("Sum or mean"),
+peptide_fig_radioitems_sum_or_mean = html.Div([ 
+    dbc.Label("Show sum or mean values: "),
     dbc.RadioItems(
         options=[
-        {'label': 'sum', 'value': False},
-        {'label': 'mean', 'value': True}
+        {'label': 'Sum of all samples', 'value': False},
+        {'label': 'Mean of all samples', 'value': True}
         ],
         value=False,
         id='sum-or-mean-radio',
@@ -504,7 +504,7 @@ venn_bar_fig = html.Div([
         children=[    
         dbc.Row([
             dbc.Col([
-                dcc.Graph(id='venn-bar', figure={}, config={'displaylogo': False})]),
+                dcc.Graph(id='venn-bar', figure={}, config={'displayModeBar': False})]),
         ])]
     )
 ])
@@ -757,20 +757,21 @@ def create_protein_figure_and_table(rows, derived_virtual_selected_rows, search_
         protein_list = json_to_protein_list(protein_list_json)
         if 'area_sum' in protein_radioitems_value:
             difference_metric = 'area_sum'
-            columns = ['Protein','UniProt id','#peptides g1','#peptides g2', 'intensity_g1','intensity_sum_stdev_g1','intensity_g2', 'intensity_sum_stdev_g2','p-value_area']
-            sort = ['intensity_g1', 'intensity_g2']
+
+            columns = ['Protein','UniProt ID','Nbr Peptides G1','Nbr Peptides G2','Intensity G1','Intensity G2','Intens.sum SD G1', 'Intens.sum SD G2', 'Intensity P-value']
+            sort = ['Intensity G1','Intensity G2']
         elif 'area_mean' in protein_radioitems_value:
             difference_metric = 'area_mean'
-            columns = ['Protein','UniProt id','#peptides g1','#peptides g2', 'mean_intensity_g1', 'intensity_mean_stdev_g1','mean_intensity_g2','intensity_mean_stdev_g2','p-value_area']
-            sort = ['intensity_g1', 'intensity_g2']
+            columns = ['Protein','UniProt ID','Nbr Peptides G1','Nbr Peptides G2', 'Intens.mean G1', 'Intens.mean G2', 'Intens.mean SD G1', 'Intens.mean SD G2','Intensity P-value']
+            sort = ['Intens.mean G1', 'Intens.mean G2']
         elif 'spc_sum' in protein_radioitems_value:
             difference_metric = 'spc_sum'
-            columns = ['Protein','UniProt id','#peptides g1','#peptides g2','spc_g1','spc_sum_stdev_g1','spc_g2','spc_sum-stdev_g2','p-value_spc']
-            sort = ['mean_spc_g1','mean_spc_g2']
+            columns = ['Protein','UniProt ID','Nbr Peptides G1','Nbr Peptides G2','Spc G1','SpC G2','SpC.sum SD G1 ','SpC.sum SD G2', 'SpC P-value']
+            sort = ['Spc G1','SpC G2']
         else:
             difference_metric = 'spc_mean'
-            columns = ['Protein','UniProt id','#peptides g1','#peptides g2','mean_spc_g1','spc_mean_stdev_g1', 'mean_spc_g2', 'spc_mean_stdev_g2','p-value_spc']
-            sort = ['mean_spc_g1','mean_spc_g2']
+            columns = ['Protein','UniProt ID','Nbr Peptides G1','Nbr Peptides G2','SpC.mean G1','SpC.mean G2','SpC.mean SD G1', 'SpC.mean SD G2', 'SpC P-value']
+            sort = ['SpC.mean G1','SpC.mean G2']
         df_protein_info.sort_values(by=sort, ascending=False, inplace=True)
         protein_info_data = df_protein_info.to_dict('rows')
         protein_info_columns=[{"name": str(i), "id": str(i)} for i in columns]
@@ -798,11 +799,12 @@ def get_normalization_data(radioitems_normalization, housekeeping_protein):
 
 def create_peptide_fig(n_clicks_generate_peptide_fig, sum_or_mean_radio, peptide_radioitems_value, button_label, protein_list_json, peptide_list_json):
     if peptide_radioitems_value == 'area':
-        columns = ['Peptide','Start','End','Intensity_g1','Intensity_stdev_g1', 'Intensity_g2', 'Intensity_stdev_g2', 'p-value_area']
-        sort = ['Intensity_g1', 'Intensity_g2']
+        columns = ['Peptide','Start','End','Intensity G1','Intensity G2','Intensity SD G1', 'Intensity SD G2']
+        sort = ['Intensity G1','Intensity G2']
     else:
-        columns = ['Peptide','Start','End','spc_g1','spc-stdev_g1','spc_g2', 'spc_stdev_g2', 'p-value_spc']
-        sort = ['spc_g1', 'spc_g2']
+        columns = ['Peptide','Start','End','SpC G1','SpC G2', 'SpC SD G1', 'SpC SD G2']
+        sort = ['SpC G1','SpC G2']
+
 
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
     if changed_id == 'generate-peptide-fig.n_clicks':
