@@ -35,7 +35,7 @@ app.layout = html.Div([
 file_columns = ['Sample', 'File']
 
 modal_file = html.Div([
-    dbc.Button("Files", id="open-modal-file", color='info', className="mr-1"),
+    dbc.Button("Files", id="open-modal-file", color='secondary', className="mr-1"),
     dbc.Tooltip(
         "Import files",
         target='open-modal-file',
@@ -238,9 +238,9 @@ navbar = dbc.Navbar(
     [
         dbc.NavLink("PepViz", href = '/', style = {'color':'grey', 'font-size':20, 'font-weight':'bold', 'font':'Roboto'} ),
         modal_file,
-        dbc.Button("Cutoffs", id="open-modal-cutoff", color='info', className='mr-1'),
+        dbc.Button("Cutoffs", id="open-modal-cutoff", color='secondary', className='mr-1'),
         modal_cutoff,
-        dbc.Button('Normalization', id="open-modal-normalization", color='info', className='mr-1'),
+        dbc.Button('Normalization', id="open-modal-normalization", color='secondary', className='mr-1'),
         normalization_modal,
         dbc.Nav([
         modal_feedback,
@@ -292,7 +292,7 @@ how_to_use_collapse = html.Div(
         dbc.Collapse(
             dbc.Card([
             dbc.CardBody(
-                dcc.Markdown(how_to_use), style={"maxHeight": "300px", "overflowY": "scroll"}
+                how_to_use, style={"maxHeight": "300px", "overflowY": "scroll"}
             ),
             dbc.CardFooter(dbc.Button('Load example data', id='load-example-data', color='primary')
             )
@@ -397,7 +397,10 @@ protein_fig_radioitems = html.Div([
 ])
 
 protein_fig = html.Div([
+    dbc.Row([
+        html.Img(src = app.get_asset_url ('scatter.png'), style={'height':'6%', 'width':'6%'}),
         html.H3('Protein View'),
+    ]),
         dbc.Row([
             dbc.Col(search_protein, width={'size':3}),
             dbc.Col(dbc.Checklist(
@@ -450,7 +453,10 @@ peptide_fig_radioitems_sum_or_mean = html.Div([
 ])
 
 peptide_fig = html.Div([
+        dbc.Row([
+        html.Img(src = app.get_asset_url ('bar.png'), style={'height':'6%', 'width':'6%'}),
         html.H3('Peptide View'),
+    ]),
         dbc.Row([
             dbc.Col(peptide_fig_radioitems_sum_or_mean),
             dbc.Col(peptide_fig_radioitems)    ,
@@ -615,10 +621,11 @@ main_page = dbc.Container([
         dbc.Col(peptide_fig, width={'size': 8}),
         dbc.Col(peptide_info, width={'size':4})
     ]),
-    dbc.Row([
-        html.H2('General characteristics'),
+       dbc.Row([
+        html.Img(src = app.get_asset_url ('pie.png'), style={'height':'4%', 'width':'4%'}),
+        html.H3('General characteristics', style={'bottom-margin':0}),
     ]),
-    dbc.Row([dbc.Col(amino_acid_pie_dropdown, width=2)]),
+    dbc.Row([dbc.Col(amino_acid_pie_dropdown, width=2, style={'padding':15})]),
     dbc.Row([
         dbc.Col(peptide_length_fig, width={'size':8}),
         dbc.Col(venn_bar_fig, width={'size':4}),
