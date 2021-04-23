@@ -21,7 +21,7 @@ from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, 
 from methods import amino_acid_piecharts, all_sample_bar_chart, create_peptide_list_from_trivname
 from methods import apply_protein_cutoffs, apply_peptide_cutoffs, get_unique_and_common_proteins, create_venn_bar
 from methods import proteins_present_in_all_samples, create_protein_datatable, create_peptide_datatable, log_intensity, normalize_data, create_length_histogram
-from texts_for_webapp import how_to_use
+from texts_for_webapp import how_to_use, Documentation
 
 
 app = dash.Dash(__name__,external_stylesheets=[dbc.themes.SANDSTONE, '.assets/style.css'], suppress_callback_exceptions=True)
@@ -173,7 +173,7 @@ modal_cutoff = dbc.Modal([
 
 
 modal_feedback = html.Div([
-    dbc.Button("Feedback", id="open-modal-feedback", color='link', className="mr-1"),
+    dbc.Button("Feedback", id="open-modal-feedback", color='secondary', outline=True, className="mr-1"),
     dbc.Modal([
                 dbc.ModalHeader("Feedback", className="font-weight-bold"),
                 dbc.Row(dbc.Textarea(
@@ -244,7 +244,7 @@ navbar = dbc.Navbar(
         normalization_modal,
         dbc.Nav([
         modal_feedback,
-        dbc.NavLink('Documentation & FAQ', href='/documentation&FAQ'),
+        dbc.NavLink('Documentation', href='/documentation'),
         dbc.NavLink('Home', href='/')
         ],
         navbar=True,
@@ -468,7 +468,7 @@ amino_acid_radioitems = html.Div([
         dbc.Label("Select difference metric"), 
         dbc.RadioItems(
             options=[
-                {"label": "Area", "value": 'area'},
+                {"label": "Intensity", "value": 'area'},
                 {"label": "Spectral Count", "value": 'spectral_count'}, 
             ], 
             value='area',
@@ -576,6 +576,13 @@ peptide_info = html.Div(dash_table.DataTable(id='peptide-info-table',
     ),
 )
 
+documentation = dbc.Col([
+    dbc.Row(html.H1('Documentation')),
+    html.Hr(),
+    Documentation,
+    
+])
+
 
 hidden_divs = html.Div([
     dcc.Store(id='cutoff-value-holder'),
@@ -624,17 +631,21 @@ main_page = dbc.Container([
 ], fluid=True)
 
 documentation_page = dbc.Container([
-    dbc.Row([
+     dbc.Row([
         dbc.Col(navbar, width={"size":12}, className="mb-4")
     ]),
-    dbc.Row(html.H1('Documentation')),
+    dbc.Row([
+        documentation,
+    ])
+
+    
 ], fluid=True)
 
 #-----------------DEFS AND CALLBACKS--------------------------------------------------------------
 def display_page(pathname):
     if pathname == '/':
         return main_page
-    elif pathname == '/documentation&FAQ':
+    elif pathname == '/documentation':
         return documentation_page
     else:
         return main_page

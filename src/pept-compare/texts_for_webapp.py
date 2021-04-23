@@ -1,3 +1,6 @@
+import dash_html_components as html
+import dash_bootstrap_components as dbc
+
 how_to_use = '''
 #### How to use: 
 
@@ -18,3 +21,36 @@ _Complete proteome_ in the dropdown under **General Characteristics** (_selectin
 '''
 
 
+Data_processing = html.Div([html.H5('Data processing', style={"font-weight": "bold"}),
+    html.P('''XXXX requires a minimum of one input file per group, however, statistical calculations require at least 
+    three files per group. The input files should either be in a CSV (.csv) or Excel (.xlsx) format. The files are stored 
+    in your browser during the session.'''),
+    dbc.Card(html.P( '''The input files require one column of: Peptide sequence, UniProt id and intensity measure. 
+    { Peptide, Protein, Intensity }'''), color='info', inverse=True),
+])
+
+Settings_and_filters = html.Div()
+
+Visualization = html.Div(
+)
+
+Interactivity = html.Div()
+
+Cite = html.Div()
+
+Legal = html.Div()
+
+Contact = html.Div()
+
+
+Documentation = html.Div([
+    Data_processing,
+    Settings_and_filters,
+    Visualization,
+    Interactivity,
+    Cite,
+    Legal,
+    Contact,
+
+
+])
