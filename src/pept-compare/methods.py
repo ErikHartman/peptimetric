@@ -602,9 +602,6 @@ def create_venn_bar(p_list, complete_proteome = True):
             elif g2 != 0:
                 group_2_unique.append(peptide.get_sequence())
 
-
-    top_labels = ['Group 1', 'Common', 'Group 2']
-
     fig = go.Figure()
     fig.update_layout(
         barmode='relative',
@@ -821,7 +818,12 @@ def stacked_samples_peptide(peptide_list, **kwargs):
         paper_bgcolor='rgb(255, 255, 255)',
         plot_bgcolor='rgb(255, 255, 255)',
         )
-        
+    fig.add_annotation(text="Group 2",
+                  xref="paper", yref="paper",
+                  x=0.05, y=0, showarrow=False)
+    fig.add_annotation(text="Group 1",
+                  xref="paper", yref="paper",
+                  x=0.05, y=1, showarrow=False)
     fig.update_layout(title=trivial_name, yaxis=dict(title=y_axis_label), xaxis=dict(title='Sequence', rangeslider=dict(visible=True)))
     fig.update_yaxes(range=[-maximum_intensity, maximum_intensity])
     return fig
