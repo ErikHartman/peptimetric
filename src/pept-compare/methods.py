@@ -46,7 +46,7 @@ column_names_dict = {
     'Area': ['Area','Intensity', 'area', 'intensity', 'intensities'],
     'RT': ['RT','retention time', 'Retention time'],
     'CCS': ['CCS','collision cross section', 'Collision Cross Section', 'Collision cross section'],
-    'Spectral count': ['Spectral count','SPC', 'spectral count', '#Feature', 'spectral counts', '#Features']
+    'Spectral count': ['Spectral count','SPC', 'SpC', 'spc', 'sc', 'SC', 'spectral count', '#Feature', 'spectral counts', '#Features']
 }
 
 def read_files_gui():
@@ -886,12 +886,13 @@ def proteins_present_in_all_samples(protein_list):
     return proteins_present_in_all_samples
 
 def create_peptide_datatable(peptide_list):
-    peptide_info_columns = ['Peptide','Start','End','Intensity_g1','Intensity_g2','Intensity_stdev_g1', 'Intensity_stdev_g2', 'spc_g1','spc_g2', 'spc_stdev_g1', 'spc_stdev_g2']
+    peptide_info_columns = ['Peptide','Start','End','Intensity_g1','Intensity_g2','Intensity_stdev_g1', 'Intensity_stdev_g2', 'spc_g1','spc_g2', 'spc_stdev_g1', 'spc_stdev_g2', 'p-value_area', 'p-value_spc']
     df_peptide_info = pd.DataFrame(columns=peptide_info_columns)
     for peptide in peptide_list:
         df_peptide_info = df_peptide_info.append({'Peptide': str(peptide.get_sequence()), 'Start': peptide.get_start(),'End': peptide.get_end(), 'Intensity_g1': round(float(peptide.get_area()[0]), 3), 
         'Intensity_g2': round(float(peptide.get_area()[2]), 3),'Intensity_stdev_g1': round(float(peptide.get_area()[1]), 3), 'Intensity_stdev_g2': round(float(peptide.get_area()[3]), 3), 
-        'spc_g1': round(float(peptide.get_spectral_count()[0]), 3), 'spc_g2':round(float(peptide.get_spectral_count()[2]), 3), 'spc_stdev_g1':round(float(peptide.get_area()[1]), 3), 'spc_stdev_g2': round(float(peptide.get_area()[3]), 3)}, ignore_index=True)
+        'spc_g1': round(float(peptide.get_spectral_count()[0]), 3), 'spc_g2':round(float(peptide.get_spectral_count()[2]), 3), 'spc_stdev_g1':round(float(peptide.get_area()[1]), 3), 'spc_stdev_g2': round(float(peptide.get_area()[3]), 3),
+        'p-value_area':round(float(peptide.get_pvalue('area')), 3), 'p-value_spc':round(float(peptide.get_pvalue('spc')), 3)}, ignore_index=True)
     return df_peptide_info
 
 

@@ -1,4 +1,6 @@
 how_to_use = '''
+#### How to use: 
+
 
 **Step zero:** If you already know what normalizations and cutoffs to apply to your dataset, do so by pressing the **NORMALIZATION** and **CUTOFFS** buttons
  before uploading the files to reduce load time.
