@@ -26,7 +26,7 @@ Data_processing = html.Div([html.H5('Data processing', style={"font-weight": "bo
     three files per group. The input files should either be in a CSV (.csv) or Excel (.xlsx) format. The files are stored 
     in your browser during the session.'''),
     dbc.Card(html.P( '''The input files require one column of: Peptide sequence, UniProt id and intensity measure. 
-    { Peptide, Protein, Intensity }'''), color='info', inverse=True),
+    { Peptide, Protein, Intensity }'''), color='#DFF0D8', style={'border':0}),
 ])
 
 Settings_and_filters = html.Div()

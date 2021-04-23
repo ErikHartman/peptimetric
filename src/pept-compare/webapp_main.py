@@ -236,7 +236,7 @@ normalization_modal = dbc.Modal([
 
 navbar = dbc.Navbar(
     [
-        dbc.NavbarBrand("PepViz", className='font-weight-bold'),
+        dbc.NavLink("PepViz", href = '/', style = {'color':'grey', 'font-size':20, 'font-weight':'bold', 'font':'Roboto'} ),
         modal_file,
         dbc.Button("Cutoffs", id="open-modal-cutoff", color='info', className='mr-1'),
         modal_cutoff,
@@ -383,17 +383,16 @@ sample_collapse = html.Div(
 )
 
 protein_fig_radioitems = html.Div([
-    dbc.Label("Select difference metric: "),
-    dbc.RadioItems(
+    dcc.Dropdown(
+        placeholder = 'Select difference metric...',
         options=[
         {'label': 'Intensity sum', 'value': 'area_sum'},
         {'label': 'Intensity mean', 'value': 'area_mean'},
         {'label': 'SpC sum', 'value': 'spc_sum'},
         {'label': 'SpC mean', 'value': 'spc_mean'}
         ],
-        value='area_sum',
+        value='',
         id='protein-radioitems',
-        inline=True,
     )
 ])
 
@@ -427,7 +426,6 @@ all_samples_protein_fig = html.Div([
 )])
 
 peptide_fig_radioitems = html.Div([
-    dbc.Label("Select difference metric: "),
     dbc.RadioItems(
         options=[
         {'label': 'Intensity', 'value': 'area'},
@@ -440,7 +438,6 @@ peptide_fig_radioitems = html.Div([
 ])
 
 peptide_fig_radioitems_sum_or_mean = html.Div([ 
-    dbc.Label("Show sum or mean values: "),
     dbc.RadioItems(
         options=[
         {'label': 'Sum of all samples', 'value': False},
@@ -465,7 +462,6 @@ peptide_fig = html.Div([
         ])
 
 amino_acid_radioitems = html.Div([
-        dbc.Label("Select difference metric"), 
         dbc.RadioItems(
             options=[
                 {"label": "intensity", "value": 'area'},
@@ -577,7 +573,8 @@ peptide_info = html.Div(dash_table.DataTable(id='peptide-info-table',
 )
 
 documentation = dbc.Col([
-    dbc.Row(html.H1('Documentation')),
+    dbc.Row([html.Img(src = app.get_asset_url ('document.jpg'), style={'height':'2%', 'width':'2%'}),
+        dbc.Col(html.H1('Documentation'))]),
     html.Hr(),
     Documentation,
     
