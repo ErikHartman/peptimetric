@@ -1,6 +1,6 @@
 how_to_use = '''
 
-**Step zero:** If you already know what normalizations and cutoffs to apply, do so by pressing the **NORMALIZATION** and **CUTOFFS** buttons
+**Step zero:** If you already know what normalizations and cutoffs to apply to your dataset, do so by pressing the **NORMALIZATION** and **CUTOFFS** buttons
  before uploading the files to reduce load time.
 
 **Step one:** Upload your files to the respective groups by pressing the **FILES** button (or load example data by pressing the button below).

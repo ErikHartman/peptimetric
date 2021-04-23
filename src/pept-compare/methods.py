@@ -213,7 +213,6 @@ def amino_acid_frequency(p_list, **kwargs):
     return complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2    
 
 def amino_acid_piecharts(p_list, **kwargs):
-    color=green
     color_dict = [
             'rgb(230,222,122)',
             'rgb(230,222,122)',
@@ -259,6 +258,9 @@ def amino_acid_piecharts(p_list, **kwargs):
         , textinfo='label', marker_colors=color_dict, sort=False, title_text = 'First amino acid'), row=2, col=2)
     fig.add_trace(go.Pie(labels=list(last_aa_g2.keys()), values=list(last_aa_g2.values())
         , textinfo='label', marker_colors=color_dict, sort=False, title_text = 'Last amino acid'), row=2, col=3)
+    fig.update_layout(
+    annotations=[dict(text='Group 1', x=0, y=0.82, font_size=20, showarrow=False,  textangle=-90),
+                 dict(text='Group 2', x=0, y=0.18, font_size=20, showarrow=False,  textangle=-90)])
     return fig
 
 def group_amino_acids(peptide_list):
