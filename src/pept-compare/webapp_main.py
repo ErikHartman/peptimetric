@@ -18,7 +18,7 @@ import plotly.graph_objects as go
 
 from methods import protein_list_to_json, json_to_protein_list, peptide_list_to_json, json_to_peptide_list
 from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, create_protein_list, create_protein_df_fig, create_protein_fig , create_peptide_list, stacked_samples_peptide
-from methods import amino_acid_piecharts, common_family, all_sample_bar_chart, create_peptide_list_from_trivname
+from methods import amino_acid_piecharts, all_sample_bar_chart, create_peptide_list_from_trivname
 from methods import apply_protein_cutoffs, apply_peptide_cutoffs, get_unique_and_common_proteins, create_venn_bar
 from methods import proteins_present_in_all_samples, create_protein_datatable, create_peptide_datatable, log_intensity, normalize_data, create_length_histogram
 from texts_for_webapp import how_to_use
@@ -422,7 +422,7 @@ protein_fig = html.Div([
                 inline=True,
                 options=[
                     {'label': 'Show standard deviation', 'value': 'show-stdev'},
-                    {'label': 'Show protein families', 'value': 'show-pfam'}
+
                     ],
                 )                 
             ),
@@ -760,30 +760,26 @@ def create_protein_figure_and_table(rows, derived_virtual_selected_rows, search_
         protein_list = json_to_protein_list(protein_list_json)
         if 'area_sum' in protein_radioitems_value:
             difference_metric = 'area_sum'
-            columns = ['Protein','UniProt id','#peptides g1','#peptides g2', 'intensity_g1','intensity_g2','intensity_sum_stdev_g1', 'intensity_sum_stdev_g2','Protein family','p-value_area']
+            columns = ['Protein','UniProt id','#peptides g1','#peptides g2', 'intensity_g1','intensity_g2','intensity_sum_stdev_g1', 'intensity_sum_stdev_g2','p-value_area']
             sort = ['intensity_g1', 'intensity_g2']
         elif 'area_mean' in protein_radioitems_value:
             difference_metric = 'area_mean'
-            columns = ['Protein','UniProt id','#peptides g1','#peptides g2', 'mean_intensity_g1','mean_intensity_g2', 'intensity_mean_stdev_g1', 'intensity_mean_stdev_g2', 'Protein family','p-value_area']
+            columns = ['Protein','UniProt id','#peptides g1','#peptides g2', 'mean_intensity_g1','mean_intensity_g2', 'intensity_mean_stdev_g1', 'intensity_mean_stdev_g2','p-value_area']
             sort = ['intensity_g1', 'intensity_g2']
         elif 'spc_sum' in protein_radioitems_value:
             difference_metric = 'spc_sum'
-            columns = ['Protein','UniProt id','#peptides g1','#peptides g2','spc_g1','spc_g2','spc_sum_stdev_g1','spc_sum-stdev_g2','Protein family','p-value_spc']
+            columns = ['Protein','UniProt id','#peptides g1','#peptides g2','spc_g1','spc_g2','spc_sum_stdev_g1','spc_sum-stdev_g2','p-value_spc']
             sort = ['mean_spc_g1','mean_spc_g2']
         else:
             difference_metric = 'spc_mean'
-            columns = ['Protein','UniProt id','#peptides g1','#peptides g2','mean_spc_g1','mean_spc_g2','spc_mean_stdev_g1', 'spc_mean_stdev_g2','Protein family','p-value_spc']
+            columns = ['Protein','UniProt id','#peptides g1','#peptides g2','mean_spc_g1','mean_spc_g2','spc_mean_stdev_g1', 'spc_mean_stdev_g2','p-value_spc']
             sort = ['mean_spc_g1','mean_spc_g2']
         df_protein_info.sort_values(by=sort, ascending=False, inplace=True)
         protein_info_data = df_protein_info.to_dict('rows')
         protein_info_columns=[{"name": str(i), "id": str(i)} for i in columns]
         if str(changed_id) == 'generate-protein-graph.n_clicks' or str(changed_id) == 'protein-radioitems.value' or str(changed_id) == 'protein-checkbox.value':
-            if checkbox_values and 'show-stdev' in checkbox_values and 'show-pfam' in checkbox_values:
-                protein_fig = create_protein_fig(df_fig, protein_list, show_pfam=True, show_stdev = True,  difference_metric = difference_metric)
-            elif checkbox_values and 'show-stdev' in checkbox_values:
-                protein_fig = create_protein_fig(df_fig, protein_list, show_stdev = True, difference_metric = difference_metric)
-            elif checkbox_values and 'show-pfam' in checkbox_values:
-                protein_fig = create_protein_fig(df_fig, protein_list, show_pfam=True, difference_metric = difference_metric)
+            if checkbox_values and 'show-stdev' in checkbox_values :
+                protein_fig = create_protein_fig(df_fig, protein_list, show_stdev = True,  difference_metric = difference_metric)
             else:
                 protein_fig = create_protein_fig(df_fig, protein_list, difference_metric = difference_metric)
         if len(highlighted_triv_names) < 1:

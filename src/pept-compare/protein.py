@@ -19,15 +19,6 @@ def download_fasta(protein_id):
     return requests.get(link).text
 
 
-@memory.cache
-def download_protein_family(protein_id):
-    try:
-        pfam = prody.searchPfam(protein_id)
-        return pfam
-    except:
-        return None
-
-
 class Protein:
 
     def __init__(self, df, accession):
@@ -255,15 +246,6 @@ class Protein:
     def get_fasta_seq(self):
         return str(self.fasta.seq)
 
-    def get_protein_family(self):
-        data = download_protein_family(self.get_id())
-        protein_families = []
-        if data is None:
-            return 'No protein family found'
-        else:
-            for i in data.values():
-                protein_families.append(i.get('id'))
-            return protein_families
 
     def get_number_of_samples(self):
         area_columns = [col for col in self.df if col.startswith('Area')]

@@ -307,13 +307,11 @@ def create_protein_df_fig(protein_list, **kwargs):
     trivial_name = []
     accession = []
     nbr_of_peptides = []
-    pfam = []
 
     for protein in protein_list:
         trivial_name.append(protein.get_trivial_name())
         accession.append(protein.get_id())
         nbr_of_peptides.append(sum(protein.get_nbr_of_peptides()))
-        pfam.append(protein.get_protein_family())
         
         g1_area_sum.append(protein.get_area_sum()[0])
         g1_area_sum_stdev.append(protein.get_area_sum()[1])
@@ -339,9 +337,9 @@ def create_protein_df_fig(protein_list, **kwargs):
     col, size = set_color_and_size(nbr_of_peptides, color_thresholds)
     for s in size:
         s *= 2
-    df_fig = pd.DataFrame(list(zip(g1_area_sum, g2_area_sum, g1_area_mean, g2_area_mean, g1_spc_sum, g2_spc_sum, g1_spc_mean, g2_spc_mean, nbr_of_peptides, trivial_name, pfam, col, accession, g1_area_sum_stdev, g2_area_sum_stdev,
+    df_fig = pd.DataFrame(list(zip(g1_area_sum, g2_area_sum, g1_area_mean, g2_area_mean, g1_spc_sum, g2_spc_sum, g1_spc_mean, g2_spc_mean, nbr_of_peptides, trivial_name, col, accession, g1_area_sum_stdev, g2_area_sum_stdev,
     g1_area_mean_stdev, g2_area_mean_stdev, g1_spc_sum_stdev, g2_spc_sum_stdev, g1_spc_mean_stdev, g2_spc_mean_stdev)),
-        columns=['g1_area_sum','g2_area_sum','g1_area_mean','g2_area_mean', 'g1_spc_sum','g2_spc_sum', 'g1_spc_mean','g2_spc_mean','nbr_of_peptides','trivial_name','pfam','col','accession',
+        columns=['g1_area_sum','g2_area_sum','g1_area_mean','g2_area_mean', 'g1_spc_sum','g2_spc_sum', 'g1_spc_mean','g2_spc_mean','nbr_of_peptides','trivial_name','col','accession',
          'g1_area_sum_stdev', 'g2_area_sum_stdev', 'g1_area_mean_stdev', 'g2_area_mean_stdev', 
         'g1_spc_sum_stdev', 'g2_spc_sum_stdev', 'g1_spc_mean_stdev', 'g2_spc_mean_stdev'])
     
@@ -350,7 +348,6 @@ def create_protein_df_fig(protein_list, **kwargs):
 def create_protein_fig(df_fig, protein_list, **kwargs):
     default_settings =  {
         'show_stdev':'',
-        'show_pfam':'',
         'difference_metric':'',
     }
     default_settings.update(kwargs)
@@ -377,7 +374,7 @@ def create_protein_fig(df_fig, protein_list, **kwargs):
 
     fig = px.scatter(df_fig, x=g2_intensity, y=g1_intensity,
         color='nbr_of_peptides', color_continuous_scale=px.colors.diverging.PiYG, 
-        size='nbr_of_peptides', hover_data=['trivial_name','nbr_of_peptides','pfam','accession'])
+        size='nbr_of_peptides', hover_data=['trivial_name','nbr_of_peptides','accession'])
     fig.update_layout(yaxis=dict(title=y_label), xaxis=dict(title=x_label))
     g1_intensity = list(df_fig[g1_intensity])
     g2_intensity = list(df_fig[g2_intensity])
@@ -387,15 +384,6 @@ def create_protein_fig(df_fig, protein_list, **kwargs):
     fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}, coloraxis_colorbar=dict(title='Number of peptides'))
     if kwargs.get('show_stdev') == True:
         fig.update_traces(error_x= dict(array=df_fig[g1_std].array, thickness=1), error_y=dict(array=df_fig[g2_std].array, thickness=1))
-    if kwargs.get('show_pfam') == True:
-        for p1 in protein_list:
-            for p2 in protein_list:
-                if common_family(p1.get_protein_family(), p2.get_protein_family())[0]:
-                    x0 = p1.get_area_sum()[2]
-                    x1 = p2.get_area_sum()[2]
-                    y0 = p1.get_area_sum()[0]
-                    y1 = p2.get_area_sum()[0]
-                    fig.add_shape(type="line",x0=x0, y0=y0, x1=x1, y1=y1, line=dict(color="firebrick",width=1, dash='dash'))
 
     return fig
 
@@ -484,16 +472,6 @@ def peptide_graphic_plotly(peptide_list, **kwargs):
     
     return fig
     
-
-def common_family(pfam1, pfam2):
-    fams = []
-    for fam1 in pfam1:
-        for fam2 in pfam2:
-            if str(fam1) == str(fam2):
-                fams.append(fam1)
-    return len(fams)>0, fams
-
-
 def calculate_pi(seq):
     return electrochem.pI(seq, 7)
 
@@ -915,13 +893,13 @@ def create_peptide_datatable(peptide_list):
 
 def create_protein_datatable(protein_list):
     protein_info_columns = ['Protein','UniProt id','#peptides g1','#peptides g2','intensity_g1','intensity_g2','intensity_sum_stdev_g1', 'intensity_sum_stdev_g2', 'mean_intensity_g1', 'mean_intensity_g2', 'intensity_mean_stdev_g1', 'intensity_mean_stdev_g2',
-    'spc_g1','spc_g2','spc_sum_stdev_g1','spc_sum-stdev_g2', 'mean_spc_g1','mean_spc_g2','spc_mean_stdev_g1', 'spc_mean_stdev_g2', 'Protein family','p-value_area', 'p-value_spc']
+    'spc_g1','spc_g2','spc_sum_stdev_g1','spc_sum-stdev_g2', 'mean_spc_g1','mean_spc_g2','spc_mean_stdev_g1', 'spc_mean_stdev_g2', 'p-value_area', 'p-value_spc']
     df_protein_info = pd.DataFrame(columns=protein_info_columns)
     for protein in protein_list:
         df_protein_info = df_protein_info.append({'Protein': str(protein.get_trivial_name()), 'UniProt id': protein.get_id(),'#peptides g1': protein.get_nbr_of_peptides()[0], '#peptides g2': protein.get_nbr_of_peptides()[1], 
         'intensity_g1': round(float(protein.get_area_sum()[0]), 3), 'intensity_g2': round(float(protein.get_area_sum()[2]), 3),'intensity_sum_stdev_g1': round(float(protein.get_area_sum()[1]), 3),'intensity_sum_stdev_g2': round(float(protein.get_area_sum()[3]), 3), 'mean_intensity_g1': round(float(protein.get_area_mean()[0]),3), 'mean_intensity_g2': round(float(protein.get_area_mean()[2]), 3), 'intensity_mean_stdev_g1': round(float(protein.get_area_mean()[1]), 3), 'intensity_mean_stdev_g2': round(float(protein.get_area_sum()[3]), 3), 
         'spc_g1': round(float(protein.get_spectral_count_sum()[0]),3), 'spc_g2': round(float(protein.get_spectral_count_sum()[2]), 3),'spc_sum_stdev_g1': round(float(protein.get_spectral_count_sum()[1]), 3) ,'spc_sum_stdev_g2': round(float(protein.get_spectral_count_sum()[3]), 3) ,'mean_spc_g1': round(float(protein.get_spectral_count_mean()[0]), 3), 'mean_spc_g2': round(float(protein.get_spectral_count_mean()[2]), 3),'spc_mean_stdev_g1': round(float(protein.get_spectral_count_mean()[1]), 3),
-        'spc_mean_stdev_g2': round(float(protein.get_spectral_count_mean()[3]), 3), 'Protein family':protein.get_protein_family(), 'p-value_area':round(float(protein.get_pvalue('area')), 3), 'p-value_spc':round(float(protein.get_pvalue('spc')), 3)},  ignore_index=True)
+        'spc_mean_stdev_g2': round(float(protein.get_spectral_count_mean()[3]), 3), 'p-value_area':round(float(protein.get_pvalue('area')), 3), 'p-value_spc':round(float(protein.get_pvalue('spc')), 3)},  ignore_index=True)
     return df_protein_info
 
     
