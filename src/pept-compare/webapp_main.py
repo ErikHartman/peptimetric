@@ -170,21 +170,10 @@ modal_cutoff = dbc.Modal([
             centered=True,
               )
 
-modal_FAQ = html.Div([
-    dbc.Button("FAQ", id="open-modal-FAQ", color='info', className="mr-1"),
-    dbc.Modal([
-                dbc.ModalHeader("FAQ", className="font-weight-bold"),
-                dbc.ModalFooter(
-                    dbc.Button("Close", id="close-modal-FAQ", className="ml-auto")
-                ),
-            ],
-            id="modal-FAQ",
-            size='m',
-            centered=True,
-              )])
+
 
 modal_feedback = html.Div([
-    dbc.Button("Feedback", id="open-modal-feedback", color='info', className="mr-1"),
+    dbc.Button("Feedback", id="open-modal-feedback", color='link', className="mr-1"),
     dbc.Modal([
                 dbc.ModalHeader("Feedback", className="font-weight-bold"),
                 dbc.Row(dbc.Textarea(
@@ -254,9 +243,8 @@ navbar = dbc.Navbar(
         dbc.Button('Normalization', id="open-modal-normalization", color='info', className='mr-1'),
         normalization_modal,
         dbc.Nav([
-        modal_FAQ,
         modal_feedback,
-        dbc.NavLink('Documentation', href='/documentation'),
+        dbc.NavLink('Documentation & FAQ', href='/documentation&FAQ'),
         dbc.NavLink('Home', href='/')
         ],
         navbar=True,
@@ -646,7 +634,7 @@ documentation_page = dbc.Container([
 def display_page(pathname):
     if pathname == '/':
         return main_page
-    elif pathname == '/documentation':
+    elif pathname == '/documentation&FAQ':
         return documentation_page
     else:
         return main_page
