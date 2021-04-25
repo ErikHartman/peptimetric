@@ -398,7 +398,7 @@ protein_fig_radioitems = html.Div([
         {'label': 'SpC sum', 'value': 'spc_sum'},
         {'label': 'SpC mean', 'value': 'spc_mean'}
         ],
-        value='',
+        value='area_sum',
         id='protein-radioitems',
     )
 ])
@@ -692,9 +692,9 @@ def update_data_frame(contents, filename, log_checkbox):
         content_type, content_string = content.split(',')
         decoded = base64.b64decode(content_string)
         decoded_list.append(io.BytesIO(decoded))
-    dfs = make_peptide_dfs(decoded_list)
+    dfs = make_peptide_dfs(decoded_list, filename)
+    master_df = concatenate_dataframes(dfs)
     if log_checkbox:
-        master_df = concatenate_dataframes(dfs)
         return master_df
     master_df = log_intensity(master_df)
     return master_df

@@ -56,14 +56,16 @@ def read_files_gui():
     return make_peptide_dfs(filenames)
 
 
-def make_peptide_dfs(filenames: List):
+def make_peptide_dfs(files, filenames):
     dfs = []
-    for filename in filenames:
+    for file, filename in zip(files, filenames):
         print("opening", filename)
         if filename.split('.')[-1] == 'xlsx':
-            df = pd.read_excel(filename, engine='openpyxl')
+            print('Format: excel')
+            df = pd.read_excel(file, engine='openpyxl')
         elif filename.split('.')[-1] == 'csv':
-            df = pd.read_csv(filename)
+            print('Format: csv')
+            df = pd.read_csv(file)
         else:
             print('Unsupported file format')
         columns_to_keep = []
