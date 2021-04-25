@@ -60,7 +60,12 @@ def make_peptide_dfs(filenames: List):
     dfs = []
     for filename in filenames:
         print("opening", filename)
-        df = pd.read_excel(filename, engine='openpyxl')
+        if filename.split('.')[-1] == 'xlsx':
+            df = pd.read_excel(filename, engine='openpyxl')
+        elif filename.split('.')[-1] == 'csv':
+            df = pd.read_csv(filename)
+        else:
+            print('Unsupported file format')
         columns_to_keep = []
         for column_name in df.columns:
             for key, val in zip(column_names_dict.keys(), column_names_dict.values()):

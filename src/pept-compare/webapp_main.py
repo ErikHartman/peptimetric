@@ -113,11 +113,11 @@ modal_file = html.Div([
 protein_tab = dbc.Form([
                     dbc.FormGroup([
                         dbc.Col(dbc.Label("Total intensity", className="mr-2", style={'padding':10}), width=8),
-                        dbc.Col(dbc.Input(placeholder='0', type='number', className='ml-auto', min=0, step=0.001, id='tot-intensity-cutoff', value=0, style={'padding':10}), width=2),
+                        dbc.Col(dbc.Input(placeholder='0', type='number', className='ml-auto', min=0, step=0.000000001, id='tot-intensity-cutoff', value=0, style={'padding':10}), width=2),
                     ], className="mr-3",),
                     dbc.FormGroup([
                         dbc.Col(dbc.Label('Total spectral count', className='mr-2', style={'padding':10}), width=8),
-                        dbc.Col(dbc.Input(placeholder='0', type="number", className='ml-auto', min=0, step=0.001, id='tot-spc-cutoff', value=0, style={'padding':10}), width=2),
+                        dbc.Col(dbc.Input(placeholder='0', type="number", className='ml-auto', min=0, step=0.000000001, id='tot-spc-cutoff', value=0, style={'padding':10}), width=2),
                     ], className="mr-3",),
                     dbc.FormGroup([
                         dbc.Col(dbc.Label('Number of peptides', className='mr-2', style={'padding':10}), width=8),
@@ -158,8 +158,9 @@ peptide_tab = dbc.Form([
 modal_cutoff = dbc.Modal([
                 dbc.ModalHeader("Cutoff settings", className="font-weight-bold"),
                 dbc.Tabs([
+                    dbc.Tab(peptide_tab, label='Peptide'),
                     dbc.Tab(protein_tab, label='Protein'),
-                    dbc.Tab(peptide_tab, label='Peptide')
+                    
                 ]),
                 dbc.ModalFooter(
                     dbc.Button("Apply", id="close-modal-cutoff", className="ml-auto")
@@ -222,6 +223,13 @@ normalization_modal = dbc.Modal([
                                 ), width=5,
                         )
                     ]),
+                dbc.Checklist(
+                    options=[
+                        {"label": "I've already taken the log of my intensities", "value": True},
+                    ],
+                    value=[],
+                    id="log-checkbox",
+                ),
                 ]),
                 
                 dbc.ModalFooter(
@@ -350,7 +358,7 @@ sample_collapse = html.Div(
                                         'font-family':'Roboto',
                                         'fontSize':12,
                                     },
-                                    style_table = {'padding':10}
+                                    style_table = {'padding':10} 
                             )),
             dbc.Col(dash_table.DataTable(
                                 id = 'sample-collapse-2',
@@ -372,8 +380,7 @@ sample_collapse = html.Div(
                                         'font-family':'Roboto',
                                         'fontSize':12,
                                     },
-                                    style_table = {'padding':10}
-                            )),
+                                    style_table = {'padding':10} )) 
                 ]),
             ]),
             id="sample-collapse",
@@ -579,7 +586,7 @@ peptide_info = html.Div(dash_table.DataTable(id='peptide-info-table',
 )
 
 documentation = dbc.Col([
-    dbc.Row([html.Img(src = app.get_asset_url ('document.jpg'), style={'height':'2%', 'width':'2%'}),
+    dbc.Row([html.Img(src = app.get_asset_url ('document.jpg'), style={'height':'4%', 'width':'4%'}),
         dbc.Col(html.H1('Documentation'))]),
     html.Hr(),
     Documentation,
@@ -665,7 +672,7 @@ def toggle_modal(n1, n2, is_open):
     return is_open
 
 
-def update_file_list(contents, filename):
+def update_file_list(contents, filename, log_checkbox):
     if filename:
         file_list = []
         i=0
@@ -673,20 +680,22 @@ def update_file_list(contents, filename):
             s = [f"S{i}", f]
             file_list.append(s)
             i+=1  
-        master_df = update_data_frame(contents, filename)
+        master_df = update_data_frame(contents, filename, log_checkbox)
         df = pd.DataFrame(file_list, columns = ['Sample', 'File'])
         return df.to_dict('rows'), df.to_dict('rows'), master_df.to_json()
     else:
-        return [],[], []
+        return [], [], []
 
-def update_data_frame(contents, filename):
+def update_data_frame(contents, filename, log_checkbox):
     decoded_list = []
     for f, content in zip(filename, contents):
         content_type, content_string = content.split(',')
         decoded = base64.b64decode(content_string)
         decoded_list.append(io.BytesIO(decoded))
     dfs = make_peptide_dfs(decoded_list)
-    master_df = concatenate_dataframes(dfs)
+    if log_checkbox:
+        master_df = concatenate_dataframes(dfs)
+        return master_df
     master_df = log_intensity(master_df)
     return master_df
 
@@ -981,14 +990,16 @@ app.callback(
     Output("output-filename-1", "data"),
     Output("sample-collapse-1", "data"),
     Output('df_g1-holder', 'children'),
-    [Input("upload-data-1", "contents"), Input("upload-data-1", "filename")],
+    [Input("upload-data-1", "contents"), Input("upload-data-1", "filename"),
+    Input('log-checkbox', 'value')],
 )(update_file_list)
 
 app.callback(
     Output("output-filename-2", "data"),
     Output("sample-collapse-2", "data"),
     Output('df_g2-holder','children'),
-    [Input("upload-data-2", "contents"), Input("upload-data-2", "filename")],
+    [Input("upload-data-2", "contents"), Input("upload-data-2", "filename"),
+    Input('log-checkbox', 'value')],
 )(update_file_list)
 
 app.callback(

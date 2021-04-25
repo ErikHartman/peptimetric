@@ -24,9 +24,11 @@ _Complete proteome_ in the dropdown under **General Characteristics** (_selectin
 ''')
 ])
 
-General = html.P('''
-XXX was developed by Erik Hartman and Simon Mahdavi to help researchers visualize and explore their proteomic and peptidomic data. 
-''', style={'padding-left':15, 'padding-right':15, 'font-weight':'light'})
+General = html.P(children=['''
+XXX was developed by Erik Hartman and Simon Mahdavi @ Lunds University to help researchers visualize and explore differences in the proteome and peptidome of sample groups.
+ The main features of the XXX are: normalizing data, applying cutoffs and showcasing the proteome and peptidome of a dataset. There are many interactive elements to allow for easy manipulation and explorations of the users dataset. The webapp
+was developed using''', html.A('Plotly Dash library', href='https://plotly.com/dash/'), ''' and published on the cloud plattoform ''', html.A('Heroku', href='https://www.heroku.com/')],
+ style={'padding-left':15, 'padding-right':15, 'font-weight':'light'})
 
 Data_processing = html.Div([dbc.Row([html.Img(src = './assets/computer.png', style={'height':'5%', 'width':'5%'}),
         html.H5('Data processing', style={"font-weight": "bold"}),]),
@@ -43,6 +45,9 @@ Data_processing = html.Div([dbc.Row([html.Img(src = './assets/computer.png', sty
     , html.P('Spectral count:', style={'font-weight':'bold','margin-bottom':0}), html.P('Spectral count, SPC, SpC, spc, sc, SC, spectral count, #Feature, spectral counts, #Features')
 
      ], color='#DFF0D8', style={'border':0, 'padding-left':15, 'padding-right':15}),
+     html.P('''Information about the submitted proteins is fetched from UniProt, and the user therefore has to 
+     provide a valid UniProt id (accession number) for each peptide in the dataset. Any disturbance in UniProts servers will therefore
+     also affect XXX.''', style={'padding-left':15, 'padding-right':15, 'padding-top':15}),
 ])
 
 Settings = html.Div([dbc.Row([html.Img(src = './assets/settings.png', style={'height':'5%', 'width':'5%'}),
@@ -50,16 +55,16 @@ Settings = html.Div([dbc.Row([html.Img(src = './assets/settings.png', style={'he
 html.H6('Normalization', style={'font-weight':'bold', 'margin-bottom':0, 'padding-left':15, 'padding-right':15}),
 html.P('''
 XXX accommodates for two ways of normalizing your data: using the global intensity and by using a housekeeping protein. Both methods 
-are valid ways of normalizing MS and MSMS data. 
+are valid ways of normalizing MS and MSMS data and may reduce the inter-sample biases introduced in sample preparation and loading. 
 ''', style={'padding-left':15, 'padding-right':15}),
 html.H6('Cutoffs', style={'font-weight':'bold', 'margin-bottom':0, 'padding-left':15, 'padding-right':15}),
 html.P('''
 Often MS samples contain proteins of very low quality and/or abundancy. These oftten contain few peptides, or have very low intensity and spectral
-count. We therefore give you the option to apply cutoffs to your dataset. There are two different cutoffs.
+count. We therefore give you the option to apply cutoffs to your dataset.
 ''', style={'padding-left':15, 'padding-right':15}), 
 html.P(' Peptide cutoffs', style={'font-weight':'bold', 'margin-bottom':0, 'padding-left':15, 'padding-right':15}),
 html.P('''Peptide cutoffs allow you to remove peptides with either low intensity or low spectral count. We also give you the option
-to remove retention time and/or collission crossection surface outliers. Outliers are considered to be situated
+to remove retention time (RT) and/or collission crossection surface (CCS) outliers. Outliers are considered to be situated
 three standard deviations from the mean. The peptide cutoffs are applied before the protein cutoffs.
 ''', style={'padding-left':15, 'padding-right':15}),
 html.P(' Protein cutoffs', style={'font-weight':'bold', 'margin-bottom':0, 'padding-left':15, 'padding-right':15}),
@@ -71,9 +76,21 @@ it will be removed from the dataset if the peptide cutoffs are properly applied.
 ])
 
 Visualization = html.Div([
-        html.H5('Visualization', style={"font-weight": "bold",'padding-left':15, 'padding-right':15})],
+    dbc.Row([html.Img(src = './assets/scatter.png', style={'height':'5%', 'width':'5%'}),
+        html.H5('Visualization', style={"font-weight": "bold",'padding-left':15, 'padding-right':15})]),
+html.P('''
+Protein View
+''', style={'font-weight':'bold', 'margin-bottom':0, 'padding-left':15, 'padding-right':15} ),
 
-)
+html.P('''
+Peptide View
+''', style={'font-weight':'bold', 'margin-bottom':0, 'padding-left':15, 'padding-right':15}),
+
+html.P('''
+General Characteristics
+''', style={'font-weight':'bold', 'margin-bottom':0, 'padding-left':15, 'padding-right':15}),
+])
+
 
 Interactivity = html.Div([
     dbc.Row([html.Img(src = './assets/interact.png', style={'height':'5%', 'width':'5%'}),

@@ -9,13 +9,8 @@ import numpy as np
               
 
 if __name__  == "__main__":
-    g1 = concatenate_dataframes(read_files_gui())
-    g2 = concatenate_dataframes(read_files_gui())
-    master = merge_dataframes(g1,g2)
-    protein_list = create_protein_list(master)
-    peptide_list = create_peptide_list_from_trivname(protein_list, "HBB_HUMAN")
-    fig = amino_acid_piecharts(peptide_list, peptide_or_protein_list = 'peptide_list', difference_metric = 'spectral_count')
-    fig.show()
+    s = 'he.llo.csv'
+    print(s.split('.')[-1])
     
     
 
