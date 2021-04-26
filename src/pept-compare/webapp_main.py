@@ -36,14 +36,14 @@ app.layout = html.Div([
 file_columns = ['Sample', 'File']
 
 modal_file = html.Div([
-    dbc.Button("Files", id="open-modal-file", color='secondary',  outline=True, style={'border-color':'transparent'}, className="mr-1"),
+    dbc.Button("Upload files", id="open-modal-file", color='secondary',  outline=True, style={'border-color':'transparent'}, className="mr-1"),
     dbc.Tooltip(
         "Import files",
         target='open-modal-file',
         placement='bottom'
     ),
         dbc.Modal([
-                dbc.ModalHeader("Files", className="font-weight-bold"),
+                dbc.ModalHeader("Upload files", className="font-weight-bold"),
                     dbc.Row([
                         dbc.Col(dbc.ModalBody('Group 1', className='ml-auto text-center font-weight-bold')),
                         dbc.Col(dbc.ModalBody('Group 2', className='ml-auto text-center font-weight-bold')),
@@ -102,7 +102,7 @@ modal_file = html.Div([
                     ]),
                 dbc.ModalFooter([
                     dbc.Label('*upload 3 or more files for statistical analysis'),
-                    dbc.Button("Upload my files", color = 'primary', id="close-modal-file", className="ml-auto", n_clicks_timestamp=0)
+                    dbc.Button("Upload files", color = 'primary', id="close-modal-file", className="ml-auto", n_clicks_timestamp=0)
                 ]),
             ],
             id="modal-file",
@@ -112,18 +112,15 @@ modal_file = html.Div([
 
 
 protein_tab = dbc.Form([
-                    dbc.FormGroup([
-                        dbc.Col(dbc.Label("Total intensity", className="mr-2", style={'padding':10}), width=8),
-                        dbc.Col(dbc.Input(placeholder='0', type='number', className='ml-auto', min=0, step=0.000000001, id='tot-intensity-cutoff', value=0, style={'padding':10}), width=2),
-                    ], className="mr-3",),
-                    dbc.FormGroup([
-                        dbc.Col(dbc.Label('Total spectral count', className='mr-2', style={'padding':10}), width=8),
-                        dbc.Col(dbc.Input(placeholder='0', type="number", className='ml-auto', min=0, step=0.000000001, id='tot-spc-cutoff', value=0, style={'padding':10}), width=2),
-                    ], className="mr-3",),
-                    dbc.FormGroup([
-                        dbc.Col(dbc.Label('Number of peptides', className='mr-2', style={'padding':10}), width=8),
-                        dbc.Col(dbc.Input(placeholder='0', type="number", className='ml-auto', min=0, id='nbr-of-peptides-cutoff', value=0, style={'padding':10}), width=2),
-                    ], className="mr-3",),
+                    dbc.Col([dbc.Label("Intensity", style={'padding':10, 'margin':5}),
+                                    dbc.Label('Spectral count', style={'padding':10}),
+                                    dbc.Label('Number of peptides', className='mr-2', style={'padding':10})]),
+                        dbc.Col([dbc.Input(placeholder='0', type='number', className='ml-auto', min=0, step=0.00000001, 
+                        id='tot-intensity-cutoff', value=0, style={'padding':10, 'margin':5}),
+                        dbc.Input(placeholder='0', type="number", className='ml-auto', min=0, step=0.00000001, 
+                        id='tot-spc-cutoff', value=0, style={'padding':10, 'margin-bottom':5}),
+                        dbc.Input(placeholder='0', type="number", className='ml-auto', min=0, 
+                        id='nbr-of-peptides-cutoff', value=0, style={'padding':10})]),
                     dbc.FormGroup([
                         dbc.Col(dbc.Checklist(
                          options=[
@@ -136,14 +133,12 @@ protein_tab = dbc.Form([
                 inline=True),
 
 peptide_tab = dbc.Form([
-                    dbc.FormGroup([
-                        dbc.Col(dbc.Label("Intensity", style={'padding':10}), width=8),
-                        dbc.Col(dbc.Input(placeholder='0', type='number', className='ml-auto', min=0, step=0.001, id='peptide-intensity-cutoff', value=0, style={'padding':10}), width=2),
-                    ], className="mr-3", row=True),
-                    dbc.FormGroup([
-                        dbc.Col(dbc.Label('Spectral count', className='mr-2', style={'padding':10}), width=7),
-                        dbc.Col(dbc.Input(placeholder='0', type="number", className='ml-auto', min=0, step=0.001, id='peptide-spc-cutoff', value=0, style={'padding':10}), width=2),
-                    ], className="mr-3",),
+                        dbc.Col([dbc.Label("Intensity", style={'padding':10, 'margin':5}),
+                                    dbc.Label('Spectral count', style={'padding':10})]),
+                        dbc.Col([dbc.Input(placeholder='0', type='number', className='ml-auto', min=0, step=0.001, 
+                        id='peptide-intensity-cutoff', value=0, style={'padding':10, 'margin':5}),
+                        dbc.Input(placeholder='0', type="number", className='ml-auto', min=0, step=0.001, 
+                        id='peptide-spc-cutoff', value=0, style={'padding':10})]),
                     dbc.FormGroup([
                         dbc.Col(dbc.Checklist(
                             options=[
@@ -165,7 +160,7 @@ modal_cutoff = dbc.Modal([
                 ]),
                 dbc.ModalFooter([
                     dbc.Label('*cutoffs will be applied after normalization'),
-                    dbc.Button("Apply", id="close-modal-cutoff", className="ml-auto")
+                    dbc.Button("Apply", id="close-modal-cutoff", color="primary", className="ml-auto")
                 ]),
             ],
             id="modal-cutoff",
@@ -179,10 +174,11 @@ modal_feedback = html.Div([
     dbc.Button("Feedback", id="open-modal-feedback", color='secondary', outline=True, style={'border-color':'transparent'}, className="mr-1"),
     dbc.Modal([
                 dbc.ModalHeader("Feedback", className="font-weight-bold"),
-                dbc.Row(dbc.Textarea(
+                dbc.Row(dbc.Input(
                     id='email-adress',
                     placeholder='Your e-mail adress',
-                    style={'width': '80%', 'height': '2rem', 'padding-top':5, 'padding-bottom':5}), 
+                    type="email",
+                    style={'width': '80%', 'height': '2rem'}), 
                     style= {'padding-top':5, 'padding-bottom':5}, justify='center',align='center'),
                         
                 dbc.Row(dbc.Textarea(
@@ -193,11 +189,11 @@ modal_feedback = html.Div([
                         style= {'padding-top':5, 'padding-bottom':5},
                         align='center', justify='center'),
                 
-                dbc.Row(html.Div(id='email-sent', children=[])),
+                dbc.Row(html.Div(id='email-sent', style={'padding-top':5, 'padding-bottom':5}), align='center', justify='center'),
                 
                 dbc.ModalFooter([
-                    dbc.Button("Send feedback", id="send-feedback", className="ml-auto"),
-                     dbc.Button("Close", id="close-modal-feedback", className="ml-auto")
+                    dbc.Button("Send feedback", id="send-feedback", color='info', className="mr-auto", n_clicks=0),
+                    dbc.Button("Close", id="close-modal-feedback", color='primary', className="ml-auto")
                 ]),
             ],
             id="modal-feedback",
@@ -243,7 +239,7 @@ normalization_modal = dbc.Modal([
                 ]),
                 
                 dbc.ModalFooter(
-                    dbc.Button("Apply", id="close-modal-normalization", className="ml-auto")
+                    dbc.Button("Apply", id="close-modal-normalization", color="primary", className="ml-auto")
                 ),
             ],
             id="modal-normalization",
@@ -324,7 +320,8 @@ how_to_use_collapse = html.Div(
         dbc.Tooltip(
             "View guideline on how to use (NAMN)",
             target="how-to-use-collapse-button", 
-            placement="right"
+            placement="right",
+            arrowClassName='cooltooltip',
         ),
     ]
 )
@@ -934,12 +931,13 @@ def create_venn_bar_fig(length_dropdown_values, protein_list_json, peptide_list_
 
 
 def send_feedback(n_clicks, email_body, email_adress):
-    if n_clicks:
-        email_body = email_adress + "/n" + email_body
+    if n_clicks and email_adress and email_body:
+        print(email_body, email_adress)
+        email_body = 'E-mail from: ' + email_adress + "\n" + 'Feedback: ' + email_body
         send_email(email_body)
         return 'Feedback sent!'
     else:
-        return ''
+        return 'Please enter your email adress and your feedback above'
 
 
 app.callback(

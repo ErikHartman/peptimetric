@@ -17,9 +17,20 @@ p{
   padding-right: 15px;
 }
 
+h6{
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+
 .btn-info{
   background-color: #92dbb0;
   border-color: #92dbb0 ;
+}
+
+.btn-info-active{
+  background-color: #27854d;
+  border-color: #75e0a0 ;
 }
 
 .btn-info:hover{
@@ -37,7 +48,21 @@ p{
   border-color: #5587c9 ;
 }
 
-.btn-secondary:hover{
+.btn-outline-secondary:hover{
   background-color: #5587c9;
   border-color: #5587c9 ;
+}
+
+
+
+.dot{
+  background-color:white;
+}
+
+.dash-tooltip.bottom .dash-tooltip-arrow {
+  top: 0;
+  left: 50%;
+  margin-left: -5px;
+  border-bottom-color: #000000; /* black */
+  border-width: 0 5px 5px;
 }
