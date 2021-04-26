@@ -1,0 +1,43 @@
+.export{
+  font: Roboto;
+  color:black;
+  background-color: #fafafa;
+  border-radius: 0.25rem;
+  border: 1px solid;
+  border-color:black;
+}
+
+.export:hover{
+  background-color: #e6e0e0;
+  border-color: rgb(211, 211, 211);
+}
+
+p{
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.btn-info{
+  background-color: #92dbb0;
+  border-color: #92dbb0 ;
+}
+
+.btn-info:hover{
+  background-color: #27854d;
+  border-color: #75e0a0 ;
+}
+
+.btn-primary{
+  background-color: #92b2db;
+  border-color: #92b2db ;
+}
+
+.btn-primary:hover{
+  background-color: #5587c9;
+  border-color: #5587c9 ;
+}
+
+.btn-secondary:hover{
+  background-color: #5587c9;
+  border-color: #5587c9 ;
+}

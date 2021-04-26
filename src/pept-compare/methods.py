@@ -570,8 +570,8 @@ def all_sample_bar_chart(protein_list, accession, **kwargs):
         y='Intensity'
     elif kwargs.get('metric') == 'spc_sum':
         intensities = selected_protein.get_spectral_count_sum_all_samples()
-        df = pd.DataFrame(intensities.items(), columns=['Sample', 'Spectral Count'])
-        y='Spectral Count'
+        df = pd.DataFrame(intensities.items(), columns=['Sample', 'Spectral count'])
+        y='Spectral count'
     elif kwargs.get('metric') == 'area_mean':
         intensities = selected_protein.get_area_mean_all_samples()
         df = pd.DataFrame(intensities.items(), columns=['Sample', 'Intensity'])
@@ -579,7 +579,7 @@ def all_sample_bar_chart(protein_list, accession, **kwargs):
     elif kwargs.get('metric') == 'spc_mean':
         intensities = selected_protein.get_spectral_count_mean_all_samples()
         df = pd.DataFrame(intensities.items(), columns=['Sample', 'Spectral count'])
-        y='Spectral Count'
+        y='Spectral count'
     fig = px.bar(df, x = 'Sample', y=y, color=y, color_continuous_scale=px.colors.sequential.algae, title=title)
     fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}, showlegend=False, coloraxis_showscale=False)
     return fig
