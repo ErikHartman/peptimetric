@@ -36,12 +36,8 @@ app.layout = html.Div([
 file_columns = ['Sample', 'File']
 
 modal_file = html.Div([
-    dbc.Button("Upload files", id="open-modal-file", color='secondary',  outline=True, style={'border-color':'transparent'}, className="mr-1"),
-    dbc.Tooltip(
-        "Import files",
-        target='open-modal-file',
-        placement='bottom'
-    ),
+
+    dbc.Button("Files", id="open-modal-file", color='secondary',  outline=True, style={'border-color':'transparent'}, className="mr-1"),
         dbc.Modal([
                 dbc.ModalHeader("Upload files", className="font-weight-bold"),
                     dbc.Row([
@@ -317,12 +313,7 @@ how_to_use_collapse = html.Div(
             is_open=True,
             
         ),
-        dbc.Tooltip(
-            "View guideline on how to use (NAMN)",
-            target="how-to-use-collapse-button", 
-            placement="right",
-            arrowClassName='cooltooltip',
-        ),
+
     ]
 )
 
@@ -333,12 +324,6 @@ sample_collapse = html.Div(
             id="sample-collapse-button",
             className="mb-3",
             color="info",
-        ),
-        dbc.Tooltip(
-            "View samples",
-            target="sample-collapse-button",
-            placement="right",
-            #style={},
         ),
         dbc.Collapse(
             dbc.Card([
@@ -452,7 +437,7 @@ peptide_fig_radioitems = html.Div([
         ],
         value='area',
         id='peptide-radioitems',
-        inline=True,
+        
     )
 ])
 
@@ -464,7 +449,7 @@ peptide_fig_radioitems_sum_or_mean = html.Div([
         ],
         value=False,
         id='sum-or-mean-radio',
-        inline=True,
+       
     )
 ])
 
@@ -480,13 +465,13 @@ peptide_fig = html.Div([
         ]),
         dcc.Loading(type='cube', color = '#76b382',
             children=dcc.Graph(id='peptide-fig', figure={}, config={'displaylogo': False})
-        )
+        ),
         ])
 
 amino_acid_radioitems = html.Div([
         dbc.RadioItems(
             options=[
-                {"label": "intensity", "value": 'area'},
+                {"label": "Intensity", "value": 'area'},
                 {"label": "Spectral Count", "value": 'spectral_count'}, 
             ], 
             value='area',
