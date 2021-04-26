@@ -351,7 +351,6 @@ def create_protein_df_fig(protein_list, **kwargs):
         columns=['g1_area_sum','g2_area_sum','g1_area_mean','g2_area_mean', 'g1_spc_sum','g2_spc_sum', 'g1_spc_mean','g2_spc_mean','nbr_of_peptides','trivial_name','col','accession',
          'g1_area_sum_stdev', 'g2_area_sum_stdev', 'g1_area_mean_stdev', 'g2_area_mean_stdev', 
         'g1_spc_sum_stdev', 'g2_spc_sum_stdev', 'g1_spc_mean_stdev', 'g2_spc_mean_stdev'])
-    
     return df_fig
 
 def create_protein_fig(df_fig, protein_list, **kwargs):
@@ -360,31 +359,41 @@ def create_protein_fig(df_fig, protein_list, **kwargs):
         'difference_metric':'',
     }
     default_settings.update(kwargs)
+    
     if kwargs.get('difference_metric') == 'area_sum':
-        g1_intensity, g2_intensity = 'g1_area_sum','g2_area_sum'
+        df_fig.rename(columns={'g1_area_sum':'G1','g2_area_sum':'G2'}, inplace=True)
+        g1_intensity, g2_intensity = 'G1','G2'
         g1_std, g2_std = 'g1_area_sum_stdev', 'g2_area_sum_stdev'
         x_label = 'Group 1: log(Sum of peptide intensity)'
         y_label = 'Group 2: log(Sum of peptide intensity)'
+
     elif kwargs.get('difference_metric') == 'area_mean':
-        g1_intensity, g2_intensity = 'g1_area_mean','g2_area_mean'
+        df_fig.rename(columns={'g1_area_mean':'G1','g2_area_mean':'G2'}, inplace=True)
+        g1_intensity, g2_intensity = 'G1','G2'
         g1_std, g2_std = 'g1_area_mean_stdev', 'g2_area_mean_stdev'
         x_label = 'Group 1: log(Peptide intensity mean)'
         y_label = 'Group 2: log(Peptide intensity mean)'
+
     elif kwargs.get('difference_metric') == 'spc_sum':
-        g1_intensity, g2_intensity = 'g1_spc_sum', 'g2_spc_sum'
+        df_fig.rename(columns={'g1_spc_sum':'G1','g2_spc_sum':'G2'}, inplace=True)
+        g1_intensity, g2_intensity = 'G1', 'G2'
         g1_std, g2_std = 'g1_spc_sum_stdev', 'g2_spc_sum_stdev'
         x_label = 'Group 1: Sum of spectral count'
         y_label = 'Group 2: Sum of spectral count'
+
     elif kwargs.get('difference_metric') == 'spc_mean':
-        g1_intensity, g2_intensity = 'g1_spc_mean', 'g2_spc_mean'
+        df_fig.rename(columns={'g1_spc_mean':'G1','g2_spc_mean':'G2'}, inplace=True)
+        g1_intensity, g2_intensity = 'G1', 'G2'
         g1_std, g2_std = 'g1_spc_mean_stdev', 'g2_spc_mean_stdev'
         x_label = 'Group 1: Mean of spectral count'
         y_label = 'Group 2: Mean of spectral count'
 
+    df_fig.rename(columns={'trivial_name':'Trivial name', 'nbr_of_peptides':'# Peptides', 'accession':'Accession'}, inplace=True)
     fig = px.scatter(df_fig, x=g2_intensity, y=g1_intensity,
-        color='nbr_of_peptides', color_continuous_scale=px.colors.diverging.PiYG, 
-        size='nbr_of_peptides', hover_data=['trivial_name','nbr_of_peptides','accession'])
-    fig.update_layout(yaxis=dict(title=y_label), xaxis=dict(title=x_label))
+        color='# Peptides', color_continuous_scale=px.colors.diverging.PiYG, 
+        size='# Peptides', hover_data=['Trivial name', '# Peptides', 'Accession'])
+    fig.update_layout(yaxis=dict(title=y_label), xaxis=dict(title=x_label), hoverlabel=dict(font_family='Roboto'))
+    
     g1_intensity = list(df_fig[g1_intensity])
     g2_intensity = list(df_fig[g2_intensity])
     minimum = min(g1_intensity + g2_intensity)
