@@ -22,9 +22,10 @@ from methods import amino_acid_piecharts, all_sample_bar_chart, create_peptide_l
 from methods import apply_protein_cutoffs, apply_peptide_cutoffs, get_unique_and_common_proteins, create_venn_bar
 from methods import proteins_present_in_all_samples, create_protein_datatable, create_peptide_datatable, log_intensity, normalize_data, create_length_histogram
 from texts_for_webapp import how_to_use, Documentation
+from mail_sender import send_email
 
 
-app = dash.Dash(__name__,external_stylesheets=[dbc.themes.SANDSTONE, '.assets/style.css'], suppress_callback_exceptions=True)
+app = dash.Dash(__name__,external_stylesheets=[dbc.themes.SANDSTONE], suppress_callback_exceptions=True)
 
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
@@ -179,12 +180,20 @@ modal_feedback = html.Div([
     dbc.Modal([
                 dbc.ModalHeader("Feedback", className="font-weight-bold"),
                 dbc.Row(dbc.Textarea(
-                    id='textarea-feedback',
+                    id='email-adress',
+                    placeholder='Your e-mail adress',
+                    style={'width': '80%', 'height': '2rem', 'padding-top':5, 'padding-bottom':5}), 
+                    style= {'padding-top':5, 'padding-bottom':5}, justify='center',align='center'),
+                        
+                dbc.Row(dbc.Textarea(
+                    id='email-text',
                     placeholder='Send your feedback',
                     style={'width': '80%', 'height': 100},
-                    
                         ), 
+                        style= {'padding-top':5, 'padding-bottom':5},
                         align='center', justify='center'),
+                
+                dbc.Row(html.Div(id='email-sent', children=[])),
                 
                 dbc.ModalFooter([
                     dbc.Button("Send feedback", id="send-feedback", className="ml-auto"),
@@ -245,7 +254,7 @@ normalization_modal = dbc.Modal([
 
 navbar = dbc.Navbar(
     [
-        dbc.NavLink("PepViz", href = '/', style = {'color':'grey', 'font-size':20, 'font-weight':'bold', 'font':'Roboto'} ),
+        dbc.NavLink("Peptimetric", href = '/', style = {'color':'grey', 'font-size':20,  'font-weight':'bold', 'font':'Roboto', 'text-transform':'lowercase'} ),
         modal_file,
         dbc.Button('Normalization', id="open-modal-normalization", color='secondary', outline=True, style={'border-color':'transparent'}, className='mr-1'),
         normalization_modal,
@@ -304,11 +313,13 @@ how_to_use_collapse = html.Div(
                 how_to_use, style={"maxHeight": "300px", "overflowY": "scroll"}
             ),
             dbc.CardFooter(dbc.Button('Load example data', id='load-example-data', color='primary')
-            )
+            ),
+            
             ]),
             id="how-to-use-collapse",
             className="mb-4",
             is_open=True,
+            
         ),
         dbc.Tooltip(
             "View guideline on how to use (NAMN)",
@@ -531,7 +542,6 @@ protein_info = html.Div(dash_table.DataTable(
             row_selectable="multi",
             export_format='xlsx',
             selected_rows=[],
-            css=[{'selector':'.export','rule':'position:font-type:Roboto;color:black;background-color:#FAFAFA;border-color:#8c8c8c);border:1px solid'}],
             style_data_conditional = [{
                 'if' : {'row_index':'odd'},
                 'backgroundColor' : 'rgb(182, 224, 194)'
@@ -563,7 +573,7 @@ peptide_info = html.Div(dash_table.DataTable(id='peptide-info-table',
             filter_action='native',
             virtualization=True,
             export_format='xlsx',
-            css=[{'selector':'.export','rule':'position:font-type:Roboto;color:black;background-color:#FAFAFA;border-color:#8c8c8c;border:1px solid'}],
+
             style_data_conditional = [{
                 'if' : {'row_index':'odd'},
                 'backgroundColor' : 'rgb(182, 224, 194)'
@@ -587,7 +597,7 @@ peptide_info = html.Div(dash_table.DataTable(id='peptide-info-table',
 )
 
 documentation = dbc.Col([
-    dbc.Row([html.Img(src = app.get_asset_url ('document.jpg'), style={'height':'4%', 'width':'4%'}),
+    dbc.Row([html.Img(src = app.get_asset_url ('document.png'), style={'height':'4%', 'width':'4%'}),
         dbc.Col(html.H1('Documentation'))]),
     html.Hr(),
     Documentation,
@@ -612,7 +622,7 @@ hidden_divs = html.Div([
 main_page = dbc.Container([
     
     dbc.Row([
-        dbc.Col(navbar, width={"size":12}, className="mb-4")
+        dbc.Col(navbar, width={"size":12}, className="mb-4", style={'padding-left':0, 'padding-right':0},)
     ]),
     dbc.Row([
         dbc.Col(how_to_use_collapse , width={'size':8}),
@@ -640,18 +650,18 @@ main_page = dbc.Container([
     ]),  
     dbc.Row(dbc.Col(amino_acid_figs)),
     hidden_divs,
-], fluid=True)
+], fluid=True, style={'padding':0})
 
 documentation_page = dbc.Container([
      dbc.Row([
-        dbc.Col(navbar, width={"size":12}, className="mb-4")
+        dbc.Col(navbar, width={"size":12}, className="mb-4", style={'padding-right':0, 'padding-left':0})
     ]),
     dbc.Row([
         documentation,
     ])
 
     
-], fluid=True)
+], fluid=True, style={'padding':0})
 
 #-----------------DEFS AND CALLBACKS--------------------------------------------------------------
 def display_page(pathname):
@@ -923,7 +933,21 @@ def create_venn_bar_fig(length_dropdown_values, protein_list_json, peptide_list_
 
 
 
+def send_feedback(n_clicks, email_body, email_adress):
+    if n_clicks:
+        email_body = email_adress + "/n" + email_body
+        send_email(email_body)
+        return 'Feedback sent!'
+    else:
+        return ''
 
+
+app.callback(
+    Output('email-sent', 'children'),
+    Input('send-feedback', 'n_clicks'),
+    State('email-text', 'value'),
+    State('email-adress','value')
+)(send_feedback)
 
 app.callback(
     Output('generate-protein-graph', 'disabled'),
