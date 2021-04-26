@@ -35,7 +35,7 @@ app.layout = html.Div([
 file_columns = ['Sample', 'File']
 
 modal_file = html.Div([
-    dbc.Button("Files", id="open-modal-file", color='secondary', className="mr-1"),
+    dbc.Button("Files", id="open-modal-file", color='secondary',  outline=True, style={'border-color':'transparent'}, className="mr-1"),
     dbc.Tooltip(
         "Import files",
         target='open-modal-file',
@@ -162,9 +162,10 @@ modal_cutoff = dbc.Modal([
                     dbc.Tab(protein_tab, label='Protein'),
                     
                 ]),
-                dbc.ModalFooter(
+                dbc.ModalFooter([
+                    dbc.Label('*cutoffs will be applied after normalization'),
                     dbc.Button("Apply", id="close-modal-cutoff", className="ml-auto")
-                ),
+                ]),
             ],
             id="modal-cutoff",
             size='m',
@@ -174,7 +175,7 @@ modal_cutoff = dbc.Modal([
 
 
 modal_feedback = html.Div([
-    dbc.Button("Feedback", id="open-modal-feedback", color='secondary', outline=True, className="mr-1"),
+    dbc.Button("Feedback", id="open-modal-feedback", color='secondary', outline=True, style={'border-color':'transparent'}, className="mr-1"),
     dbc.Modal([
                 dbc.ModalHeader("Feedback", className="font-weight-bold"),
                 dbc.Row(dbc.Textarea(
@@ -246,10 +247,10 @@ navbar = dbc.Navbar(
     [
         dbc.NavLink("PepViz", href = '/', style = {'color':'grey', 'font-size':20, 'font-weight':'bold', 'font':'Roboto'} ),
         modal_file,
-        dbc.Button("Cutoffs", id="open-modal-cutoff", color='secondary', className='mr-1'),
-        modal_cutoff,
-        dbc.Button('Normalization', id="open-modal-normalization", color='secondary', className='mr-1'),
+        dbc.Button('Normalization', id="open-modal-normalization", color='secondary', outline=True, style={'border-color':'transparent'}, className='mr-1'),
         normalization_modal,
+        dbc.Button("Cutoffs", id="open-modal-cutoff", color='secondary', outline=True, style={'border-color':'transparent'}, className='mr-1'),
+        modal_cutoff,
         dbc.Nav([
         modal_feedback,
         dbc.NavLink('Documentation', href='/documentation'),
@@ -450,8 +451,8 @@ peptide_fig_radioitems = html.Div([
 peptide_fig_radioitems_sum_or_mean = html.Div([ 
     dbc.RadioItems(
         options=[
-        {'label': 'Sum of all samples', 'value': False},
-        {'label': 'Mean of all samples', 'value': True}
+        {'label': 'View all samples', 'value': False},
+        {'label': 'View mean of all samples', 'value': True}
         ],
         value=False,
         id='sum-or-mean-radio',
