@@ -21,8 +21,7 @@ from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, 
 from methods import amino_acid_piecharts, all_sample_bar_chart, create_peptide_list_from_trivname
 from methods import apply_protein_cutoffs, apply_peptide_cutoffs, get_unique_and_common_proteins, create_venn_bar
 from methods import proteins_present_in_all_samples, create_protein_datatable, create_peptide_datatable, log_intensity, normalize_data, create_length_histogram
-from texts_for_webapp import how_to_use, Documentation
-from mail_sender import send_email
+from texts_for_webapp import how_to_use, Documentation, contact_text
 
 
 app = dash.Dash(__name__,external_stylesheets=[dbc.themes.SANDSTONE], suppress_callback_exceptions=True)
@@ -169,26 +168,14 @@ modal_cutoff = dbc.Modal([
 modal_feedback = html.Div([
     dbc.Button("Feedback", id="open-modal-feedback", color='secondary', outline=True, style={'border-color':'transparent'}, className="mr-1"),
     dbc.Modal([
-                dbc.ModalHeader("Feedback", className="font-weight-bold"),
-                dbc.Row(dbc.Input(
-                    id='email-adress',
-                    placeholder='Your e-mail adress',
-                    type="email",
-                    style={'width': '80%', 'height': '2rem'}), 
-                    style= {'padding-top':5, 'padding-bottom':5}, justify='center',align='center'),
-                        
-                dbc.Row(dbc.Textarea(
-                    id='email-text',
-                    placeholder='Send your feedback',
-                    style={'width': '80%', 'height': 100},
-                        ), 
-                        style= {'padding-top':5, 'padding-bottom':5},
-                        align='center', justify='center'),
-                
-                dbc.Row(html.Div(id='email-sent', style={'padding-top':5, 'padding-bottom':5}), align='center', justify='center'),
+        dbc.ModalHeader('Feedback'),
+                dbc.ModalBody(
+                    html.Div(
+                        html.P(contact_text)
+                    )
+                ),
                 
                 dbc.ModalFooter([
-                    dbc.Button("Send feedback", id="send-feedback", color='info', className="mr-auto", n_clicks=0),
                     dbc.Button("Close", id="close-modal-feedback", color='primary', className="ml-auto")
                 ]),
             ],
@@ -931,23 +918,6 @@ def create_venn_bar_fig(length_dropdown_values, protein_list_json, peptide_list_
         return {}
 
 
-
-def send_feedback(n_clicks, email_body, email_adress):
-    if n_clicks and email_adress and email_body:
-        print(email_body, email_adress)
-        email_body = 'E-mail from: ' + email_adress + "\n" + 'Feedback: ' + email_body
-        send_email(email_body)
-        return 'Feedback sent!'
-    else:
-        return 'Please enter your email adress and your feedback above'
-
-
-app.callback(
-    Output('email-sent', 'children'),
-    Input('send-feedback', 'n_clicks'),
-    State('email-text', 'value'),
-    State('email-adress','value')
-)(send_feedback)
 
 app.callback(
     Output('generate-protein-graph', 'disabled'),

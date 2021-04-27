@@ -154,15 +154,14 @@ Legal = html.Div([
     ''', style={})
 ])
 
+contact_text = html.P(['''
+    Have you found any bugs or would you like to file a feature request? ''', html.A('Contact us! ', href='mailto:peptimetric@gmail.com'),
+    '''Please describe your request or problem. We will get back to you with further questions if necessary.
+    '''],)
 Contact = html.Div([
     dbc.Row([html.Img(src = './assets/contact.png', style={'height':'5%', 'width':'5%'}),
         html.H5('Contact', style={"font-weight": "bold", }),]),
-    html.P('''
-    Have you found any bugs or would you like to file a feature request? Please use the Feedback button, situated in the navbar and
-    we'll make sure to get back to you. Be sure to describe the problem/request you're having in great detail for our understanding.
-
-    For other purposes, feel free to contact us directly.
-    ''', style={})
+    contact_text,
 ])
 
 
