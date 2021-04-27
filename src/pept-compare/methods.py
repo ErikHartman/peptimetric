@@ -541,9 +541,9 @@ def create_venn_bar(p_list, complete_proteome = True):
         paper_bgcolor='rgb(255, 255, 255)',
         plot_bgcolor='rgb(255, 255, 255)',
         )
-    fig.add_trace(go.Bar(x=['1'], y=[len(group_1_unique)], name='Group 1: Unique', marker=dict(color=green['light'])))
-    fig.add_trace(go.Bar(x=['1'], y=[len(common)], name='Common', marker=dict(color=green['medium'])))
-    fig.add_trace(go.Bar(x=['1'], y=[len(group_2_unique)], name='Group 2: Unique', marker=dict(color=green['dark'])))
+    fig.add_trace(go.Bar(x=['Venn bar'], y=[len(group_1_unique)], name='Group 1: Unique', marker=dict(color=green['light'])))
+    fig.add_trace(go.Bar(x=['Venn bar'], y=[len(common)], name='Common', marker=dict(color=green['medium'])))
+    fig.add_trace(go.Bar(x=['Venn bar'], y=[len(group_2_unique)], name='Group 2: Unique', marker=dict(color=green['dark'])))
     return fig
 
 def stacked_samples_peptide(peptide_list, **kwargs):
@@ -754,6 +754,7 @@ def stacked_samples_peptide(peptide_list, **kwargs):
     fig.add_annotation(text="Group 1",
                   xref="paper", yref="paper",
                   x=0.05, y=1, showarrow=False)
+
     fig.update_layout(title=trivial_name, yaxis=dict(title=y_axis_label), xaxis=dict(title='Sequence', rangeslider=dict(visible=True)))
     fig.update_yaxes(range=[-maximum_intensity, maximum_intensity])
     return fig
@@ -827,13 +828,13 @@ def create_peptide_datatable(peptide_list):
 
 def create_protein_datatable(protein_list):
     protein_info_columns = ['Protein','UniProt ID','#peptides_g1','#peptides_g2','intensity_sum_g1','intensity_sum_g2','intensity_sum_g1_sd', 'intensity_sum_g2_sd', 'intensity_mean_g1', 'intensity_mean_g2', 'intensity_mean_g1_sd', 'intensity_mean_g2_sd',
-    'spc_sum_g1','spc_sum_g2','spc_sum_g1_sd ','spc_sum_g2_sd', 'spc_mean_g1','spc_mean_g2','spc_mean_g1_sd', 'spc_mean_g2_sd', 'intensity_p_value', 'spc_p_value']
+    'spc_sum_g1','spc_sum_g2','spc_sum_g1_sd ','spc_sum_g2_sd', 'spc_mean_g1','spc_mean_g2','spc_mean_g1_sd', 'spc_mean_g2_sd', 'intensity_p_value_sum', 'intensity_p_value_mean', 'spc_p_value_sum', 'spc_p_value_mean']
     df_protein_info = pd.DataFrame(columns=protein_info_columns)
     for protein in protein_list:
         df_protein_info = df_protein_info.append({'Protein': str(protein.get_trivial_name()), 'UniProt id': protein.get_id(),'#peptides_g1': protein.get_nbr_of_peptides()[0], '#peptides_g2': protein.get_nbr_of_peptides()[1], 
         'intensity_sum_g1': round(float(protein.get_area_sum()[0]), 3), 'intensity_sum_g2': round(float(protein.get_area_sum()[2]), 3),'intensity_sum_g1_sd': round(float(protein.get_area_sum()[1]), 3),'intensity_sum_g2_sd': round(float(protein.get_area_sum()[3]), 3), 'intensity_mean_g1': round(float(protein.get_area_mean()[0]),3), 'intesnity_mean_g2': round(float(protein.get_area_mean()[2]), 3), 'intensity_mean_g1_sd': round(float(protein.get_area_mean()[1]), 3), 'intensity_mean_g2_sd': round(float(protein.get_area_sum()[3]), 3), 
         'spc_g1': round(float(protein.get_spectral_count_sum()[0]),3), 'spc_g2': round(float(protein.get_spectral_count_sum()[2]), 3),'spc_sum_g1_sd': round(float(protein.get_spectral_count_sum()[1]), 3) ,'spc_sum_g2_sd': round(float(protein.get_spectral_count_sum()[3]), 3) ,'spc_mean_g1': round(float(protein.get_spectral_count_mean()[0]), 3), 'spc_mean_g2': round(float(protein.get_spectral_count_mean()[2]), 3),'spc_mean_g1_sd': round(float(protein.get_spectral_count_mean()[1]), 3),
-        'spc_mean_g2_sd': round(float(protein.get_spectral_count_mean()[3]), 3), 'intensity_p_value':round(float(protein.get_pvalue('area')), 3), 'spc_p_value':round(float(protein.get_pvalue('spc')), 3)},  ignore_index=True)
+        'spc_mean_g2_sd': round(float(protein.get_spectral_count_mean()[3]), 3), 'intensity_p_value_sum':round(float(protein.get_pvalue('area')), 3), 'intensity_p_value_mean':round(float(protein.get_pvalue_mean('area')), 3), 'spc_p_value_sum':round(float(protein.get_pvalue('spc')), 3), 'spc_p_value_mean':round(float(protein.get_pvalue_mean('spc')), 3)},  ignore_index=True)
     return df_protein_info
 
     
@@ -848,7 +849,7 @@ def normalize_data(protein_list, housekeeping_protein=False):
             protein_spc_dict =  Counter(protein.get_spectral_count_sum_all_samples())
             total_intensity_dict = Counter(total_intensity_dict) + protein_intensity_dict
             total_spc_dict = Counter(total_spc_dict) + protein_spc_dict
-
+        print(total_intensity_dict)
         for protein in protein_list:
             df = protein.df.copy()
             for key, value in total_intensity_dict.items():

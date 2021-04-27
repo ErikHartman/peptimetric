@@ -269,6 +269,21 @@ class Protein:
             ttest, pvalue = ttest_ind_from_stats(g1_mean, g1_std, n1, g2_mean, g2_std, n2)
             return pvalue
 
+    def get_pvalue_mean(self, spc_or_area):
+        if spc_or_area == 'spc':
+            g1_mean, g1_std, g2_mean, g2_std = self.get_spectral_count_mean()
+        else:
+            g1_mean, g1_std, g2_mean, g2_std = self.get_area_mean()
+        n1, n2 = self.get_number_of_samples()
+        nbr_of_peptides_g1, nbr_of_peptides_g2 = self.get_nbr_of_peptides()
+        if n1 < 2 or n2 < 2:
+            return np.nan
+        elif nbr_of_peptides_g1 < 2 or nbr_of_peptides_g2 < 2:
+            return np.nan
+        else:
+            ttest, pvalue = ttest_ind_from_stats(g1_mean, g1_std, n1, g2_mean, g2_std, n2)
+            return pvalue
+
     def present_in_all_samples(self):
         area_sum_all_samples = self.get_area_sum_all_samples()
         for area in area_sum_all_samples.values():

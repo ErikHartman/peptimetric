@@ -761,27 +761,27 @@ def create_protein_figure_and_table(rows, derived_virtual_selected_rows, search_
         protein_list = json_to_protein_list(protein_list_json)
         if 'area_sum' in protein_radioitems_value:
             difference_metric = 'area_sum'
-            columns = ['Protein','UniProt ID','#peptides_g1','#peptides_g2','intensity_sum_g1', 'intensity_sum_g1_sd','intensity_sum_g2', 'intensity_sum_g2_sd', 'intensity_p_value']
+            columns = ['Protein','UniProt ID','#peptides_g1','#peptides_g2','intensity_sum_g1', 'intensity_sum_g1_sd','intensity_sum_g2', 'intensity_sum_g2_sd', 'intensity_p_value_sum']
             sort = ['intensity G2', 'intensity G1']
-            rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2', 'intensity_sum_g1': 'intensity G1', 'intensity_sum_g2':'intensity G2', 'intensity_sum_g1_sd':'SD', 'intensity_sum_g2_sd': 'SD', 'intensity_p_value':'p-value'
+            rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2', 'intensity_sum_g1': 'intensity G1', 'intensity_sum_g2':'intensity G2', 'intensity_sum_g1_sd':'SD', 'intensity_sum_g2_sd': 'SD', 'intensity_p_value_sum':'p-value'
             }
         elif 'area_mean' in protein_radioitems_value:
             difference_metric = 'area_mean'
-            columns = ['Protein','UniProt ID','#peptides_g1','#peptides_g2','intensity_mean_g1', 'intensity_mean_g1_sd','intensity_mean_g2', 'intensity_mean_g2_sd', 'intensity_p_value']
+            columns = ['Protein','UniProt ID','#peptides_g1','#peptides_g2','intensity_mean_g1', 'intensity_mean_g1_sd','intensity_mean_g2', 'intensity_mean_g2_sd', 'intensity_p_value_mean']
             sort = ['intensity G2', 'intensity G1']
-            rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2','intensity_mean_g1': 'intensity G1', 'intensity_mean_g2':'intensity G2', 'intensity_mean_g1_sd':'SD', 'intensity_mean_g2_sd': 'SD', 'intensity_p_value':'p-value'
+            rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2','intensity_mean_g1': 'intensity G1', 'intensity_mean_g2':'intensity G2', 'intensity_mean_g1_sd':'SD', 'intensity_mean_g2_sd': 'SD', 'intensity_p_value_mean':'p-value'
             }
         elif 'spc_sum' in protein_radioitems_value:
             difference_metric = 'spc_sum'
-            columns = ['Protein','UniProt ID','#peptides_g1','#peptides_g2','spc_sum_g1', 'spc_sum_g1_sd','spc_sum_g2', 'spc_sum_g2_sd', 'spc_p_value']
+            columns = ['Protein','UniProt ID','#peptides_g1','#peptides_g2','spc_sum_g1', 'spc_sum_g1_sd','spc_sum_g2', 'spc_sum_g2_sd', 'spc_p_value_sum']
             sort = ['SpC G2','SpC G1']
-            rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2','spc_sum_g1': 'SpC G1', 'spc_sum_g2':'SpC G2', 'spc_sum_g1_sd':'SD', 'spc_sum_g2_sd': 'SD', 'spc_p_value':'p-value'
+            rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2','spc_sum_g1': 'SpC G1', 'spc_sum_g2':'SpC G2', 'spc_sum_g1_sd':'SD', 'spc_sum_g2_sd': 'SD', 'spc_p_value_sum':'p-value'
             }
         else:
             difference_metric = 'spc_mean'
-            columns = ['Protein','UniProt ID','#peptides_g1','#peptides_g2','spc_mean_g1', 'spc_mean_g1_sd','spc_mean_g2', 'spc_mean_g2_sd', 'spc_p_value']
+            columns = ['Protein','UniProt ID','#peptides_g1','#peptides_g2','spc_mean_g1', 'spc_mean_g1_sd','spc_mean_g2', 'spc_mean_g2_sd', 'spc_p_value_mean']
             sort = ['SpC G2','SpC G1']
-            rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2','spc_mean_g1': 'SpC G1', 'spc_mean_g2':'SpC G2', 'spc_mean_g1_sd':'SD', 'spc_mean_g2_sd': 'SD', 'spc_p_value':'p-value'
+            rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2','spc_mean_g1': 'SpC G1', 'spc_mean_g2':'SpC G2', 'spc_mean_g1_sd':'SD', 'spc_mean_g2_sd': 'SD', 'spc_p_value_mean':'p-value'
             }
         
         df_protein_info = df_protein_info[columns]
