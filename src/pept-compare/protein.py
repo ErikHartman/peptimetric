@@ -30,7 +30,7 @@ class Protein:
         return json.dumps(self, indent = 4, default=lambda o: o.__dict__)
 
     def get_area_sum_all_samples(self):
-        area_columns = [col for col in self.df if col.startswith('Area')]
+        area_columns = [col for col in self.df if col.startswith('Intensity')]
         area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
         area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
         area_sum_g1 = []
@@ -49,7 +49,7 @@ class Protein:
         return area_g1_dict
     
     def get_area_mean_all_samples(self):
-        area_columns = [col for col in self.df if col.startswith('Area')]
+        area_columns = [col for col in self.df if col.startswith('Intensity')]
         area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
         area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
         area_mean_g1 = []
@@ -106,7 +106,7 @@ class Protein:
         return spc_g1_dict
 
     def get_area_sum(self):
-        area_columns = [col for col in self.df if col.startswith('Area')]
+        area_columns = [col for col in self.df if col.startswith('Intensity')]
         area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
         area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
         area_sum_g1 = []
@@ -125,7 +125,7 @@ class Protein:
             return statistics.mean(area_sum_g1), 0, statistics.mean(area_sum_g2), 0
 
     def get_area_mean(self):
-        area_columns = [col for col in self.df if col.startswith('Area')]
+        area_columns = [col for col in self.df if col.startswith('Intensity')]
         area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
         area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
         area_mean_g1 = []
@@ -182,7 +182,7 @@ class Protein:
             return statistics.mean(spc_mean_g1), 0, statistics.mean(spc_mean_g2), 0
 
     def three_peptides(self):
-        area_columns = [col for col in self.df if col.startswith('Area')]
+        area_columns = [col for col in self.df if col.startswith('Intensity')]
         area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
         area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
         df = self.df.copy()
@@ -202,7 +202,7 @@ class Protein:
             return 0, 0
 
     def get_nbr_of_peptides(self):
-        area_columns = [col for col in self.df if col.startswith('Area')]
+        area_columns = [col for col in self.df if col.startswith('Intensity')]
         area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
         area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
         spc_columns = [col for col in self.df if col.startswith('Spectral')]
@@ -248,7 +248,7 @@ class Protein:
 
 
     def get_number_of_samples(self):
-        area_columns = [col for col in self.df if col.startswith('Area')]
+        area_columns = [col for col in self.df if col.startswith('Intensity')]
         area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
         area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
         return len(area_columns_g1), len(area_columns_g2)

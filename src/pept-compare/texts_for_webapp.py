@@ -148,16 +148,20 @@ html.P('''
 Legal = html.Div([
     dbc.Row([html.Img(src = './assets/legal.png', style={'height':'5%', 'width':'5%'}),
         html.H5('Legal', style={"font-weight": "bold", }),]),
-    html.P('''
-    Peptimetric is free to use for academic purposes. The uploaded files are stored as JSON files in your browser. No data is saved and no use is monitored
+    html.P(['''
+    Peptimetric is free to use for academic purposes and is available at ''', html.A('GitHub', href="https://github.com/ErikHartman/peptimetric"), ''' under an MIT license. 
+    The uploaded files are stored as JSON files in your browser. No data is saved and no use is monitored
     using cookies or third party applications. The Dash library is freely available under the MIT license.
-    ''', style={})
+    '''])
 ])
 
+
 contact_text = html.P(['''
-    Have you found any bugs or would you like to file a feature request? ''', html.A('Contact us! ', href='mailto:peptimetric@gmail.com'),
-    '''Please describe your request or problem. We will get back to you with further questions if necessary.
+    Have you found any bugs or would you like to file a feature request? ''', html.A('Click here to contact us! ', href='mailto:peptimetric@gmail.com'),
+    '''Please describe your request or problem in as great detail as possible. We will get back to you with further questions if necessary.
     '''],)
+
+
 Contact = html.Div([
     dbc.Row([html.Img(src = './assets/contact.png', style={'height':'5%', 'width':'5%'}),
         html.H5('Contact', style={"font-weight": "bold", }),]),
@@ -181,6 +185,4 @@ Documentation = html.Div([
     Legal,
     html.Hr(),
     Contact,
-
-
 ])
