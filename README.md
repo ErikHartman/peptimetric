@@ -1,4 +1,4 @@
-# Kandidatarbete 2021
+# Peptimetric
 
 ![GitHub Actions badge](https://github.com/ErikHartman/kand/workflows/Test/badge.svg)
 
