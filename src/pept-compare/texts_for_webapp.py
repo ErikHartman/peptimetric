@@ -56,10 +56,13 @@ Data_processing = html.Div([dbc.Row([html.Img(src = './assets/computer.png', sty
 Settings = html.Div([dbc.Row([html.Img(src = './assets/settings.png', style={'height':'5%', 'width':'5%'}),
         html.H5('Settings', style={"font-weight": "bold"}),]),
 html.H6('Normalization', style={'font-weight':'bold', 'margin-bottom':0, }),
-dbc.Row([dbc.Col(html.P('''
+dbc.Row([dbc.Col([html.P('''
 Peptimetric accommodates for two ways of normalizing your data: using the global intensity, and by using a housekeeping protein. Both methods 
 are valid ways of normalizing MS and MSMS data and may reduce the inter-sample biases introduced in sample preparation and loading. 
-''', style={}), width={'size':7}),
+''', style={}),
+html.P('''All the intensity values from the input files are converted to the logarithm (log) scale before presented in the Protein view. If the values present in the input files are 
+already in the logarithmic scale the option in the normalizartion modal have to be marked in order to obtain correct graphs. The logaritmic scale is generally used when analysing data from MS, hence
+logaritmic intensities usually follows normal distrubtion.''', style={})], width={'size':7}),
 dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/normalization.jpg', style={'height':'100%', 'width':'100%'})), width={'size':4, 'offset':0}),
 ]),
 
