@@ -30,6 +30,7 @@ ipython = "^7.21.0"
 ipywidgets = "^7.6.3"
 rq = "^1.8.0"
 redis = "^3.5.3"
+gunicorn = "^20.1.0"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.7.2"
