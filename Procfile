@@ -1,0 +1,1 @@
+web: gunicorn webapp_main:server

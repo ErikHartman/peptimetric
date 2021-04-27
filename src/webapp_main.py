@@ -25,6 +25,7 @@ from texts_for_webapp import how_to_use, Documentation, contact_text
 
 
 app = dash.Dash(__name__,external_stylesheets=[dbc.themes.SANDSTONE], suppress_callback_exceptions=True)
+server=app.server
 
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
