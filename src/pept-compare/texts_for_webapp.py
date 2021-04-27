@@ -137,7 +137,29 @@ Interactivity = html.Div([
         html.H5('Interactivity', style={"font-weight": "bold",})]),
 html.P('''
 All of the elements in peptimetric contain some type of interacitivty, allowing for easy exploration of your dataset. 
-''', style={})
+''', style={}), 
+html.P('''
+    Search protein
+    ''', style={'font-weight':'bold', 'margin-bottom':0, } ),
+    html.P(['''
+    The search protein function makes it possible to search for all proteins present in the dataset, and those not removed 
+    by any cutoffs. A scrollable and clickable list containing the trivialnames from ''' , html.A('UniProt', href='https://uniprot.org/'),''' also displays the proteins 
+    present in the dataset. A protein is serached by pressing "Enter", and the selected protein will be highlighted in the protein graph. 
+    '''], style={} ),
+    html.P('''
+    Modebars
+    ''', style={'font-weight':'bold', 'margin-bottom':0, }),
+    html.P(['''
+    Peptrimetric uses the built-in ''', html.A('Modebars', href='https://plotly.com/chart-studio-help/getting-to-know-the-plotly-modebar/'),''' from Plotly to allow 
+    the user to interact with the graphs created in both protein view and peptide view. Functions like
+    downloading the plots (.png), zooming, autoscale, reset axis and different hover options are therefore available. More information 
+    '''], style={} ),
+    html.P('''
+    Peptide view slider 
+    ''', style={'font-weight':'bold', 'margin-bottom':0, }),html.P('''
+    The slider at the bottom of the peptide view graph allows the user to slide across the peptide sequences and also minimize the window to make it easier to visualize 
+    differences between the groups.
+    ''', style={} ),
 ])
 
 Cite = html.Div([

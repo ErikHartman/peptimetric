@@ -406,7 +406,7 @@ protein_fig = html.Div([
             dbc.Col(dbc.Button('Generate protein graph', id='generate-protein-graph', color='success'))
         ]),
         dcc.Loading(type='cube', color = '#76b382',
-            children=dcc.Graph(id='protein-fig', figure={}, config={'toImageButtonOptions':{'format': 'jpeg'}, 'displaylogo':False})
+            children=dcc.Graph(id='protein-fig', figure={}, config={'displaylogo':False})
         )
         
         ])
