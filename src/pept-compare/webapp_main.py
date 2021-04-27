@@ -56,7 +56,7 @@ modal_file = html.Div([
                                 data=[],
                                 style_data_conditional = [{
                                         'if' : {'row_index':'odd'},
-                                        'backgroundColor' : 'rgb(182, 224, 194)'
+                                        'backgroundColor' : '#92dbb0'
                                     }
                                     ],
                                     style_header={
@@ -78,7 +78,7 @@ modal_file = html.Div([
                                 data=[],
                                 style_data_conditional = [{
                                         'if' : {'row_index':'odd'},
-                                        'backgroundColor' : 'rgb(182, 224, 194)'
+                                        'backgroundColor' : '#92dbb0'
                                     }
                                     ],
                                     style_header={
@@ -209,7 +209,7 @@ normalization_modal = dbc.Modal([
                                     list = 'protein-list',
                                     className="ml-auto",
                                     disabled=True
-                                ), width=5,
+                                ), width=8,
                         )
                     ]),
                 dbc.Checklist(
@@ -325,7 +325,7 @@ sample_collapse = html.Div(
                                 data=[],
                                 style_data_conditional = [{
                                         'if' : {'row_index':'odd'},
-                                        'backgroundColor' : 'rgb(182, 224, 194)'
+                                        'backgroundColor' : '#92dbb0'
                                     }
                                     ],
                                     style_header={
@@ -347,7 +347,7 @@ sample_collapse = html.Div(
                                 data=[],
                                 style_data_conditional = [{
                                         'if' : {'row_index':'odd'},
-                                        'backgroundColor' : 'rgb(182, 224, 194)'
+                                        'backgroundColor' : '#92dbb0'
                                     }
                                     ],
                                     style_header={
@@ -513,7 +513,7 @@ protein_info = html.Div(dash_table.DataTable(
             selected_rows=[],
             style_data_conditional = [{
                 'if' : {'row_index':'odd'},
-                'backgroundColor' : 'rgb(182, 224, 194)'
+                'backgroundColor' : '#92dbb0'
             }
             ],
             style_header={
@@ -545,7 +545,7 @@ peptide_info = html.Div(dash_table.DataTable(id='peptide-info-table',
 
             style_data_conditional = [{
                 'if' : {'row_index':'odd'},
-                'backgroundColor' : 'rgb(182, 224, 194)'
+                'backgroundColor' : '#92dbb0'
             }
             ],
             style_header={

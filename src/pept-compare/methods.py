@@ -43,7 +43,7 @@ red = {
 column_names_dict = {
     'Peptide' : ['Peptide','Sequence', 'sequence', 'Sequences', 'sequences' 'peptide', 'peptides'],
     'Accession': ['Accession','Protein', 'protein','accession','uniprot id', 'UniProt id', 'Uniprot id'],
-    'Area': ['Area','Intensity', 'area', 'intensity', 'intensities'],
+    'Intensity': ['Intensity','Area', 'area', 'intensity', 'intensities'],
     'RT': ['RT','retention time', 'Retention time'],
     'CCS': ['CCS','collision cross section', 'Collision Cross Section', 'Collision cross section'],
     'Spectral count': ['Spectral count','SPC', 'SpC', 'spc', 'sc', 'SC', 'spectral count', '#Feature', 'spectral counts', '#Features']
@@ -108,7 +108,7 @@ def merge_dataframes(g1, g2):
     return g1.merge(g2, on=['Peptide', 'Accession'], how='outer', suffixes=['_g1','_g2'])
 
 def log_intensity(df):
-    area_columns = [col for col in df if col.startswith('Area')]
+    area_columns = [col for col in df if col.startswith('Intensity')]
     df[area_columns] = df[area_columns].apply(lambda x: [np.log10(y) if y > 0 else 0 for y in x])
     return df
 
@@ -399,99 +399,15 @@ def create_protein_fig(df_fig, protein_list, **kwargs):
     minimum = min(g1_intensity + g2_intensity)
     maximum = max(g1_intensity + g2_intensity)
     fig.add_shape(type="line",x0=minimum, y0=minimum, x1=maximum, y1=maximum, line=dict(color="#919499",width=1, dash='dash'))
-    fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}, coloraxis_colorbar=dict(title='Number of peptides'))
+    fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}, 
+    coloraxis_colorbar=dict(title='Number of peptides'),
+    modebar ={
+                    'bgcolor': 'rgba(255,255,255,1)'
+                })
     if kwargs.get('show_stdev') == True:
         fig.update_traces(error_x= dict(array=df_fig[g1_std].array, thickness=1), error_y=dict(array=df_fig[g2_std].array, thickness=1))
 
     return fig
-
-def peptide_graphic_plotly(peptide_list, **kwargs):
-    default_settings = {
-        'color':'green',
-        'difference_metric':'area_sum',
-        'show_difference':'',
-        'show_weight':'',
-        
-    }
-    default_settings.update(**kwargs)
-    color=green
-    if kwargs.get('color') == 'green':
-        color = green
-    trivial_name = peptide_list[0].protein.get_trivial_name()
-    fasta = peptide_list[0].protein.get_fasta_seq()
-    fasta_dict = {"index": [], "counter_pos": [], "counter_neg": [], "intensity_pos": [], "intensity_neg": []}
-    for i in range(len(fasta)):
-        fasta_dict["index"].append(i)
-        fasta_dict["counter_pos"].append(0)
-        fasta_dict["counter_neg"].append(0)
-        fasta_dict["intensity_pos"].append(0)
-        fasta_dict["intensity_neg"].append(0)
-    for peptide in peptide_list:
-        start = peptide.get_start()
-        end = peptide.get_end()
-        intensity_pos = peptide.get_area()[0]
-        intensity_neg = peptide.get_area()[2]
-        if peptide.get_start() != None:
-            for i in list(range(start, end)):
-                if intensity_neg > 0 or intensity_pos > 0:
-                    fasta_dict["intensity_pos"][i] += intensity_pos
-                    fasta_dict["intensity_neg"][i] += intensity_neg
-                    if intensity_pos > 0:
-                        fasta_dict["counter_pos"][i] += 1
-                    if intensity_neg > 0:
-                        fasta_dict["counter_neg"][i] += 1
-    col_pos = []
-    col_neg = []
-    max_count = max(fasta_dict["counter_pos"] + fasta_dict["counter_neg"])
-    min_count = min(fasta_dict["counter_pos"] + fasta_dict["counter_neg"])
-    for count in fasta_dict["counter_pos"]:
-        if count > 4 * max_count / 5:
-            col_pos.append(color['dark'])
-        elif count > 3 * max_count / 5:
-            col_pos.append(color['mediumdark'])
-        elif count > 2 * max_count / 5:
-            col_pos.append(color['medium'])
-        elif count > max_count / 5:
-            col_pos.append(color['mediumlight'])
-        else:
-            col_pos.append(color['light'])
-    for count in fasta_dict["counter_neg"]:
-        if count > 4 * max_count / 5:
-            col_neg.append(color['dark'])
-        elif count > 3 * max_count / 5:
-            col_neg.append(color['mediumdark'])
-        elif count > 2 * max_count / 5:
-            col_neg.append(color['medium'])
-        elif count > max_count / 5:
-            col_neg.append(color['mediumlight'])
-        else:
-            col_neg.append(color['light'])
-    fig = go.Figure()
-    fig.add_trace(go.Bar(x=fasta_dict["index"], y=fasta_dict["intensity_pos"], name="group 1", 
-    width=1, marker=dict(line=dict(width=0), color=col_pos)))
-    fig.add_trace(go.Bar(x=fasta_dict["index"], y=[-value for value in fasta_dict['intensity_neg']], name="group 2", width=1, marker=dict(line=dict(width=0), color=col_neg)))
-    fig.update_layout(barmode='relative', title_text=trivial_name, showlegend=False)
-    fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',})
-    maximum_intensity = max(fasta_dict['intensity_pos'] + fasta_dict['intensity_neg'])
-    fig.update_yaxes(range=[-maximum_intensity, maximum_intensity])
-    fig.update_layout(yaxis=dict(title='log(Intensity)'), xaxis=dict(title='Sequence', rangeslider=dict(visible=True)))
-    if kwargs.get('show_weight') == 'show':
-        weight = (sum(fasta_dict['intensity_pos']) - sum(fasta_dict['intensity_neg'])) / len(fasta)
-        fig.add_shape(type='line', x0=0, y0=weight, x1=len(fasta), y1=weight, line=dict(
-        color="#182773",
-        width=2,
-        dash="dash",
-    ))
-    if kwargs.get('show_difference') == 'show':
-        difference = []
-        for i in list(range(len(fasta_dict["index"]))):
-            difference.append(fasta_dict['intensity_pos'][i] - fasta_dict['intensity_neg'][i])
-        fig.add_trace(go.Scatter(x=fasta_dict["index"], y=difference, mode='lines', line=dict(color='rgb(208,28,139)', width=2), opacity=0.5))
-    
-    return fig
-    
-def calculate_pi(seq):
-    return electrochem.pI(seq, 7)
 
 def rt_check(df):
     rt_cols = df[[col for col in df if col.startswith('RT')]]
@@ -523,7 +439,7 @@ def apply_peptide_cutoffs(protein_list, **kwargs):
         df = protein.df.copy()
         df.fillna(0, inplace=True)
         spc_columns = [col for col in df if col.startswith('Spectral')]
-        area_columns = [col for col in df if col.startswith('Area')]
+        area_columns = [col for col in df if col.startswith('Intensity')]
         df[spc_columns] = df[spc_columns].apply(lambda x: [y if y > spc_limit else 0 for y in x])
         df[area_columns] = df[area_columns].apply(lambda x: [y if y > area_limit else 0 for y in x])
         if kwargs.get('rt') == True:
@@ -591,6 +507,7 @@ def all_sample_bar_chart(protein_list, accession, **kwargs):
         y='Spectral count'
     fig = px.bar(df, x = 'Sample', y=y, color=y, color_continuous_scale=px.colors.sequential.algae, title=title)
     fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}, showlegend=False, coloraxis_showscale=False)
+    
     return fig
 
 def create_venn_bar(p_list, complete_proteome = True):
@@ -631,14 +548,11 @@ def create_venn_bar(p_list, complete_proteome = True):
 
 def stacked_samples_peptide(peptide_list, **kwargs):
     default_settings = {
-        'color':'green',
         'difference_metric':'area',
         'average': False,
         
     }
     default_settings.update(**kwargs)
-    if kwargs.get('color') == 'green':
-        color = green
     fasta = peptide_list[0].fasta
     fig  = go.Figure()
     trivial_name =  peptide_list[0].protein.get_trivial_name()
