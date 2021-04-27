@@ -37,7 +37,7 @@ file_columns = ['Sample', 'File']
 
 modal_file = html.Div([
 
-    dbc.Button("Files", id="open-modal-file", color='secondary',  outline=True, style={'border-color':'transparent'}, className="mr-1"),
+    dbc.Button("Upload files", id="open-modal-file", color='secondary',  outline=True, style={'border-color':'transparent'}, className="mr-1"),
         dbc.Modal([
                 dbc.ModalHeader("Upload files", className="font-weight-bold"),
                     dbc.Row([
@@ -213,7 +213,7 @@ normalization_modal = dbc.Modal([
                         )),
                         dbc.Col(dbc.Input(
                                     id='housekeeping-protein-input',
-                                    placeholder='Search protein...',
+                                    placeholder='Protein name (e.g. ALBU_HUMAN)',
                                     name = 'text',
                                     debounce=True,
                                     inputMode='latin',
@@ -774,23 +774,34 @@ def create_protein_figure_and_table(rows, derived_virtual_selected_rows, search_
         protein_list = json_to_protein_list(protein_list_json)
         if 'area_sum' in protein_radioitems_value:
             difference_metric = 'area_sum'
-            columns = ['Protein','UniProt ID','Nbr Peptides G1','Nbr Peptides G2','Intensity sum G1','Intensity sum G2','Int.sum SD G1', 'Int.sum SD G2', 'Int.sum p-value']
-            sort = ['Intensity sum G1','Intensity sum G2']
+            columns = ['Protein','UniProt ID','#peptides_g1','#peptides_g2','intensity_sum_g1', 'intensity_sum_g1_sd','intensity_sum_g2', 'intensity_sum_g2_sd', 'intensity_p_value']
+            sort = ['intensity G2', 'intensity G1']
+            rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2', 'intensity_sum_g1': 'intensity G1', 'intensity_sum_g2':'intensity G2', 'intensity_sum_g1_sd':'SD', 'intensity_sum_g2_sd': 'SD', 'intensity_p_value':'p-value'
+            }
         elif 'area_mean' in protein_radioitems_value:
             difference_metric = 'area_mean'
-            columns = ['Protein','UniProt ID','Nbr Peptides G1','Nbr Peptides G2', 'Intensity mean G1', 'Intensity mean G2', 'Int.mean SD G1', 'Int.mean SD G2','Int.mean p-value']
-            sort = ['Intensity mean G1', 'Intensity mean G2']
+            columns = ['Protein','UniProt ID','#peptides_g1','#peptides_g2','intensity_mean_g1', 'intensity_mean_g1_sd','intensity_mean_g2', 'intensity_mean_g2_sd', 'intensity_p_value']
+            sort = ['intensity G2', 'intensity G1']
+            rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2','intensity_mean_g1': 'intensity G1', 'intensity_mean_g2':'intensity G2', 'intensity_mean_g1_sd':'SD', 'intensity_mean_g2_sd': 'SD', 'intensity_p_value':'p-value'
+            }
         elif 'spc_sum' in protein_radioitems_value:
             difference_metric = 'spc_sum'
-            columns = ['Protein','UniProt ID','Nbr Peptides G1','Nbr Peptides G2','SpC sum G1','SpC sum G2','SpC.sum SD G1', 'SpC.sum SD G2', 'SpC.sum p-value']
-            sort = ['SpC sum G1','SpC sum G2']
+            columns = ['Protein','UniProt ID','#peptides_g1','#peptides_g2','spc_sum_g1', 'spc_sum_g1_sd','spc_sum_g2', 'spc_sum_g2_sd', 'spc_p_value']
+            sort = ['SpC G2','SpC G1']
+            rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2','spc_sum_g1': 'SpC G1', 'spc_sum_g2':'SpC G2', 'spc_sum_g1_sd':'SD', 'spc_sum_g2_sd': 'SD', 'spc_p_value':'p-value'
+            }
         else:
             difference_metric = 'spc_mean'
-            columns = ['Protein','UniProt ID','Nbr Peptides G1','Nbr Peptides G2','SpC mean G1','SpC mean G2','SpC.mean SD G1', 'SpC.mean SD G2', 'SpC.mean p-value']
-            sort = ['SpC mean G1','SpC mean G2']
+            columns = ['Protein','UniProt ID','#peptides_g1','#peptides_g2','spc_mean_g1', 'spc_mean_g1_sd','spc_mean_g2', 'spc_mean_g2_sd', 'spc_p_value']
+            sort = ['SpC G2','SpC G1']
+            rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2','spc_mean_g1': 'SpC G1', 'spc_mean_g2':'SpC G2', 'spc_mean_g1_sd':'SD', 'spc_mean_g2_sd': 'SD', 'spc_p_value':'p-value'
+            }
+        
+        df_protein_info = df_protein_info[columns]
+        df_protein_info.rename(columns = rename, inplace=True)
         df_protein_info.sort_values(by=sort, ascending=False, inplace=True)
         protein_info_data = df_protein_info.to_dict('rows')
-        protein_info_columns=[{"name": str(i), "id": str(i)} for i in columns]
+        protein_info_columns=[{"name": str(i), "id": str(i)} for i in df_protein_info.columns]
         if str(changed_id) == 'generate-protein-graph.n_clicks' or str(changed_id) == 'protein-radioitems.value' or str(changed_id) == 'protein-checkbox.value':
             if checkbox_values and 'show-stdev' in checkbox_values :
                 protein_fig = create_protein_fig(df_fig, protein_list, show_stdev = True,  difference_metric = difference_metric)
@@ -815,11 +826,13 @@ def get_normalization_data(radioitems_normalization, housekeeping_protein):
 
 def create_peptide_fig(n_clicks_generate_peptide_fig, sum_or_mean_radio, peptide_radioitems_value, button_label, protein_list_json, peptide_list_json):
     if peptide_radioitems_value == 'area':
-        columns = ['Peptide','Start','End','Intensity G1','Intensity G2','Intensity SD G1', 'Intensity SD G2']
-        sort = ['Intensity G1','Intensity G2']
+        columns = ['Peptide','Start','End','intensity_g1','intensity_g1_sd','intensity_g2', 'intensity_g2_sd']
+        sort = ['intensity G1','intensity G2']
+        rename = {'intensity_g1':'intensity G1', 'intensity_g1_sd':'SD','intensity_g2':'intensity G2','intensity_g2_sd':'SD'}
     else:
-        columns = ['Peptide','Start','End','SpC G1','SpC G2', 'SpC SD G1', 'SpC SD G2']
+        columns = ['Peptide','Start','End','spc_g1', 'spc_g1_sd','spc_g2', 'spc_g2_sd']
         sort = ['SpC G1','SpC G2']
+        rename= {'spc_g1':'SpC G1', 'spc_g1_sd':'SD','spc_g2':'SpC G2','spc_g2_sd':'SD'}
 
 
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
@@ -830,18 +843,22 @@ def create_peptide_fig(n_clicks_generate_peptide_fig, sum_or_mean_radio, peptide
         peptide_fig = stacked_samples_peptide(peptide_list, show_difference='show', show_weight ='show', average=sum_or_mean_radio, difference_metric=peptide_radioitems_value)
         df_peptide_info = create_peptide_datatable(peptide_list)
         df_peptide_info.fillna(0, inplace=True)
+        df_peptide_info = df_peptide_info[columns]
+        df_peptide_info.rename(columns=rename, inplace=True)
         df_peptide_info.sort_values(by=sort, ascending=False, inplace=True)
         peptide_table_data = df_peptide_info.to_dict('rows')
-        peptide_table_columns=[{"name": str(i), "id": str(i)} for i in columns]
+        peptide_table_columns=[{"name": str(i), "id": str(i)} for i in df_peptide_info.columns]
         return peptide_fig,  peptide_table_data, peptide_table_columns, peptide_list_to_json(peptide_list)
     elif peptide_list_json and (changed_id == 'sum-or-mean-radio.value' or 'peptide-radioitems.value'):
         peptide_list = json_to_peptide_list(peptide_list_json)
         peptide_fig = stacked_samples_peptide(peptide_list, show_difference='show', show_weight ='show', average=sum_or_mean_radio, difference_metric=peptide_radioitems_value)
         df_peptide_info = create_peptide_datatable(peptide_list)
         df_peptide_info.fillna(0, inplace=True)
+        df_peptide_info = df_peptide_info[columns]
+        df_peptide_info.rename(columns=rename, inplace=True)
         df_peptide_info.sort_values(by=sort, ascending=False, inplace=True)
         peptide_table_data = df_peptide_info.to_dict('rows')
-        peptide_table_columns=[{"name": str(i), "id": str(i)} for i in columns]
+        peptide_table_columns=[{"name": str(i), "id": str(i)} for i in df_peptide_info.columns]
         return peptide_fig, peptide_table_data, peptide_table_columns, peptide_list_json
     
     else:
