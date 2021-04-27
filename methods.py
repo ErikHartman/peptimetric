@@ -1,9 +1,6 @@
 import statistics
-import tkinter as tk
 from functools import reduce
-from tkinter.filedialog import askopenfilenames
 from typing import List
-import copy
 from collections import Counter
 
 import plotly.graph_objects as go
@@ -48,13 +45,6 @@ column_names_dict = {
     'CCS': ['CCS','collision cross section', 'Collision Cross Section', 'Collision cross section'],
     'Spectral count': ['Spectral count','SPC', 'SpC', 'spc', 'sc', 'SC', 'spectral count', '#Feature', 'spectral counts', '#Features']
 }
-
-def read_files_gui():
-    root = tk.Tk()
-    root.withdraw()
-    filenames = askopenfilenames(initialdir="/Documents/GitHub/kand/example_files", title="Open files", multiple=True)
-    return make_peptide_dfs(filenames, filenames)
-
 
 def make_peptide_dfs(files, filenames):
     dfs = []
