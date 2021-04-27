@@ -15,9 +15,9 @@ if __name__  == "__main__":
     master = log_intensity(master)
     protein_list = create_protein_list(master)
     protein_list = normalize_data(protein_list, housekeeping_protein=False)
+    fig = create_venn_bar(protein_list, complete_proteome=True)
     
-    
-
+    fig.show()
 
     
     

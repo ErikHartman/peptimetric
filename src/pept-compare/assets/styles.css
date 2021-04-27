@@ -1,14 +1,12 @@
 .export{
   font: Roboto;
   color:black;
-  background-color: #fafafa;
-  border-radius: 0.25rem;
-  border: 1px solid;
-  border-color:black;
+  background-color: #e6e0e0;
+  border-color: rgb(211, 211, 211);
 }
 
 .export:hover{
-  background-color: #e6e0e0;
+  background-color: #bdb4b4;
   border-color: rgb(211, 211, 211);
 }
 
@@ -46,6 +44,12 @@ h6{
 .btn-primary:hover{
   background-color: #5587c9;
   border-color: #5587c9 ;
+  
+}
+
+.btn-outline-secondary{
+  border-color: transparent;
+  
 }
 
 .btn-outline-secondary:hover{
@@ -54,15 +58,11 @@ h6{
 }
 
 
+.custom-tabs {
+  padding: 0px 24px;
 
-.dot{
-  background-color:white;
 }
 
-.dash-tooltip.bottom .dash-tooltip-arrow {
-  top: 0;
-  left: 50%;
-  margin-left: -5px;
-  border-bottom-color: #000000; /* black */
-  border-width: 0 5px 5px;
+.nav-tabs{
+  background-color: #fff;
 }
