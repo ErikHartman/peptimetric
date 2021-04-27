@@ -551,7 +551,7 @@ def create_venn_bar(p_list, complete_proteome = True):
     fig.add_trace(go.Bar(x=[''], y=[len(group_1_unique)], name='Group 1: Unique', marker=dict(color=green['light'])))
     fig.add_trace(go.Bar(x=[''], y=[len(common)], name='Common', marker=dict(color=green['medium'])))
     fig.add_trace(go.Bar(x=[''], y=[len(group_2_unique)], name='Group 2: Unique', marker=dict(color=green['dark'])))
-    fig.update_traces(hovertemplate="<br>".join(["Number of peptides: %{y}"]))
+    fig.update_traces(hovertemplate="<br>".join(["Number of peptides: %{y}<extra></extra>"]))
     fig.update_yaxes(title_text='Number of peptides')
     fig.update_layout(hoverlabel_align = 'left')
     return fig
