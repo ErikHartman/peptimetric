@@ -2,7 +2,6 @@ from Bio import SeqIO
 import requests
 from io import StringIO
 from methods import *
-from pyteomics import parser
 import numpy as np
 from joblib import Memory
 import statistics
