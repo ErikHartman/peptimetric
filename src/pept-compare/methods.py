@@ -803,6 +803,7 @@ def create_length_histogram(p_list, **kwargs):
         paper_bgcolor='rgb(255, 255, 255)',
         plot_bgcolor='rgb(255, 255, 255)',
         )
+    fig.update_yaxes(title_text='Number of peptides')
     return fig
 
 

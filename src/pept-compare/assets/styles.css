@@ -2,7 +2,8 @@
   font: Roboto;
   color:black;
   background-color: #e6e0e0;
-  border-color: rgb(211, 211, 211);
+  border-radius: 0.2rem;
+  border: 0.1px #e6e0e0;
 }
 
 .export:hover{
@@ -65,4 +66,12 @@ h6{
 
 .nav-tabs{
   background-color: #fff;
+}
+
+#bottom-navbar {
+  background-color: #333;
+  overflow: hidden;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
 }

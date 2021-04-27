@@ -31,9 +31,9 @@ General = dbc.Card(html.P(children=['''
 Peptimetric was developed by Erik Hartman and Simon Mahdavi @ Lunds University to help researchers visualize and explore differences in the proteome and peptidome of sample groups.
  The main features of the peptimetric are: normalizing data, applying cutoffs and showcasing the proteome and peptidome of a dataset. There are many interactive elements to allow for easy manipulation and explorations of the users dataset. The webapp
 was developed using ''', html.A('Plotly Dash library for Python', href='https://plotly.com/dash/'), ''' and published on the cloud plattoform ''', html.A('Heroku.', href='https://www.heroku.com/')],
- style={'font-weight':'light'}),  color='#F8F8F8', style={'border':0, })
+ style={'font-weight':'light'}),  color='#F8F8F8', style={'border':0, 'padding-top':10 })
 
-Data_processing = html.Div([dbc.Row([html.Img(src = './assets/computer.png', style={'height':'5%', 'width':'5%'}),
+Data_processing = html.Div([dbc.Row([html.Img(src = './assets/computer.png', style={'height':'4%', 'width':'4%'}),
         html.H5('Data processing', style={"font-weight": "bold"}),]),
     html.P(['''Peptimetric requires a minimum of one input file per group, however, statistical calculations require at least 
     three files per group. The input files should either be in a CSV (.csv) or Excel (.xlsx) format. The files are stored 
@@ -53,7 +53,7 @@ Data_processing = html.Div([dbc.Row([html.Img(src = './assets/computer.png', sty
      also affect peptimetric.'''], style={'padding-top':15}),
 ])
 
-Settings = html.Div([dbc.Row([html.Img(src = './assets/settings.png', style={'height':'5%', 'width':'5%'}),
+Settings = html.Div([dbc.Row([html.Img(src = './assets/settings.png', style={'height':'4%', 'width':'4%'}),
         html.H5('Settings', style={"font-weight": "bold"}),]),
 html.H6('Normalization', style={'font-weight':'bold', 'margin-bottom':0, }),
 dbc.Row([dbc.Col([html.P('''
@@ -87,7 +87,7 @@ dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/cutoff.jpg', style={'height':'100%',
 ])
 
 Visualization = html.Div([
-    dbc.Row([html.Img(src = './assets/scatter.png', style={'height':'5%', 'width':'5%'}),
+    dbc.Row([html.Img(src = './assets/scatter.png', style={'height':'4%', 'width':'4%'}),
         html.H5('Visualization', style={"font-weight": "bold",})]),
     html.P('''
     Protein View
@@ -98,12 +98,12 @@ Visualization = html.Div([
     without significant loading time. The standard deviation is off by default. The graph can be manipulated and saved using the toolbar. Hovering
     on a datapoint will reveal a tooltip with information about the protein. It will also generate a bar chart showing the chosen difference metric
     for each sample. Selecting a protein highlights it, making it possible to generate a peptide view.
-    ''', style={} ),
+    '''),
     html.P('''The protein table contain information about the number of peptides and chosen difference metric for each protein. The table is filterable
     and sortable. Selecting a protein highlights the protein in the protein figure. If you select multiple proteins, only the first protein will be selected
     for peptide view.
-    ''', style={} ),
-
+    '''),
+    dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/protein_view.jpg', style={'height':'100%', 'width':'100%'})), width= {'size':8, 'offset':2}),
     html.P('''
     Peptide View
     ''', style={'font-weight':'bold', 'margin-bottom':0, }),
@@ -118,6 +118,8 @@ Visualization = html.Div([
     and peptide table yet.
     ''', style={} ),
 
+    dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/peptide_view.jpg', style={'height':'100%', 'width':'100%'})), width= {'size':8, 'offset':2}),
+
     html.P('''
     General Characteristics
     ''', style={'font-weight':'bold', 'margin-bottom':0, }),
@@ -126,14 +128,18 @@ Visualization = html.Div([
     The general characteristics section contain three figures: length distribution, peptidome overlap and amino acid profile. You may select to view these figures
     for either the complete proteome or the selected protein. Selecting complete proteome may result in long loading times for large datasets. As long as a peptide is present in one of the samples in a group
     they will be included in the visualization of the general characteristics for that group.
-    ''', style={'margin-bottom':0, }),
+    '''),
+
+    dbc.Row([dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/general_info.jpg', style={'height':'100%', 'width':'100%'}))), 
+    dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/aa_profile.jpg', style={'height':'100%', 'width':'100%'}))), 
+    ])
 
 ])
 
 
 
 Interactivity = html.Div([
-    dbc.Row([html.Img(src = './assets/interact.png', style={'height':'5%', 'width':'5%'}),
+    dbc.Row([html.Img(src = './assets/interact.png', style={'height':'4%', 'width':'4%'}),
         html.H5('Interactivity', style={"font-weight": "bold",})]),
 html.P('''
 All of the elements in peptimetric contain some type of interacitivty, allowing for easy exploration of your dataset. 
@@ -163,7 +169,7 @@ html.P('''
 ])
 
 Cite = html.Div([
-    dbc.Row([html.Img(src = './assets/cite.png', style={'height':'5%', 'width':'5%'}),
+    dbc.Row([html.Img(src = './assets/cite.png', style={'height':'4%', 'width':'4%'}),
         html.H5('Cite', style={"font-weight": "bold"}),]),
     dbc.Card(html.P( '''Erik Hartman, Simon Mahdavi'''), color='#F8F8F8', style={'border':0 }),
 html.P('''
@@ -171,7 +177,7 @@ html.P('''
 ])
 
 Legal = html.Div([
-    dbc.Row([html.Img(src = './assets/legal.png', style={'height':'5%', 'width':'5%'}),
+    dbc.Row([html.Img(src = './assets/legal.png', style={'height':'4%', 'width':'4%'}),
         html.H5('Legal', style={"font-weight": "bold", }),]),
     html.P(['''
     Peptimetric is free to use for academic purposes and is available at ''', html.A('GitHub', href="https://github.com/ErikHartman/peptimetric"), ''' under an MIT license. 
@@ -188,7 +194,7 @@ contact_text = html.P(['''
 
 
 Contact = html.Div([
-    dbc.Row([html.Img(src = './assets/contact.png', style={'height':'5%', 'width':'5%'}),
+    dbc.Row([html.Img(src = './assets/contact.png', style={'height':'4%', 'width':'4%'}),
         html.H5('Contact', style={"font-weight": "bold", }),]),
     contact_text,
 ])

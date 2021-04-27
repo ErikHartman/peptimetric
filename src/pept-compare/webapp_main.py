@@ -256,6 +256,7 @@ navbar = dbc.Navbar(
     ],   
 )
 
+
 amino_acid_pie_dropdown = dcc.Dropdown(
     id= 'amino-acid-pie-dropdown',
     placeholder='Select view',
@@ -594,6 +595,12 @@ hidden_divs = html.Div([
     dcc.Store(id='housekeeping-protein-holder'),
     
 ])
+
+hidden_divs_documentation = html.Div([
+    hidden_divs,
+    sample_collapse,
+    search_protein,
+], style={'display':'none'})
 #---------------------------PAGES---------------------------------------------------------------
 main_page = dbc.Container([
     
@@ -625,6 +632,7 @@ main_page = dbc.Container([
         dbc.Col(venn_bar_fig, width={'size':4}),
     ]),  
     dbc.Row(dbc.Col(amino_acid_figs)),
+
     hidden_divs,
 ], fluid=True, style={'padding':0})
 
@@ -634,8 +642,8 @@ documentation_page = dbc.Container([
     ]),
     dbc.Row([
         documentation,
-    ])
-
+    ]),
+    hidden_divs_documentation,
     
 ], fluid=True, style={'padding':0})
 
