@@ -213,7 +213,7 @@ normalization_modal = dbc.Modal([
                                     inputMode='latin',
                                     minLength=0, maxLength=30,
                                     size = '10',
-                                    list = 'protein-list',
+                                    list = 'protein-datalist',
                                     className="ml-auto",
                                     disabled=True
                                 ), width=8,
@@ -280,12 +280,12 @@ search_protein = html.Div([
             inputMode='latin',
             minLength=0, maxLength=30,
             size = '20',
-            list = 'protein-list',
+            list = 'protein-datalist',
             className="ml-auto",
             disabled=True,
         )
     ]),
-    html.Datalist( id = 'protein-list', children=[])
+    html.Datalist( id = 'protein-datalist', children=[])
 ])
 how_to_use_collapse = html.Div(
     [
@@ -587,6 +587,7 @@ hidden_divs = html.Div([
     dcc.Store(id='cutoff-value-holder'),
     dcc.Store(id='protein-list-df-holder'),
     dcc.Store(id='peptide-list-df-holder'),
+    dcc.Store(id='protein-list'),
     dcc.Store(id='df_g1-holder'),
     dcc.Store(id='df_g2-holder'),
     dcc.Store(id='peptide-data-holder'),
@@ -946,6 +947,11 @@ def create_venn_bar_fig(length_dropdown_values, protein_list_json, peptide_list_
         return {}
 
 
+def store_to_datalist(stored_children):
+    return stored_children
+
+app.callback(Output('protein-datalist','children'),
+Input('protein-list', 'children'))(store_to_datalist)
 
 app.callback(
     Output('generate-protein-graph', 'disabled'),
