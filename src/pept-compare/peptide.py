@@ -39,10 +39,10 @@ class Peptide:
         g1_count=0
         g2_count=0
         for area in area_columns_g1:
-            if int(df_unique[area]) != 0:
+            if float(df_unique[area]) != 0:
                 g1_count += 1
         for area in area_columns_g2:
-            if int(df_unique[area]) != 0:
+            if float(df_unique[area]) != 0:
                 g2_count += 1
         return g1_count, g2_count
 

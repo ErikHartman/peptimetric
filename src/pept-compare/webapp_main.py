@@ -36,9 +36,10 @@ file_columns = ['Sample', 'File']
 
 modal_file = html.Div([
 
-    dbc.Button("Upload files", id="open-modal-file", color='secondary',  outline=True, style={'border-color':'transparent'}, className="mr-1"),
+    dbc.Button("Upload files", id="open-modal-file", color='secondary',  outline=True, className="mr-1"),
         dbc.Modal([
                 dbc.ModalHeader("Upload files", className="font-weight-bold"),
+                dbc.ModalBody([
                     dbc.Row([
                         dbc.Col(dbc.ModalBody('Group 1', className='ml-auto text-center font-weight-bold')),
                         dbc.Col(dbc.ModalBody('Group 2', className='ml-auto text-center font-weight-bold')),
@@ -94,9 +95,12 @@ modal_file = html.Div([
                                     },
                                     style_table = {'padding':10}
                             )),
+                            
+                    ],),
+                    dbc.Label('*upload 3 or more files for statistical analysis'),
                     ]),
                 dbc.ModalFooter([
-                    dbc.Label('*upload 3 or more files for statistical analysis'),
+                    dbc.Button("Close", color = 'secondary', id="close-modal-file-2", outline=True, className="mr-auto", n_clicks_timestamp=0),
                     dbc.Button("Upload files", color = 'primary', id="close-modal-file", className="ml-auto", n_clicks_timestamp=0)
                 ]),
             ],
@@ -148,13 +152,15 @@ peptide_tab = dbc.Form([
 
 modal_cutoff = dbc.Modal([
                 dbc.ModalHeader("Cutoff settings", className="font-weight-bold"),
-                dbc.Tabs([
-                    dbc.Tab(peptide_tab, label='Peptide'),
+                dbc.Tabs(className='custom-tabs',
+                    children=[
+                    dbc.Tab(peptide_tab, label='Peptide', ),
                     dbc.Tab(protein_tab, label='Protein'),
                     
                 ]),
+                dbc.Label('*cutoffs will be applied after normalization', style={'padding':10}),
                 dbc.ModalFooter([
-                    dbc.Label('*cutoffs will be applied after normalization'),
+                    dbc.Button("Close", id="close-modal-cutoff-2", color="secondary", outline=True, className="mr-auto"),
                     dbc.Button("Apply", id="close-modal-cutoff", color="primary", className="ml-auto")
                 ]),
             ],
@@ -166,7 +172,7 @@ modal_cutoff = dbc.Modal([
 
 
 modal_feedback = html.Div([
-    dbc.Button("Feedback", id="open-modal-feedback", color='secondary', outline=True, style={'border-color':'transparent'}, className="mr-1"),
+    dbc.Button("Feedback", id="open-modal-feedback", color='secondary', outline=True, className="mr-1"),
     dbc.Modal([
         dbc.ModalHeader('Feedback'),
                 dbc.ModalBody(
@@ -176,7 +182,7 @@ modal_feedback = html.Div([
                 ),
                 
                 dbc.ModalFooter([
-                    dbc.Button("Close", id="close-modal-feedback", color='primary', className="ml-auto")
+                    dbc.Button("Close", id="close-modal-feedback", color='secondary', outline=True,className="mr-auto")
                 ]),
             ],
             id="modal-feedback",
@@ -221,9 +227,10 @@ normalization_modal = dbc.Modal([
                 ),
                 ]),
                 
-                dbc.ModalFooter(
+                dbc.ModalFooter([
+                    dbc.Button("Close", id="close-modal-normalization-2", color="secondary", outline=True, className="mr-auto"),
                     dbc.Button("Apply", id="close-modal-normalization", color="primary", className="ml-auto")
-                ),
+                ]),
             ],
             id="modal-normalization",
             size='m',
@@ -235,9 +242,9 @@ navbar = dbc.Navbar(
     [
         dbc.NavLink("Peptimetric", href = '/', style = {'color':'grey', 'font-size':20,  'font-weight':'bold', 'font':'Roboto', 'text-transform':'lowercase'} ),
         modal_file,
-        dbc.Button('Normalization', id="open-modal-normalization", color='secondary', outline=True, style={'border-color':'transparent'}, className='mr-1'),
+        dbc.Button('Normalization', id="open-modal-normalization", color='secondary', outline=True, className='mr-1'),
         normalization_modal,
-        dbc.Button("Cutoffs", id="open-modal-cutoff", color='secondary', outline=True, style={'border-color':'transparent'}, className='mr-1'),
+        dbc.Button("Cutoffs", id="open-modal-cutoff", color='secondary', outline=True, className='mr-1'),
         modal_cutoff,
         dbc.Nav([
         modal_feedback,
@@ -646,8 +653,8 @@ def toggle_collapse(n, is_open):
         return not is_open
     return is_open
 
-def toggle_modal(n1, n2, is_open):
-    if n1 or n2:
+def toggle_modal(n1, n2, n3, is_open):
+    if n1 or n2 or n3:
         return not is_open
     return is_open
 
@@ -759,29 +766,38 @@ def create_protein_figure_and_table(rows, derived_virtual_selected_rows, search_
     if df_fig:
         df_fig = pd.read_json(df_fig)
         protein_list = json_to_protein_list(protein_list_json)
-        if 'area_sum' in protein_radioitems_value:
+        if protein_radioitems_value:
+            if 'spc_mean' in protein_radioitems_value:
+                difference_metric = 'spc_mean'
+                columns = ['Protein','UniProt id','#peptides_g1','#peptides_g2','spc_mean_g1', 'spc_mean_g1_sd','spc_mean_g2', 'spc_mean_g2_sd', 'spc_p_value_mean']
+                sort = ['SpC G2','SpC G1']
+                rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2','spc_mean_g1': 'SpC G1', 'spc_mean_g2':'SpC G2', 'spc_mean_g1_sd':'SD', 'spc_mean_g2_sd': 'SD', 'spc_p_value_mean':'p-value'
+                }
+                
+            if 'area_mean' in protein_radioitems_value:
+                difference_metric = 'area_mean'
+                columns = ['Protein','UniProt id','#peptides_g1','#peptides_g2','intensity_mean_g1', 'intensity_mean_g1_sd','intensity_mean_g2', 'intensity_mean_g2_sd', 'intensity_p_value_mean']
+                sort = ['intensity G2', 'intensity G1']
+                rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2','intensity_mean_g1': 'intensity G1', 'intensity_mean_g2':'intensity G2', 'intensity_mean_g1_sd':'SD', 'intensity_mean_g2_sd': 'SD', 'intensity_p_value_mean':'p-value'
+                }
+            elif 'spc_sum' in protein_radioitems_value:
+                difference_metric = 'spc_sum'
+                columns = ['Protein','UniProt id','#peptides_g1','#peptides_g2','spc_sum_g1', 'spc_sum_g1_sd','spc_sum_g2', 'spc_sum_g2_sd', 'spc_p_value_sum']
+                sort = ['SpC G2','SpC G1']
+                rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2','spc_sum_g1': 'SpC G1', 'spc_sum_g2':'SpC G2', 'spc_sum_g1_sd':'SD', 'spc_sum_g2_sd': 'SD', 'spc_p_value_sum':'p-value'
+                }
+            else:
+                difference_metric = 'area_sum'
+                columns = ['Protein','UniProt id','#peptides_g1','#peptides_g2','intensity_sum_g1', 'intensity_sum_g1_sd','intensity_sum_g2', 'intensity_sum_g2_sd', 'intensity_p_value_sum']
+                sort = ['intensity G2', 'intensity G1']
+                rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2', 'intensity_sum_g1': 'intensity G1', 'intensity_sum_g2':'intensity G2', 'intensity_sum_g1_sd':'SD', 'intensity_sum_g2_sd': 'SD', 'intensity_p_value_sum':'p-value'
+                }
+                
+        else:
             difference_metric = 'area_sum'
-            columns = ['Protein','UniProt ID','#peptides_g1','#peptides_g2','intensity_sum_g1', 'intensity_sum_g1_sd','intensity_sum_g2', 'intensity_sum_g2_sd', 'intensity_p_value_sum']
+            columns = ['Protein','UniProt id','#peptides_g1','#peptides_g2','intensity_sum_g1', 'intensity_sum_g1_sd','intensity_sum_g2', 'intensity_sum_g2_sd', 'intensity_p_value_sum']
             sort = ['intensity G2', 'intensity G1']
             rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2', 'intensity_sum_g1': 'intensity G1', 'intensity_sum_g2':'intensity G2', 'intensity_sum_g1_sd':'SD', 'intensity_sum_g2_sd': 'SD', 'intensity_p_value_sum':'p-value'
-            }
-        elif 'area_mean' in protein_radioitems_value:
-            difference_metric = 'area_mean'
-            columns = ['Protein','UniProt ID','#peptides_g1','#peptides_g2','intensity_mean_g1', 'intensity_mean_g1_sd','intensity_mean_g2', 'intensity_mean_g2_sd', 'intensity_p_value_mean']
-            sort = ['intensity G2', 'intensity G1']
-            rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2','intensity_mean_g1': 'intensity G1', 'intensity_mean_g2':'intensity G2', 'intensity_mean_g1_sd':'SD', 'intensity_mean_g2_sd': 'SD', 'intensity_p_value_mean':'p-value'
-            }
-        elif 'spc_sum' in protein_radioitems_value:
-            difference_metric = 'spc_sum'
-            columns = ['Protein','UniProt ID','#peptides_g1','#peptides_g2','spc_sum_g1', 'spc_sum_g1_sd','spc_sum_g2', 'spc_sum_g2_sd', 'spc_p_value_sum']
-            sort = ['SpC G2','SpC G1']
-            rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2','spc_sum_g1': 'SpC G1', 'spc_sum_g2':'SpC G2', 'spc_sum_g1_sd':'SD', 'spc_sum_g2_sd': 'SD', 'spc_p_value_sum':'p-value'
-            }
-        else:
-            difference_metric = 'spc_mean'
-            columns = ['Protein','UniProt ID','#peptides_g1','#peptides_g2','spc_mean_g1', 'spc_mean_g1_sd','spc_mean_g2', 'spc_mean_g2_sd', 'spc_p_value_mean']
-            sort = ['SpC G2','SpC G1']
-            rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2','spc_mean_g1': 'SpC G1', 'spc_mean_g2':'SpC G2', 'spc_mean_g1_sd':'SD', 'spc_mean_g2_sd': 'SD', 'spc_p_value_mean':'p-value'
             }
         
         df_protein_info = df_protein_info[columns]
@@ -866,6 +882,9 @@ def amino_acid_dropdown(dropdown_values, radioitem_value, protein_list_json, pep
 
 
 def generate_hover_graphs(hoverData, protein_radioitems_value, protein_list_json):
+    if not protein_radioitems_value:
+        protein_radioitems_value='area_sum'
+
     if hoverData:
         accession = hoverData['points'][0]['customdata'][-1]
         protein_list = json_to_protein_list(protein_list_json)
@@ -1048,38 +1067,31 @@ app.callback(Output('page-content', 'children'),
 
 app.callback(
     Output("modal-file", "is_open"),
-    [Input("open-modal-file", "n_clicks"), Input("close-modal-file", "n_clicks")],
+    [Input("open-modal-file", "n_clicks"), Input("close-modal-file", "n_clicks"),
+    Input("close-modal-file-2", "n_clicks")],
     [State("modal-file", "is_open")],
 )(toggle_modal)
 
 
 app.callback(
-    Output("modal-export-data", "is_open"),
-    [Input("open-modal-export-data", "n_clicks"), Input("close-modal-export-data", "n_clicks")],
-    [State("modal-export-data", "is_open")],
-)(toggle_modal)
-
-app.callback(
     Output("modal-cutoff", "is_open"),
-    [Input("open-modal-cutoff", "n_clicks"), Input("close-modal-cutoff", "n_clicks")],
+    [Input("open-modal-cutoff", "n_clicks"), Input("close-modal-cutoff", "n_clicks"),
+    Input("close-modal-cutoff-2", "n_clicks")],
     [State("modal-cutoff", "is_open")],
 )(toggle_modal)
 
 app.callback(
     Output("modal-normalization", "is_open"),
-    [Input("open-modal-normalization", "n_clicks"), Input("close-modal-normalization", "n_clicks")],
+    [Input("open-modal-normalization", "n_clicks"), Input("close-modal-normalization", "n_clicks"),
+    Input("close-modal-normalization-2", "n_clicks")],
     [State("modal-normalization", "is_open")],
 )(toggle_modal)
 
-app.callback(
-    Output("modal-FAQ", "is_open"),
-    [Input("open-modal-FAQ", "n_clicks"), Input("close-modal-FAQ", "n_clicks")],
-    [State("modal-FAQ", "is_open")],
-)(toggle_modal)
 
 app.callback(
     Output("modal-feedback", "is_open"),
-    [Input("open-modal-feedback", "n_clicks"), Input("close-modal-feedback", "n_clicks")],
+    [Input("open-modal-feedback", "n_clicks"), Input("close-modal-feedback", "n_clicks"),
+    Input("close-modal-feedback", "n_clicks")],
     [State("modal-feedback", "is_open")],
 )(toggle_modal)
 

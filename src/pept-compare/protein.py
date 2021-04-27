@@ -287,6 +287,6 @@ class Protein:
     def present_in_all_samples(self):
         area_sum_all_samples = self.get_area_sum_all_samples()
         for area in area_sum_all_samples.values():
-            if int(area)  < 1:
+            if area  < 0:
                 return False
         return True

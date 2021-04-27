@@ -52,8 +52,8 @@ column_names_dict = {
 def read_files_gui():
     root = tk.Tk()
     root.withdraw()
-    filenames = askopenfilenames(initialdir="/Documents/GitHub/kand/example_files", title="Open files", multiple=True, )
-    return make_peptide_dfs(filenames)
+    filenames = askopenfilenames(initialdir="/Documents/GitHub/kand/example_files", title="Open files", multiple=True)
+    return make_peptide_dfs(filenames, filenames)
 
 
 def make_peptide_dfs(files, filenames):
@@ -268,6 +268,13 @@ def amino_acid_piecharts(p_list, **kwargs):
     fig.update_layout(
     annotations=[dict(text='Group 1', x=0, y=0.82, font_size=20, showarrow=False,  textangle=-90),
                  dict(text='Group 2', x=0, y=0.18, font_size=20, showarrow=False,  textangle=-90)])
+
+    fig.update_traces(
+    hovertemplate="<br>".join([
+        "Amino acid: %{label}",
+        "Intensity: %{values}",
+    ])
+)
     return fig
 
 def group_amino_acids(peptide_list):
@@ -541,9 +548,9 @@ def create_venn_bar(p_list, complete_proteome = True):
         paper_bgcolor='rgb(255, 255, 255)',
         plot_bgcolor='rgb(255, 255, 255)',
         )
-    fig.add_trace(go.Bar(x=['Venn bar'], y=[len(group_1_unique)], name='Group 1: Unique', marker=dict(color=green['light'])))
-    fig.add_trace(go.Bar(x=['Venn bar'], y=[len(common)], name='Common', marker=dict(color=green['medium'])))
-    fig.add_trace(go.Bar(x=['Venn bar'], y=[len(group_2_unique)], name='Group 2: Unique', marker=dict(color=green['dark'])))
+    fig.add_trace(go.Bar(x=['1'], y=[len(group_1_unique)], name='Group 1: Unique', marker=dict(color=green['light'])))
+    fig.add_trace(go.Bar(x=['1'], y=[len(common)], name='Common', marker=dict(color=green['medium'])))
+    fig.add_trace(go.Bar(x=['1'], y=[len(group_2_unique)], name='Group 2: Unique', marker=dict(color=green['dark'])))
     return fig
 
 def stacked_samples_peptide(peptide_list, **kwargs):
@@ -827,18 +834,17 @@ def create_peptide_datatable(peptide_list):
 
 
 def create_protein_datatable(protein_list):
-    protein_info_columns = ['Protein','UniProt ID','#peptides_g1','#peptides_g2','intensity_sum_g1','intensity_sum_g2','intensity_sum_g1_sd', 'intensity_sum_g2_sd', 'intensity_mean_g1', 'intensity_mean_g2', 'intensity_mean_g1_sd', 'intensity_mean_g2_sd',
+    protein_info_columns = ['Protein','UniProt id','#peptides_g1','#peptides_g2','intensity_sum_g1','intensity_sum_g2','intensity_sum_g1_sd', 'intensity_sum_g2_sd', 'intensity_mean_g1', 'intensity_mean_g2', 'intensity_mean_g1_sd', 'intensity_mean_g2_sd',
     'spc_sum_g1','spc_sum_g2','spc_sum_g1_sd ','spc_sum_g2_sd', 'spc_mean_g1','spc_mean_g2','spc_mean_g1_sd', 'spc_mean_g2_sd', 'intensity_p_value_sum', 'intensity_p_value_mean', 'spc_p_value_sum', 'spc_p_value_mean']
     df_protein_info = pd.DataFrame(columns=protein_info_columns)
     for protein in protein_list:
         df_protein_info = df_protein_info.append({'Protein': str(protein.get_trivial_name()), 'UniProt id': protein.get_id(),'#peptides_g1': protein.get_nbr_of_peptides()[0], '#peptides_g2': protein.get_nbr_of_peptides()[1], 
-        'intensity_sum_g1': round(float(protein.get_area_sum()[0]), 3), 'intensity_sum_g2': round(float(protein.get_area_sum()[2]), 3),'intensity_sum_g1_sd': round(float(protein.get_area_sum()[1]), 3),'intensity_sum_g2_sd': round(float(protein.get_area_sum()[3]), 3), 'intensity_mean_g1': round(float(protein.get_area_mean()[0]),3), 'intesnity_mean_g2': round(float(protein.get_area_mean()[2]), 3), 'intensity_mean_g1_sd': round(float(protein.get_area_mean()[1]), 3), 'intensity_mean_g2_sd': round(float(protein.get_area_sum()[3]), 3), 
-        'spc_g1': round(float(protein.get_spectral_count_sum()[0]),3), 'spc_g2': round(float(protein.get_spectral_count_sum()[2]), 3),'spc_sum_g1_sd': round(float(protein.get_spectral_count_sum()[1]), 3) ,'spc_sum_g2_sd': round(float(protein.get_spectral_count_sum()[3]), 3) ,'spc_mean_g1': round(float(protein.get_spectral_count_mean()[0]), 3), 'spc_mean_g2': round(float(protein.get_spectral_count_mean()[2]), 3),'spc_mean_g1_sd': round(float(protein.get_spectral_count_mean()[1]), 3),
-        'spc_mean_g2_sd': round(float(protein.get_spectral_count_mean()[3]), 3), 'intensity_p_value_sum':round(float(protein.get_pvalue('area')), 3), 'intensity_p_value_mean':round(float(protein.get_pvalue_mean('area')), 3), 'spc_p_value_sum':round(float(protein.get_pvalue('spc')), 3), 'spc_p_value_mean':round(float(protein.get_pvalue_mean('spc')), 3)},  ignore_index=True)
+        'intensity_sum_g1': round(float(protein.get_area_sum()[0]), 5), 'intensity_sum_g2': round(float(protein.get_area_sum()[2]), 5),'intensity_sum_g1_sd': round(float(protein.get_area_sum()[1]), 5),'intensity_sum_g2_sd': round(float(protein.get_area_sum()[3]), 5), 'intensity_mean_g1': round(float(protein.get_area_mean()[0]),5), 'intesnity_mean_g2': round(float(protein.get_area_mean()[2]), 5), 'intensity_mean_g1_sd': round(float(protein.get_area_mean()[1]), 5), 'intensity_mean_g2_sd': round(float(protein.get_area_sum()[3]), 5), 
+        'spc_g1': round(float(protein.get_spectral_count_sum()[0]),5), 'spc_g2': round(float(protein.get_spectral_count_sum()[2]), 5),'spc_sum_g1_sd': round(float(protein.get_spectral_count_sum()[1]), 5) ,'spc_sum_g2_sd': round(float(protein.get_spectral_count_sum()[3]), 5) ,'spc_mean_g1': round(float(protein.get_spectral_count_mean()[0]), 5), 'spc_mean_g2': round(float(protein.get_spectral_count_mean()[2]), 5),'spc_mean_g1_sd': round(float(protein.get_spectral_count_mean()[1]), 5),
+        'spc_mean_g2_sd': round(float(protein.get_spectral_count_mean()[3]), 5), 'intensity_p_value_sum':round(float(protein.get_pvalue('area')), 5), 'intensity_p_value_mean':round(float(protein.get_pvalue_mean('area')), 5), 'spc_p_value_sum':round(float(protein.get_pvalue('spc')), 5), 'spc_p_value_mean':round(float(protein.get_pvalue_mean('spc')), 5)},  ignore_index=True)
     return df_protein_info
 
-    
-    
+
 def normalize_data(protein_list, housekeeping_protein=False):
     new_protein_list = []
     if housekeeping_protein == False:
