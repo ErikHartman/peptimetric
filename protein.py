@@ -75,10 +75,12 @@ class Protein:
         for s in spc_columns_g1:
             df_spc = self.df.copy()
             df_spc.fillna(0, inplace=True)
+            df_spc[s] = df_spc[s].astype(np.float64)
             spc_sum_g1.append(df_spc[s].sum())
         for s in spc_columns_g2:
             df_spc = self.df.copy()
             df_spc.fillna(0, inplace=True)
+            df_spc[s] = df_spc[s].astype(np.float64)
             spc_sum_g2.append(df_spc[s].sum())
         spc_g1_dict = dict(zip(spc_columns_g1, spc_sum_g1))
         spc_g2_dict = dict(zip(spc_columns_g2, spc_sum_g2))
@@ -94,10 +96,12 @@ class Protein:
         for s in spc_columns_g1:
             df_spc = self.df.copy()
             df_spc.fillna(0, inplace=True)
+            df_spc[s] = df_spc[s].astype(np.float64)
             spc_mean_g1.append(df_spc[s].mean())
         for s in spc_columns_g2:
             df_spc = self.df.copy()
             df_spc.fillna(0, inplace=True)
+            df_spc[s] = df_spc[s].astype(np.float64)
             spc_mean_g2.append(df_spc[s].mean())
         spc_g1_dict = dict(zip(spc_columns_g1, spc_mean_g1))
         spc_g2_dict = dict(zip(spc_columns_g2, spc_mean_g2))
@@ -112,11 +116,11 @@ class Protein:
         area_sum_g2 = []
         for a in area_columns_g1:
             df_area = self.df.copy()
-            df_area.fillna(0, inplace=True)
+            df_area.fillna(float(0), inplace=True)
             area_sum_g1.append(df_area[a].sum(axis=0))
         for a in area_columns_g2:
             df_area = self.df.copy()
-            df_area.fillna(0, inplace=True)
+            df_area.fillna(float(0), inplace=True)
             area_sum_g2.append(df_area[a].sum(axis=0))
         if len(area_sum_g1) > 1 and len(area_sum_g2) > 1:
             return statistics.mean(area_sum_g1), statistics.stdev(area_sum_g1), statistics.mean(area_sum_g2), statistics.stdev(area_sum_g2)
@@ -131,11 +135,11 @@ class Protein:
         area_mean_g2 = []
         for a in area_columns_g1:
             df_area = self.df.copy()
-            df_area.fillna(0, inplace=True)
+            df_area.fillna(float(0), inplace=True)
             area_mean_g1.append(df_area[a].mean())
         for a in area_columns_g2:
             df_area = self.df.copy()
-            df_area.fillna(0, inplace=True)
+            df_area.fillna(float(0), inplace=True)
             area_mean_g2.append(df_area[a].mean())
         if len(area_mean_g1) > 1 and len(area_mean_g2) > 1:
             return statistics.mean(area_mean_g1), statistics.stdev(area_mean_g1), statistics.mean(area_mean_g2), statistics.stdev(area_mean_g2)
@@ -148,14 +152,16 @@ class Protein:
         spc_columns_g2 = [col for col in spc_columns if col.endswith('g2')]
         spc_sum_g1 = []
         spc_sum_g2 = []
-        for a in spc_columns_g1:
+        for s in spc_columns_g1:
             df_spc = self.df.copy()
-            df_spc.fillna(0, inplace=True)
-            spc_sum_g1.append(df_spc[a].sum())
-        for a in spc_columns_g2:
+            df_spc.fillna(float(0), inplace=True)
+            df_spc[s] = df_spc[s].astype(np.float64)
+            spc_sum_g1.append(df_spc[s].sum())
+        for s in spc_columns_g2:
             df_spc = self.df.copy()
-            df_spc.fillna(0, inplace=True)
-            spc_sum_g2.append(df_spc[a].sum())
+            df_spc.fillna(float(0), inplace=True)
+            df_spc[s] = df_spc[s].astype(np.float64)
+            spc_sum_g2.append(df_spc[s].sum())
         if len(spc_sum_g1) > 1 and len(spc_sum_g2) > 1:
             return statistics.mean(spc_sum_g1), statistics.stdev(spc_sum_g1), statistics.mean(spc_sum_g2), statistics.stdev(spc_sum_g2)
         else:
@@ -169,36 +175,17 @@ class Protein:
         spc_mean_g2 = []
         for a in spc_columns_g1:
             df_spc = self.df.copy()
-            df_spc.fillna(0, inplace=True)
+            df_spc.fillna(float(0), inplace=True)
             spc_mean_g1.append(df_spc[a].mean())
         for a in spc_columns_g2:
             df_spc = self.df.copy()
-            df_spc.fillna(0, inplace=True)
+            df_spc.fillna(float(0), inplace=True)
             spc_mean_g2.append(df_spc[a].mean())
         if len(spc_mean_g1) > 1 and len(spc_mean_g2) > 1:
             return statistics.mean(spc_mean_g1), statistics.stdev(spc_mean_g1), statistics.mean(spc_mean_g2), statistics.stdev(spc_mean_g2)
         else:
             return statistics.mean(spc_mean_g1), 0, statistics.mean(spc_mean_g2), 0
 
-    def three_peptides(self):
-        area_columns = [col for col in self.df if col.startswith('Intensity')]
-        area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
-        area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
-        df = self.df.copy()
-        df = df[df[area_columns] != 0]
-        df.fillna(0, inplace=True)
-        df['g1_mean'] = df[area_columns_g1].mean(axis=1)
-        df['g2_mean'] = df[area_columns_g2].mean(axis=1)
-        df.sort_values(by=['g1_mean', 'g2_mean'], ascending=[False, False], inplace=True)
-        df = df[['g1_mean', 'g2_mean']].head(3)
-        df['fold_change_g1'] = df['g1_mean'] / (df['g2_mean'] + df['g1_mean'])
-        df['fold_change_g2'] = df['g2_mean'] / (df['g2_mean'] + df['g1_mean'])
-        mean_fold_g1 = statistics.mean(df['fold_change_g1'])
-        mean_fold_g2 = statistics.mean(df['fold_change_g2'])
-        if 0 < mean_fold_g1 <= 1 or 0 < mean_fold_g2 <= 1:
-            return mean_fold_g1, mean_fold_g2
-        else:
-            return 0, 0
 
     def get_nbr_of_peptides(self):
         area_columns = [col for col in self.df if col.startswith('Intensity')]
@@ -232,9 +219,6 @@ class Protein:
 
     def get_trivial_name(self):
         return str(self.fasta.name.split('|')[2])
-
-    def print(self):
-        print(self.df)
 
     def get_fasta(self):
         data = download_fasta(self.get_id())

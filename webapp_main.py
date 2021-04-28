@@ -22,7 +22,7 @@ from methods import amino_acid_piecharts, all_sample_bar_chart, create_peptide_l
 from methods import apply_protein_cutoffs, apply_peptide_cutoffs, get_unique_and_common_proteins, create_venn_bar
 from methods import proteins_present_in_all_samples, create_protein_datatable, create_peptide_datatable, log_intensity, normalize_data, create_length_histogram
 from texts_for_webapp import how_to_use, Documentation, contact_text
-
+from datetime import datetime
 
 app = dash.Dash(__name__, title='peptimetric', external_stylesheets=[dbc.themes.SANDSTONE], suppress_callback_exceptions=True)
 server=app.server
@@ -285,7 +285,7 @@ search_protein = html.Div([
             disabled=True,
         )
     ]),
-    html.Datalist( id = 'protein-list', children=[])
+    dcc.Loading(color = '#76b382', style={'backgroundColor': 'transparent'}, className = 'loader-wrapper', fullscreen = True, type = 'default', id='process-data-loading', children = [html.Datalist( id = 'protein-list', children=[])]),
 ])
 how_to_use_collapse = html.Div(
     [
@@ -709,7 +709,10 @@ def set_cutoffs(tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_
     return [tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CCS, present_in_all_samples]
 
 
-def process_protein_data(apply_normalization_n_clicks, n_clicks_close_file, apply_cutoffs_button, cutoff_values, df_g1, df_g2, radioitems_normalization, housekeeping_protein):
+def create_protein_list_json(apply_normalization_n_clicks, n_clicks_close_file, apply_cutoffs_button, cutoff_values, df_g1, df_g2, radioitems_normalization, housekeeping_protein):
+    now=datetime.now()
+    current_time = now.strftime("%H:%M:%S")
+    print("create_protein_list 1", current_time)  
     if apply_cutoffs_button:
         tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CCS, present_in_all_samples = cutoff_values
     else:
@@ -732,18 +735,47 @@ def process_protein_data(apply_normalization_n_clicks, n_clicks_close_file, appl
             return [], [], [], []
         if present_in_all_samples:
             protein_list_cutoff = proteins_present_in_all_samples(protein_list_cutoff)
-        
         protein_list_json = protein_list_to_json(protein_list_cutoff)
-        df_fig = create_protein_df_fig(protein_list_cutoff)
-        df_protein_info = create_protein_datatable(protein_list_cutoff)
-        df_protein_info.fillna(0, inplace=True)
         if len(protein_list) > 1:
             for protein in protein_list_cutoff:
                 triv_names.append(html.Option(value=protein.get_trivial_name()))
-        return triv_names, df_fig.to_json(), df_protein_info.to_json(), protein_list_json
+        now=datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        print("create_protein_list 2", current_time)  
+        return triv_names, protein_list_json
 
     else:
-        return [], [], [], []
+        return [], []
+
+def df_fig_from_json(protein_list_json):
+    if protein_list_json:
+        now=datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        print("df_fig_from_json 1", current_time)   
+        protein_list = json_to_protein_list(protein_list_json)
+        df_fig = create_protein_df_fig(protein_list)
+        now=datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        print("df_fig_from_json 2", current_time)  
+        return df_fig.to_json()
+    else:
+        return []
+
+def df_info_from_json(protein_list_json, protein_radioitems_value):
+    if protein_list_json and protein_radioitems_value:
+        now=datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        print("df_info_from_json 1", current_time)  
+        protein_list = json_to_protein_list(protein_list_json)
+        df_protein_info = create_protein_datatable(protein_list, protein_radioitems_value)
+        df_protein_info.fillna(0, inplace=True)
+        now=datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        print("df_info_from_json 2", current_time)  
+        return df_protein_info.to_json()
+    else:
+        return []
+
 
 def create_protein_figure_and_table(rows, derived_virtual_selected_rows, search_protein, clickData, protein_radioitems_value, checkbox_values, generate_protein_graph_n_clicks, df_fig, df_protein_info, protein_fig, protein_list_json):
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
@@ -778,38 +810,32 @@ def create_protein_figure_and_table(rows, derived_virtual_selected_rows, search_
         if protein_radioitems_value:
             if 'spc_mean' in protein_radioitems_value:
                 difference_metric = 'spc_mean'
-                columns = ['Protein','UniProt id','#peptides_g1','#peptides_g2','spc_mean_g1', 'spc_mean_g1_sd','spc_mean_g2', 'spc_mean_g2_sd', 'spc_p_value_mean']
                 sort = ['SpC G2','SpC G1']
                 rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2','spc_mean_g1': 'SpC G1', 'spc_mean_g2':'SpC G2', 'spc_mean_g1_sd':'SD', 'spc_mean_g2_sd': 'SD', 'spc_p_value_mean':'p-value'
                 }
                 
             if 'area_mean' in protein_radioitems_value:
                 difference_metric = 'area_mean'
-                columns = ['Protein','UniProt id','#peptides_g1','#peptides_g2','intensity_mean_g1', 'intensity_mean_g1_sd','intensity_mean_g2', 'intensity_mean_g2_sd', 'intensity_p_value_mean']
                 sort = ['intensity G2', 'intensity G1']
-                rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2','intensity_mean_g1': 'intensity G1', 'intensity_mean_g2':'intensity G2', 'intensity_mean_g1_sd':'SD', 'intensity_mean_g2_sd': 'SD', 'intensity_p_value_mean':'p-value'
+                rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2','metric_g1': 'intensity G1', 'metric_g2':'intensity G2', 'sd_g1':'SD', 'sd_g2': 'SD', 'p_val':'p-value'
                 }
             elif 'spc_sum' in protein_radioitems_value:
                 difference_metric = 'spc_sum'
-                columns = ['Protein','UniProt id','#peptides_g1','#peptides_g2','spc_sum_g1', 'spc_sum_g1_sd','spc_sum_g2', 'spc_sum_g2_sd', 'spc_p_value_sum']
                 sort = ['SpC G2','SpC G1']
-                rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2','spc_sum_g1': 'SpC G1', 'spc_sum_g2':'SpC G2', 'spc_sum_g1_sd':'SD', 'spc_sum_g2_sd': 'SD', 'spc_p_value_sum':'p-value'
+                rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2','metric_g1': 'SpC G1', 'metric_g2':'SpC G2', 'sd_g2':'SD', 'sd_g1': 'SD', 'p_val':'p-value'
                 }
             else:
                 difference_metric = 'area_sum'
-                columns = ['Protein','UniProt id','#peptides_g1','#peptides_g2','intensity_sum_g1', 'intensity_sum_g1_sd','intensity_sum_g2', 'intensity_sum_g2_sd', 'intensity_p_value_sum']
                 sort = ['intensity G2', 'intensity G1']
-                rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2', 'intensity_sum_g1': 'intensity G1', 'intensity_sum_g2':'intensity G2', 'intensity_sum_g1_sd':'SD', 'intensity_sum_g2_sd': 'SD', 'intensity_p_value_sum':'p-value'
+                rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2', 'metric_g1': 'intensity G1', 'metric_g2':'intensity G2', 'sd_g1':'SD', 'sd_g2': 'SD', 'p_val':'p-value'
                 }
                 
         else:
             difference_metric = 'area_sum'
-            columns = ['Protein','UniProt id','#peptides_g1','#peptides_g2','intensity_sum_g1', 'intensity_sum_g1_sd','intensity_sum_g2', 'intensity_sum_g2_sd', 'intensity_p_value_sum']
             sort = ['intensity G2', 'intensity G1']
-            rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2', 'intensity_sum_g1': 'intensity G1', 'intensity_sum_g2':'intensity G2', 'intensity_sum_g1_sd':'SD', 'intensity_sum_g2_sd': 'SD', 'intensity_p_value_sum':'p-value'
+            rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2', 'metric_g1': 'intensity G1', 'metric_g2':'intensity G2', 'sd_g1':'SD', 'sd_g2': 'SD', 'p_val':'p-value'
             }
         
-        df_protein_info = df_protein_info[columns]
         df_protein_info.rename(columns = rename, inplace=True)
         df_protein_info.sort_values(by=sort, ascending=False, inplace=True)
         protein_info_data = df_protein_info.to_dict('rows')
@@ -974,7 +1000,6 @@ app.callback(
 
 app.callback(
     Output('aa-fig', 'figure'),
-
     Input('amino-acid-pie-dropdown', 'value'),
     Input('aa-radioitems', 'value'),
     State('protein-list-df-holder', 'children'),
@@ -1027,8 +1052,6 @@ app.callback(
 
 app.callback(
     Output('protein-list', 'children'),
-    Output('protein-fig-holder', 'children'),
-    Output('protein-datatable-holder','children'),
     Output('protein-list-df-holder', 'children'),
     Input('close-modal-normalization', 'n_clicks'),
     Input("close-modal-file", "n_clicks_timestamp"),
@@ -1038,8 +1061,18 @@ app.callback(
     State('df_g2-holder', 'children'),
     State('normalization-holder', 'children'),
     State('housekeeping-protein-holder', 'children'),
-    )(process_protein_data)
+    )(create_protein_list_json)
 
+app.callback(
+    Output('protein-fig-holder', 'children'),
+    Input('protein-list-df-holder', 'children'),
+    )(df_fig_from_json)
+
+app.callback(
+    Output('protein-datatable-holder','children'),
+    Input('protein-list-df-holder', 'children'),
+    Input('protein-radioitems','value'),
+    )(df_info_from_json)
 
 app.callback(
     Output('protein-fig', 'figure'),

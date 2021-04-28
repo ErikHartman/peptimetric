@@ -1,4 +1,4 @@
-from tqdm import tqdm
+
 import pandas as pd
 from peptide import Peptide
 from protein import Protein
@@ -7,7 +7,7 @@ from protein import Protein
 def create_protein_list(df):
     p_df = df.groupby(by='Accession', as_index=False).mean()
     p_list = []
-    for accession in tqdm(p_df['Accession'], desc="Getting protein data"):
+    for accession in p_df['Accession']:
         p = Protein(df, accession)
         p_list.append(p)
     return p_list
@@ -57,6 +57,6 @@ def peptide_list_to_json(peptide_list):
 def json_to_peptide_list(json_dataframe):
     df = pd.read_json(json_dataframe)
     protein_list = create_protein_list(df)
-    accession = protein_list[0].get_id()
+    accession = protein_list[0].accession
     peptide_list = create_peptide_list(protein_list, accession)
     return peptide_list
