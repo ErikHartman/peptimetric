@@ -712,7 +712,7 @@ def set_cutoffs(tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_
 def create_protein_list_json(apply_normalization_n_clicks, n_clicks_close_file, apply_cutoffs_button, cutoff_values, df_g1, df_g2, radioitems_normalization, housekeeping_protein):
     now=datetime.now()
     current_time = now.strftime("%H:%M:%S")
-    print("create_protein_list 1", current_time)  
+    print("check 0", current_time)
     if apply_cutoffs_button:
         tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CCS, present_in_all_samples = cutoff_values
     else:
@@ -721,27 +721,41 @@ def create_protein_list_json(apply_normalization_n_clicks, n_clicks_close_file, 
     protein_list = []
     protein_list_cutoff = []
     if n_clicks_close_file and df_g1 and df_g2:
+        now=datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        print("check 1", current_time)
         g1 = pd.read_json(df_g1)
         g2 = pd.read_json(df_g2)
-        master = merge_dataframes(g1,g2)
+        master = merge_dataframes(g1,g2)    
         protein_list = create_protein_list(master)
+        now=datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        print("check 2", current_time)
         if 'global-intensity' in radioitems_normalization:
             protein_list = normalize_data(protein_list, housekeeping_protein=False)
         elif 'housekeeping-protein' in radioitems_normalization and housekeeping_protein != '':
             protein_list = normalize_data(protein_list, housekeeping_protein = housekeeping_protein)
+        now=datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        print("check 3", current_time)
         protein_list_cutoff = apply_peptide_cutoffs(protein_list, area=pep_intensity_co, spc=pep_spc_co, rt=RT, ccs=CCS)
+        now=datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        print("check 4", current_time)
         protein_list_cutoff = apply_protein_cutoffs(protein_list_cutoff, nbr_of_peptides=nbr_of_peptides_co, tot_area=tot_intensity_co, tot_spc=tot_spc_co)
         if len(protein_list_cutoff) < 1:
             return [], [], [], []
         if present_in_all_samples:
             protein_list_cutoff = proteins_present_in_all_samples(protein_list_cutoff)
+            now=datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        print("check 5", current_time)
         protein_list_json = protein_list_to_json(protein_list_cutoff)
         if len(protein_list) > 1:
             for protein in protein_list_cutoff:
                 triv_names.append(html.Option(value=protein.get_trivial_name()))
         now=datetime.now()
         current_time = now.strftime("%H:%M:%S")
-        print("create_protein_list 2", current_time)  
         return triv_names, protein_list_json
 
     else:
