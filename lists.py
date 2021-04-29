@@ -1,4 +1,3 @@
-
 import pandas as pd
 from peptide import Peptide
 from protein import Protein
@@ -7,9 +6,15 @@ from protein import Protein
 def create_protein_list(df):
     p_df = df.groupby(by='Accession', as_index=False).mean()
     p_list = []
+    df_human_proteome = pd.read_csv('human_proteome.csv')
     for accession in p_df['Accession']:
-        p = Protein(df, accession)
-        p_list.append(p)
+        if accession in df_human_proteome['accession'].values:
+            seq = df_human_proteome.loc[df_human_proteome['accession'] == accession].seq.array[0]
+            trivname = df_human_proteome.loc[df_human_proteome['accession'] == accession].trivname.array[0]
+            p = Protein(df, accession, seq, trivname)
+            p_list.append(p)
+        else:
+            print(accession)
     return p_list
 
 
@@ -26,7 +31,7 @@ def create_peptide_list(protein_list, accession):
 def create_peptide_list_from_trivname(protein_list, trivname):
     peptide_list = []
     for protein in protein_list:
-        if protein.get_trivial_name() == trivname:
+        if protein.trivname == trivname:
             for seq in protein.df['Peptide']:
                 p = Peptide(protein, seq)
                 peptide_list.append(p)

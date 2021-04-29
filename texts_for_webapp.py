@@ -48,9 +48,10 @@ Data_processing = html.Div([dbc.Row([html.Img(src = './assets/computer.png', sty
     , html.P('Spectral count:', style={'font-weight':'bold','margin-bottom':0}), html.P('Spectral count, SPC, SpC, spc, sc, SC, spectral count, #Feature, spectral counts, #Features', style= {'color':'#c7254e', 'font-family':'monospace'})
 
      ], color='#DFF0D8', style={'border':0, }),
-     html.P(['''Information about the submitted proteins is fetched from, ''', html.A('UniProt', href='https://uniprot.org/'),''' and the user therefore has to 
-     provide a valid UniProt id (accession number) for each peptide in the dataset. Any disturbance in UniProts servers will therefore
-     also affect peptimetric.'''], style={'padding-top':15}),
+     html.P(['''Information about the submitted proteins is stored in a local database, containing a version of the 
+     complete human proteome database from  ''', html.A('UniProt', href='https://uniprot.org/'),''' and the user therefore has to 
+     provide a valid UniProt id (accession number) for each peptide in the dataset. The database was fetched 2021-04-28 and contains 
+     77027 proteins.'''], style={'padding-top':15}),
 ])
 
 Settings = html.Div([dbc.Row([html.Img(src = './assets/settings.png', style={'height':'4%', 'width':'4%'}),

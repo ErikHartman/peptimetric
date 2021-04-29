@@ -8,6 +8,8 @@ import statistics
 import prody
 import json
 from scipy.stats import ttest_ind_from_stats
+import pandas as pd
+from datetime import datetime
 
 memory = Memory(".cache/", verbose=False)
 
@@ -20,10 +22,10 @@ def download_fasta(protein_id):
 
 class Protein:
 
-    def __init__(self, df, accession):
+    def __init__(self, df, accession, seq, trivname):
         self.df = df[df['Accession'] == accession]
         self.accession = accession
-        self.fasta = self.get_fasta()
+        self.fasta, self.trivname = seq, trivname
 
     def to_json(self):
         return json.dumps(self, indent = 4, default=lambda o: o.__dict__)
@@ -216,18 +218,6 @@ class Protein:
 
     def get_id(self):
         return str(self.accession)
-
-    def get_trivial_name(self):
-        return str(self.fasta.name.split('|')[2])
-
-    def get_fasta(self):
-        data = download_fasta(self.get_id())
-        fasta_iterator = SeqIO.parse(StringIO(data), "fasta")
-        for fasta in fasta_iterator:
-            return fasta
-
-    def get_fasta_seq(self):
-        return str(self.fasta.seq)
 
 
     def get_number_of_samples(self):

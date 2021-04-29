@@ -601,6 +601,7 @@ hidden_divs_documentation = html.Div([
     hidden_divs,
     sample_collapse,
     search_protein,
+    protein_fig_radioitems,
 ], style={'display':'none'})
 #---------------------------PAGES---------------------------------------------------------------
 main_page = dbc.Container([
@@ -747,15 +748,14 @@ def create_protein_list_json(apply_normalization_n_clicks, n_clicks_close_file, 
             return [], [], [], []
         if present_in_all_samples:
             protein_list_cutoff = proteins_present_in_all_samples(protein_list_cutoff)
-            now=datetime.now()
+        now=datetime.now()
         current_time = now.strftime("%H:%M:%S")
         print("check 5", current_time)
         protein_list_json = protein_list_to_json(protein_list_cutoff)
         if len(protein_list) > 1:
             for protein in protein_list_cutoff:
-                triv_names.append(html.Option(value=protein.get_trivial_name()))
-        now=datetime.now()
-        current_time = now.strftime("%H:%M:%S")
+                triv_names.append(html.Option(value=protein.trivname))
+        
         return triv_names, protein_list_json
 
     else:
