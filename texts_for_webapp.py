@@ -66,7 +66,6 @@ already in the logarithmic scale the option in the normalizartion modal have to 
 logaritmic intensities usually follows normal distrubtion.''', style={})], width={'size':7}),
 dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/normalization.jpg', style={'height':'100%', 'width':'100%'})), width={'size':4, 'offset':0}),
 ]),
-
 html.H6('Cutoffs', style={'font-weight':'bold', 'margin-bottom':0, }),
 dbc.Row([dbc.Col([html.P('''
 MS samples often contain proteins of very low quality and/or abundancy. Likely, these contain few peptides, or have very low intensity and spectral
@@ -143,7 +142,8 @@ Interactivity = html.Div([
     dbc.Row([html.Img(src = './assets/interact.png', style={'height':'4%', 'width':'4%'}),
         html.H5('Interactivity', style={"font-weight": "bold",})]),
 html.P('''
-All of the elements in peptimetric contain some type of interacitivty, allowing for easy exploration of your dataset. 
+Many of the applications and features in peptrimetric are designed to contain some sort of interactivity. Allowing for an advanced exploration of your dataset and to interact with the graphics
+in an easy way. 
 ''', style={}), 
 html.P('''
     Search protein
@@ -159,13 +159,13 @@ html.P('''
     html.P(['''
     Peptrimetric uses the built-in ''', html.A('Modebars', href='https://plotly.com/chart-studio-help/getting-to-know-the-plotly-modebar/'),''' from Plotly to allow 
     the user to interact with the graphs created in both protein view and peptide view. Functions like
-    downloading the plots (.png), zooming, autoscale, reset axis and different hover options are therefore available. More information 
+    downloading the plots to .png-format, zooming, autoscale, reset axis and different hover options are therefore available.
     '''], style={} ),
     html.P('''
     Peptide view slider 
     ''', style={'font-weight':'bold', 'margin-bottom':0, }),html.P('''
-    The slider at the bottom of the peptide view graph allows the user to slide across the peptide sequences and also minimize the window to make it easier to visualize 
-    differences between the groups.
+    Peptide sequences can be long, and can therefore be hard to draw any conclusions when viewing the entire sequence. The peptide slider at the bottom of the peptide view graph allow you to move along the peptide sequences
+    and also minimize the window to make it easier to visualize differences between the groups. The sections of the sequences that are cutout are shadowed in grey. 
     ''', style={} ),
 ])
 
