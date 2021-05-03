@@ -10,13 +10,6 @@ from datetime import datetime
 
 memory = Memory(".cache/", verbose=False)
 
-
-@memory.cache
-def download_fasta(protein_id):
-    link = f"http://www.uniprot.org/uniprot/{protein_id}.fasta"
-    return requests.get(link).text
-
-
 class Protein:
 
     def __init__(self, df, accession, seq, trivname):

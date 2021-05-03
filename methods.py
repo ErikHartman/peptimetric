@@ -12,6 +12,8 @@ import numpy as np
 import pandas as pd
 from numpy import ma
 from scipy import stats
+import datetime 
+from datetime import datetime
 
 from lists import *
 from protein import Protein
@@ -54,7 +56,7 @@ def make_peptide_dfs(files, filenames):
             df = pd.read_excel(file, engine='openpyxl')
         elif filename.split('.')[-1] == 'csv':
             print('Format: csv')
-            df = pd.read_csv(file)
+            df = pd.read_csv(file, delimiter=',')
         else:
             print('Unsupported file format')
         columns_to_keep = []
@@ -559,16 +561,9 @@ def create_venn_bar(p_list, complete_proteome = True):
     fig.update_layout(hoverlabel_align = 'left')
     return fig
 
-def stacked_samples_peptide(peptide_list, **kwargs):
-    default_settings = {
-        'difference_metric':'area',
-        'average': False,
-        
-    }
-    default_settings.update(**kwargs)
-    fasta = peptide_list[0].fasta
-    fig  = go.Figure()
-    trivial_name =  peptide_list[0].protein.trivname
+
+def pre_process_peptide_fig(peptide_list, difference_metric):
+    fasta = peptide_list[0].protein.fasta
     start = []
     end = []
     intensity_pos = []
@@ -576,13 +571,15 @@ def stacked_samples_peptide(peptide_list, **kwargs):
     for peptide in peptide_list:
         start.append(peptide.get_start())
         end.append(peptide.get_end())
-        if kwargs.get('difference_metric') == 'area':
-            intensity_pos.append(peptide.get_area_all_samples()[0])
-            intensity_neg.append(peptide.get_area_all_samples()[1])
+        if difference_metric == 'area':
+            metric_g1, metric_g2 = peptide.get_area_all_samples()
+            intensity_pos.append(metric_g1)
+            intensity_neg.append(metric_g2)
             y_axis_label = 'log(Intensity)'
-        elif kwargs.get('difference_metric') == 'spectral_count':
-            intensity_pos.append(peptide.get_spectral_count_all_samples()[0])
-            intensity_neg.append(peptide.get_spectral_count_all_samples()[1])
+        elif difference_metric == 'spectral_count':
+            metric_g1, metric_g2 = peptide.get_spectral_count_all_samples()
+            intensity_pos.append(metric_g1)
+            intensity_neg.append(metric_g2)
             y_axis_label = 'Spectral Count '    
     sample_dicts_pos = []
     sample_dicts_neg = []
@@ -619,20 +616,28 @@ def stacked_samples_peptide(peptide_list, **kwargs):
                     sample_dict['intensity'][i] += - intensity
                     if intensity != 0:
                         sample_dict['counter'][i] += 1
-
         sample_dicts_neg.append(sample_dict)
+    return sample_dicts_pos, sample_dicts_neg, y_axis_label
     
-    nbr_of_peptides = []
-    for sample_dict in sample_dicts_pos:
-        nbr_of_peptides = nbr_of_peptides + sample_dict['counter']
-    for sample_dict in sample_dicts_neg:
-        nbr_of_peptides = nbr_of_peptides + sample_dict['counter']
+
+def stacked_samples_peptide(sample_dicts_pos, sample_dicts_neg, trivial_name, y_axis_label, **kwargs):
+    default_settings = {
+        'average': False,
+    }
+
+    default_settings.update(**kwargs)
+    fig  = go.Figure()
     
-    nbr_of_peptides = [i for i in nbr_of_peptides if i != 0]
-    color_thresholds = get_thresholds(nbr_of_peptides)
-    i=0
-    color = green
     if kwargs.get('average') == False:
+        nbr_of_peptides = []
+        for sample_dict in sample_dicts_pos:
+            nbr_of_peptides = nbr_of_peptides + sample_dict['counter']
+        for sample_dict in sample_dicts_neg:
+            nbr_of_peptides = nbr_of_peptides + sample_dict['counter']
+        
+        nbr_of_peptides = [i for i in nbr_of_peptides if i != 0]
+        color_thresholds = get_thresholds(nbr_of_peptides)
+        i=0
         for sample_dict in sample_dicts_pos:
             col, size = set_color_and_size(sample_dict['counter'], color_thresholds)
             fig.add_trace(go.Bar(x=sample_dict["index"], y=sample_dict["intensity"], name=f's{i}_g1', width=1, marker=dict(line=dict(width=0), color=col), customdata=sample_dict['counter']
@@ -645,7 +650,8 @@ def stacked_samples_peptide(peptide_list, **kwargs):
             , hovertext=sample_dict['counter']))
             i += 1
         fasta_dict = {"index": [], "counter": [], "intensity_pos": [], "intensity_neg": []}
-        for i in range(len(fasta)):
+        fasta_len = len(sample_dicts_pos[0]['counter'])
+        for i in range(fasta_len):
             fasta_dict["index"].append(i)
             fasta_dict['intensity_pos'].append(0)    
             fasta_dict['intensity_neg'].append(0)      
@@ -654,8 +660,8 @@ def stacked_samples_peptide(peptide_list, **kwargs):
             for sample_dict_neg in sample_dicts_neg:
                 fasta_dict['intensity_neg'][i] += sample_dict_neg['intensity'][i]
             
-        weight = (sum(fasta_dict['intensity_pos']) + sum(fasta_dict['intensity_neg'])) / len(fasta)
-        fig.add_trace(go.Scatter( x=[0, len(fasta)], y=[weight, weight], mode='lines', name='Weight', line=dict(
+        weight = (sum(fasta_dict['intensity_pos']) + sum(fasta_dict['intensity_neg'])) / fasta_len
+        fig.add_trace(go.Scatter( x=[0, fasta_len], y=[weight, weight], mode='lines', name='Weight', line=dict(
         color="#182773",
         width=2,
         dash="dash",
@@ -742,7 +748,8 @@ def stacked_samples_peptide(peptide_list, **kwargs):
                 hoverinfo="skip",
                 name='standard_deviation_g2'
             ))
-        weight = (sum(pos_mean) + sum(neg_mean)) / len(fasta)
+        fasta_len = len(sample_dicts_pos[0]['counter'])
+        weight = (sum(pos_mean) + sum(neg_mean)) / fasta_len
         fig.add_trace(go.Scatter( x=[x[0],x[-1]], y=[weight, weight], mode='lines', name='weight', line=dict(
         color="#182773",
         width=2,
@@ -830,18 +837,29 @@ def proteins_present_in_all_samples(protein_list):
             proteins_present_in_all_samples.append(protein)
     return proteins_present_in_all_samples
 
-def create_peptide_datatable(peptide_list):
-    peptide_info_columns = ['Peptide','Start','End','intensity_g1','intensity_g2','intensity_g1_sd', 'intensity_g2_sd', 'spc_g1','spc_g2', 'spc_g1_sd', 'spc_g2_sd']
+def create_peptide_datatable(peptide_list, difference_metric):
+    peptide_info_columns = ['Peptide','Start','End','metric_g1','sd_g1','metric_g2', 'sd_g2']
     df_peptide_info = pd.DataFrame(columns=peptide_info_columns)
+    now = datetime.now()
+    current_time = now.strftime("%H:%M:%S")
+    print("Pre =", current_time)
     for peptide in peptide_list:
-        df_peptide_info = df_peptide_info.append({'Peptide': str(peptide.get_sequence()), 'Start': peptide.get_start(),'End': peptide.get_end(), 'intensity_g1': round(float(peptide.get_area()[0]), 3), 
-        'intensity_g2': round(float(peptide.get_area()[2]), 3),'intensity_g1_sd': round(float(peptide.get_area()[1]), 3), 'intensity_g2_sd': round(float(peptide.get_area()[3]), 3), 
-        'spc_g1': round(float(peptide.get_spectral_count()[0]), 3), 'spc_g2':round(float(peptide.get_spectral_count()[2]), 3), 'spc_g1_sd':round(float(peptide.get_area()[1]), 3), 'spc_g2_sd': round(float(peptide.get_area()[3]), 3)}, ignore_index=True)
+        if difference_metric == 'area':
+            metric_g1, sd_g1, metric_g2, sd_g2 = peptide.get_area()
+            df_peptide_info = df_peptide_info.append({'Peptide': str(peptide.get_sequence()), 'Start': peptide.get_start(),'End': peptide.get_end(), 'metric_g1': round(float(metric_g1), 3), 
+            'metric_g2': round(float(metric_g2), 3), 'sd_g1': round(float(sd_g1), 3), 'sd_g2': round(float(sd_g2), 3)}, ignore_index=True)
+        elif difference_metric == 'spectral_count':
+            metric_g1, sd_g1, metric_g2, sd_g2 = peptide.get_spectral_count()
+            df_peptide_info = df_peptide_info.append({'Peptide': str(peptide.get_sequence()), 'Start': peptide.get_start(),'End': peptide.get_end(), 'metric_g1': round(float(metric_g1), 3), 
+            'metric_g2': round(float(metric_g2), 3),'sd_g1': round(float(sd_g1), 3), 'sd_g2': round(float(sd_g2), 3)}, ignore_index=True)
+    now = datetime.now()
+    current_time = now.strftime("%H:%M:%S")
+    print("Post =", current_time)
     return df_peptide_info
 
 
 def create_protein_datatable(protein_list, difference_metric):
-    protein_info_columns = ['Protein','UniProt id','#peptides_g1','#peptides_g2','metric_g1','metric_g2','sd_g1','sd_g2','p_val']
+    protein_info_columns = ['Protein','UniProt id','#peptides_g1','#peptides_g2','metric_g1', 'sd_g1','metric_g2','sd_g2','p_val']
     df_protein_info = pd.DataFrame(columns=protein_info_columns)
     if difference_metric == 'area_sum':
         for protein in protein_list:
