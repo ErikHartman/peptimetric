@@ -249,7 +249,7 @@ def amino_acid_piecharts(p_list, **kwargs):
     elif kwargs.get('peptide_or_protein_list') == 'protein_list':
         complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2 = amino_acid_frequency(p_list, peptide_or_protein_list = 'protein_list', difference_metric=kwargs.get('difference_metric'))
     fig = make_subplots(rows=2, cols=3, specs=[[{"type": "pie"}, {"type": "pie"}, {"type": "pie"}],
-           [{"type": "pie"}, {"type": "pie"}, {"type": "pie"}]])
+           [{"type": "pie"}, {"type": "pie"}, {"type": "pie"}]], horizontal_spacing = 0.1, vertical_spacing= 0.1)
     fig.add_trace(go.Pie(labels=list(complete_seq_g1.keys()), values=list(complete_seq_g1.values())
         , textinfo='label', marker_colors=color_dict, sort=False, title_text = 'Complete amino acid sequence'), row=1, col= 1)
     fig.add_trace(go.Pie(labels=list(first_aa_g1.keys()), values=list(first_aa_g1.values())

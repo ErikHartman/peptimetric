@@ -1,6 +1,3 @@
-from Bio import SeqIO
-import requests
-from io import StringIO
 from methods import *
 import numpy as np
 from joblib import Memory
