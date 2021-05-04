@@ -36,7 +36,7 @@ was developed using ''', html.A('Plotly Dash library for Python', href='https://
 Data_processing = html.Div([dbc.Row([html.Img(src = './assets/computer.png', style={'height':'4%', 'width':'4%'}),
         html.H5('Data processing', style={"font-weight": "bold"}),]),
     html.P(['''Peptimetric requires a minimum of one input file per group, however, statistical calculations require at least 
-    three files per group. The input files should either be in a CSV (.csv) or Excel (.xlsx) format. The files are stored 
+    three files per group. The input files should either be in a comma separated values (.csv, recommended) or Excel (.xlsx, invalid for large files) format. The files are stored 
     in your browser during the session and will be lost after closing or refreshing the tab (''', html.A('Dash data storage).', href='https://dash.plotly.com/dash-core-components/store')]),
     dbc.Card([
         html.P( ['''The input files require four columns describing the ''', html.A('''peptide sequence, precursor protein ID, intensity and spectral count. ''', style={'font-weight':'bold'})
@@ -48,22 +48,23 @@ Data_processing = html.Div([dbc.Row([html.Img(src = './assets/computer.png', sty
     , html.P('Spectral count:', style={'font-weight':'bold','margin-bottom':0}), html.P('Spectral count, SPC, SpC, spc, sc, SC, spectral count, #Feature, spectral counts, #Features', style= {'color':'#c7254e', 'font-family':'monospace'})
 
      ], color='#DFF0D8', style={'border':0, }),
-     html.P(['''Information about the submitted proteins is stored in a local database, containing a version of the 
-     complete human proteome database from  ''', html.A('UniProt', href='https://uniprot.org/'),''' and the user therefore has to 
-     provide a valid UniProt id (accession number) for each peptide in the dataset. The database was fetched 2021-04-28 and contains 
-     77027 proteins.'''], style={'padding-top':15}),
+     html.P(['''To fetch protein sequences and names, a local database is used, consisting of data fetched from ''', html.A('UniProt', href='https://uniprot.org/'),'''. You therefore has to 
+     provide a valid UniProt id (accession number) for each peptide in the dataset. To allow for fast searches the database is categorized by 
+     species and the user therefore has to select what species to be used in the sarch when uploading the files. The database was fetched 2021-04-28 and contains 
+     77027 proteins for ''', html.A('Homo sapiens', className='font-italic'), '''. If you want to analyze data from a species which doesn't exist in the 
+     database, feel free to ''', html.A('contact us ', href='mailto:peptimetric@gmail.com'), ''' and we'll add it as soon as possible!'''], style={'padding-top':15}),
 ])
 
 Settings = html.Div([dbc.Row([html.Img(src = './assets/settings.png', style={'height':'4%', 'width':'4%'}),
         html.H5('Settings', style={"font-weight": "bold"}),]),
 html.H6('Normalization', style={'font-weight':'bold', 'margin-bottom':0, }),
 dbc.Row([dbc.Col([html.P('''
-Peptimetric accommodates for two ways of normalizing your data: using the global intensity, and by using a housekeeping protein. Both methods 
+Peptimetric accommodates for two ways of normalizing your data: using the global sample intensity, and by using a housekeeping protein. Both methods 
 are valid ways of normalizing MS and MSMS data and may reduce the inter-sample biases introduced in sample preparation and loading. 
 ''', style={}),
-html.P('''All the intensity values from the input files are converted to the logarithm (log) scale before presented in the Protein view. If the values present in the input files are 
-already in the logarithmic scale the option in the normalizartion modal have to be marked in order to obtain correct graphs. The logaritmic scale is generally used when analysing data from MS, hence
-logaritmic intensities usually follows normal distrubtion.''', style={})], width={'size':7}),
+html.P('''All the intensity values from the input files are converted to the logarithm (log) scale. If the values present in the input files are 
+already in the logarithmic scale the option in the normalizartion modal has to be marked. The logaritmic scale is generally used when analysing data from MS, as
+logaritmic intensities tends to be normally distrubuted.''', style={})], width={'size':7}),
 dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/normalization.jpg', style={'height':'100%', 'width':'100%'})), width={'size':4, 'offset':0}),
 ]),
 html.H6('Cutoffs', style={'font-weight':'bold', 'margin-bottom':0, }),

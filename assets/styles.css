@@ -27,7 +27,7 @@ h6{
   border-color: #92dbb0 ;
 }
 
-.btn-info-active{
+.btn-info:focus{
   background-color: #27854d;
   border-color: #75e0a0 ;
 }

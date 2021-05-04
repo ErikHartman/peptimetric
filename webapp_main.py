@@ -302,7 +302,7 @@ search_protein = html.Div([
             disabled=True,
         )
     ]),
-    dcc.Loading(color = '#76b382', style={'backgroundColor': 'transparent'}, className = 'loader-wrapper', fullscreen = True, type = 'default', id='process-data-loading', children = [html.Datalist( id = 'protein-list', children=[])]),
+    dcc.Loading(color = '#db77b4', style={'backgroundColor': 'transparent'}, className = 'loader-wrapper', fullscreen = True, type = 'default', id='process-data-loading', children = [html.Datalist( id = 'protein-list', children=[])]),
 ])
 how_to_use_collapse = html.Div(
     [
@@ -612,7 +612,7 @@ hidden_divs = html.Div([
     dcc.Store(id='peptide-data-holder'),
     dcc.Store(id='protein-fig-holder'),
     dcc.Store(id='normalization-holder'),
-    dcc.Loading(color = '#76b382', style={'backgroundColor': 'transparent'}, fullscreen = True, type = 'default', id='process-data-loading', children = [dcc.Store(id='protein-datatable-holder')]),
+    dcc.Loading(color = '#db77b4', style={'backgroundColor': 'transparent'}, fullscreen = True, type = 'default', id='process-data-loading', children = [dcc.Store(id='protein-datatable-holder')]),
     dcc.Store(id='housekeeping-protein-holder'),
     dcc.Store(id='processed-peptide-data')
 ])
