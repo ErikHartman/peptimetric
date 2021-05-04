@@ -2,7 +2,7 @@ import statistics
 from functools import reduce
 from typing import List
 from collections import Counter
-
+from Bio import SeqIO
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.figure_factory as ff
@@ -14,10 +14,8 @@ from numpy import ma
 from scipy import stats
 import datetime 
 from datetime import datetime
-
+import gzip
 from lists import *
-from protein import Protein
-
 
 green = {
     'dark': "#2d662f",
@@ -46,6 +44,23 @@ column_names_dict = {
     'CCS': ['CCS','collision cross section', 'Collision Cross Section', 'Collision cross section'],
     'Spectral count': ['Spectral count','SPC', 'SpC', 'spc', 'sc', 'SC', 'spectral count', '#Feature', 'spectral counts', '#Features']
 }
+
+
+def generate_local_database(uniprot_gzip_filename, file_output_name):
+    accession_list, trivname_list, seq_list = [], [], []
+    with gzip.open(uniprot_gzip_filename, 'rt') as f:
+        for record in SeqIO.parse(f, "fasta"):
+                accession, trivname = record.id.split('|')[1], record.id.split('|')[2]
+                seq = record.seq
+                accession_list.append(accession)
+                trivname_list.append(trivname)
+                seq_list.append(seq)
+    df = pd.DataFrame(list(zip(accession_list, trivname_list, seq_list)),
+               columns =['accession', 'trivname','seq'])
+    file_output_name = 'uniprot_proteomes/' + file_output_name
+    df.to_csv(file_output_name)
+
+
 
 def make_peptide_dfs(files, filenames):
     dfs = []
@@ -840,9 +855,6 @@ def proteins_present_in_all_samples(protein_list):
 def create_peptide_datatable(peptide_list, difference_metric):
     peptide_info_columns = ['Peptide','Start','End','metric_g1','sd_g1','metric_g2', 'sd_g2']
     df_peptide_info = pd.DataFrame(columns=peptide_info_columns)
-    now = datetime.now()
-    current_time = now.strftime("%H:%M:%S")
-    print("Pre =", current_time)
     for peptide in peptide_list:
         if difference_metric == 'area':
             metric_g1, sd_g1, metric_g2, sd_g2 = peptide.get_area()
@@ -852,9 +864,6 @@ def create_peptide_datatable(peptide_list, difference_metric):
             metric_g1, sd_g1, metric_g2, sd_g2 = peptide.get_spectral_count()
             df_peptide_info = df_peptide_info.append({'Peptide': str(peptide.get_sequence()), 'Start': peptide.get_start(),'End': peptide.get_end(), 'metric_g1': round(float(metric_g1), 3), 
             'metric_g2': round(float(metric_g2), 3),'sd_g1': round(float(sd_g1), 3), 'sd_g2': round(float(sd_g2), 3)}, ignore_index=True)
-    now = datetime.now()
-    current_time = now.strftime("%H:%M:%S")
-    print("Post =", current_time)
     return df_peptide_info
 
 
@@ -932,3 +941,22 @@ def normalize_data(protein_list, housekeeping_protein=False):
     else:
         print('Error: Data Normalization')
         return None
+
+
+def sort_protein_list(protein_list, difference_metric):
+    if difference_metric == 'area_sum':
+        sorted_protein_list = sorted(protein_list, key=lambda x: (x.get_area_sum()[0]+x.get_area_sum()[2]), reverse=True)
+    elif difference_metric == 'area_mean':
+        sorted_protein_list = sorted(protein_list, key=lambda x: (x.get_area_mean()[0]+x.get_area_mean()[2]), reverse=True)
+    elif difference_metric == 'spc_sum':
+        sorted_protein_list = sorted(protein_list, key=lambda x: (x.get_spectral_count_sum()[0]+x.get_spectral_count_sum()[2]), reverse=True)
+    elif difference_metric == 'spc_mean':
+        sorted_protein_list = sorted(protein_list, key=lambda x: (x.get_spectral_count_mean()[0]+x.get_spectral_count_mean()[2]), reverse=True)
+    return sorted_protein_list
+
+def sort_peptide_list(peptide_list, difference_metric):
+    if difference_metric == 'area':
+        sorted_peptide_list = sorted(peptide_list, key=lambda x: (x.get_area()[0]+x.get_area()[2]), reverse=True)
+    elif difference_metric == 'spectral_count':
+        sorted_peptide_list = sorted(peptide_list, key=lambda x: (x.get_spectral_count()[0]+x.get_spectral_count()[2]), reverse=True)
+    return sorted_peptide_list

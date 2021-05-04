@@ -3,14 +3,17 @@ from peptide import Peptide
 from protein import Protein
 
 
-def create_protein_list(df):
+def create_protein_list(df, species):
     p_df = df.groupby(by='Accession', as_index=False).mean()
     p_list = []
-    df_human_proteome = pd.read_csv('human_proteome.csv')
+    if species == 'homo-sapiens':
+        df_proteome = pd.read_csv('./uniprot_proteomes/human_proteome.csv')
+    elif species == 'pig':
+        df_proteome = pd.read_csv('./uniprot_proteomes/pig_proteome.csv')
     for accession in p_df['Accession']:
-        if accession in df_human_proteome['accession'].values:
-            seq = df_human_proteome.loc[df_human_proteome['accession'] == accession].seq.array[0]
-            trivname = df_human_proteome.loc[df_human_proteome['accession'] == accession].trivname.array[0]
+        if accession in df_proteome['accession'].values:
+            seq = df_proteome.loc[df_proteome['accession'] == accession].seq.array[0]
+            trivname = df_proteome.loc[df_proteome['accession'] == accession].trivname.array[0]
             p = Protein(df, accession, seq, trivname)
             p_list.append(p)
         else:
