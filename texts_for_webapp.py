@@ -99,11 +99,11 @@ Visualization = html.Div([
     on a datapoint will reveal a tooltip with information about the protein. It will also generate a bar chart showing the chosen difference metric
     for each sample. Selecting a protein highlights it, making it possible to generate a peptide view.
     '''),
-    html.P('''The protein table contain information about the number of peptides and chosen difference metric for each protein. The table is filterable
-    and sortable. Selecting a protein highlights the protein in the protein figure. If you select multiple proteins, only the first protein will be selected
-    for peptide view.
+    html.P('''The protein table contain information about the number of peptides and chosen difference metric for the 200 proteins with the largets intensity or spectral count. The table is filterable
+    and sorted by default on the sum of both groups difference metric. The table can further be sorted in multiple ways by using the arrows within the column. Selecting a protein highlights the protein in the protein figure. If you select multiple proteins, only the first protein will be selected
+    for peptide view. The protein datatable can be exported to a .xlsx format using the "Export" button. 
     '''),
-    dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/protein_view.jpg', style={'height':'100%', 'width':'100%'})), width= {'size':8, 'offset':2}),
+    dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/protein_view1.jpg', style={'height':'100%', 'width':'100%'})), width= {'size':8, 'offset':2}),
     html.P('''
     Peptide View
     ''', style={'font-weight':'bold', 'margin-bottom':0, }),
@@ -114,8 +114,8 @@ Visualization = html.Div([
     and difference between the groups which may be toggled on (default) or off.
     ''', style={} ),
     html.P('''
-    The peptide table showcase the peptides present in the graphic. The table may be sorted and filtered. There is no interactivity between the peptide view
-    and peptide table yet.
+    The peptide table showcase the 200 peptides with the largest intensity or spectral count in the dataset. The table may be sorted and filtered. There is no interactivity between the peptide view
+    and peptide table yet. The peptide datatable can be exported to a .xlsx format using the "Export" button. 
     ''', style={} ),
 
     dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/peptide_view.jpg', style={'height':'100%', 'width':'100%'})), width= {'size':8, 'offset':2}),

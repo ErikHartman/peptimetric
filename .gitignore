@@ -5,3 +5,4 @@
 venv
 *.pyc
 .env
+file_system_store/
