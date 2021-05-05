@@ -52,9 +52,18 @@ modal_file = html.Div([
                                         options=[
                                             {'label': 'Homo sapiens', 'value': 'homo-sapiens'},
                                             {'label': 'Sus scrofa (Pig)', 'value': 'pig'},
+                                            {'label': 'Rattus norvegicus (Rat)', 'value': 'rat'},
+                                            {'label': 'Cricetulus griseus (Hamster)', 'value': 'hamster'},
+                                            {'label': 'Mus musculus (Mouse)', 'value': 'mouse'},
+                                            {'label': 'Danio rerio (Zebra fish)', 'value': 'zebra-fish'},
+                                            {'label': 'Drosophila melanogaster', 'value': 'drosophila'},
+                                            {'label': 'Caenorhabditis elegans', 'value': 'c-elegans'},
+                                            {'label': 'Candida albicans', 'value': 'candida'},
+                                            {'label': 'Escherichia coli', 'value': 'ecoli'},
+
                                         ],
                                         
-                                    )   ,width=5,style={'padding-left':6}),
+                                    )   ,width=7,style={'padding-left':6}),
                         ],
                         row=True,
                                ),

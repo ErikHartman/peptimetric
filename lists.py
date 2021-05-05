@@ -10,6 +10,22 @@ def create_protein_list(df, species):
         df_proteome = pd.read_csv('./uniprot_proteomes/human_proteome.gz')
     elif species == 'pig':
         df_proteome = pd.read_csv('./uniprot_proteomes/pig_proteome.gz')
+    elif species == 'rat':
+        df_proteome = pd.read_csv('./uniprot_proteomes/rat_proteome.gz')
+    elif species == 'hamster':
+        df_proteome = pd.read_csv('./uniprot_proteomes/hamster_proteome.gz')
+    elif species == 'mouse':
+        df_proteome = pd.read_csv('./uniprot_proteomes/mouse_proteome.gz')
+    elif species == 'zebra-fish':
+        df_proteome = pd.read_csv('./uniprot_proteomes/zebrafish_proteome.gz')
+    elif species == 'drosophila':
+        df_proteome = pd.read_csv('./uniprot_proteomes/drosophila_proteome.gz')
+    elif species == 'c-elegans':
+        df_proteome = pd.read_csv('./uniprot_proteomes/celegans_proteome.gz')
+    elif species == 'candida':
+        df_proteome = pd.read_csv('./uniprot_proteomes/candida_albicans_proteome.gz')
+    elif species == 'ecoli':
+        df_proteome = pd.read_csv('./uniprot_proteomes/ecoli_proteome.gz')
     for accession in p_df['Accession']:
         if accession in df_proteome['accession'].values:
             seq = df_proteome.loc[df_proteome['accession'] == accession].seq.array[0]
