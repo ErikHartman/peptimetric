@@ -57,8 +57,9 @@ def generate_local_database(uniprot_gzip_filename, file_output_name):
                 seq_list.append(seq)
     df = pd.DataFrame(list(zip(accession_list, trivname_list, seq_list)),
                columns =['accession', 'trivname','seq'])
-    file_output_name = 'uniprot_proteomes/' + file_output_name
-    df.to_csv(file_output_name)
+    file_output_name = 'uniprot_proteomes/' + file_output_name + '.gz'
+    df.to_csv(file_output_name, compression='gzip')
+    return file_output_name
 
 
 
@@ -459,6 +460,8 @@ def apply_peptide_cutoffs(protein_list, **kwargs):
     default_settings.update(kwargs)
     area_limit = kwargs.get('area')
     spc_limit = kwargs.get('spc')
+    ccs = kwargs.get('ccs')
+    rt = kwargs.get('rt')
     for protein in protein_list:
         df = protein.df.copy()
         df.fillna(0, inplace=True)
@@ -466,9 +469,9 @@ def apply_peptide_cutoffs(protein_list, **kwargs):
         area_columns = [col for col in df if col.startswith('Intensity')]
         df[spc_columns] = df[spc_columns].apply(lambda x: [y if y > spc_limit else 0 for y in x])
         df[area_columns] = df[area_columns].apply(lambda x: [y if y > area_limit else 0 for y in x])
-        if kwargs.get('rt') == True:
+        if rt == True:
             df = rt_check(df)
-        if kwargs.get('ccs') == True:
+        if ccs == True:
             df = ccs_check(df)
         df.replace(0, np.nan, inplace=True)
         df = df.dropna(axis=0, how='all', subset=area_columns)
@@ -638,6 +641,7 @@ def pre_process_peptide_fig(peptide_list, difference_metric):
 def stacked_samples_peptide(sample_dicts_pos, sample_dicts_neg, trivial_name, y_axis_label, **kwargs):
     default_settings = {
         'average': False,
+        'square': (0,0)
     }
 
     default_settings.update(**kwargs)
@@ -789,6 +793,10 @@ def stacked_samples_peptide(sample_dicts_pos, sample_dicts_neg, trivial_name, y_
     fig.add_annotation(text="Group 1",
                   xref="paper", yref="paper",
                   x=0.05, y=1, showarrow=False)
+    if kwargs.get('square') != [(0,0)]:
+        for coordinates in kwargs.get('square'):
+            x0, x1 = coordinates
+            fig.add_vrect(x0=x0, x1=x1, fillcolor="#f1b6da", opacity=0.2, line_width=0)
 
     fig.update_layout(title=trivial_name, yaxis=dict(title=y_axis_label), xaxis=dict(title='Sequence', rangeslider=dict(visible=True)))
     fig.update_yaxes(range=[-maximum_intensity, maximum_intensity])

@@ -7,9 +7,9 @@ def create_protein_list(df, species):
     p_df = df.groupby(by='Accession', as_index=False).mean()
     p_list = []
     if species == 'homo-sapiens':
-        df_proteome = pd.read_csv('./uniprot_proteomes/human_proteome.csv')
+        df_proteome = pd.read_csv('./uniprot_proteomes/human_proteome.gz')
     elif species == 'pig':
-        df_proteome = pd.read_csv('./uniprot_proteomes/pig_proteome.csv')
+        df_proteome = pd.read_csv('./uniprot_proteomes/pig_proteome.gz')
     for accession in p_df['Accession']:
         if accession in df_proteome['accession'].values:
             seq = df_proteome.loc[df_proteome['accession'] == accession].seq.array[0]

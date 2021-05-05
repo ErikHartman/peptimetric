@@ -567,7 +567,9 @@ peptide_info = html.Div(dash_table.DataTable(id='peptide-info-table',
             fixed_rows={'headers': True},
             filter_action='native',
             virtualization=True,
+            row_selectable="multi",
             export_format='xlsx',
+            selected_rows=[],
 
             style_data_conditional = [{
                 'if' : {'row_index':'odd'},
@@ -731,26 +733,39 @@ def set_cutoffs(tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_
 
 
 def apply_cutoffs_to_protein_list(protein_list, apply_normalization_n_clicks, apply_cutoffs_button, cutoff_values, radioitems_normalization, housekeeping_protein):
-    if apply_cutoffs_button:
+    if cutoff_values:
         tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CCS, present_in_all_samples = cutoff_values
     else:
-        tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CCS, present_in_all_samples = 0,0,0,0,0,False,False, False
+        tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CCS, present_in_all_samples = 0,0,0,0,0,False,False,False
     triv_names = []
     if protein_list:
+        now = datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        print("1. Current Time =", current_time)
         if 'global-intensity' in radioitems_normalization:
             protein_list = normalize_data(protein_list, housekeeping_protein=False)
         elif 'housekeeping-protein' in radioitems_normalization and housekeeping_protein != '':
             protein_list = normalize_data(protein_list, housekeeping_protein = housekeeping_protein)
-        protein_list_cutoff = apply_peptide_cutoffs(protein_list, area=pep_intensity_co, spc=pep_spc_co, rt=RT, ccs=CCS)
-        protein_list_cutoff = apply_protein_cutoffs(protein_list_cutoff, nbr_of_peptides=nbr_of_peptides_co, tot_area=tot_intensity_co, tot_spc=tot_spc_co)
-        if len(protein_list_cutoff) < 1:
-            return [], [], [], []
+        now = datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        print( "2. Current Time =", current_time)
+        if cutoff_values and cutoff_values != [0,0,0,0,0,False,False,False]:
+            protein_list = apply_peptide_cutoffs(protein_list, area=pep_intensity_co, spc=pep_spc_co, rt=RT, ccs=CCS)
+            protein_list = apply_protein_cutoffs(protein_list, nbr_of_peptides=nbr_of_peptides_co, tot_area=tot_intensity_co, tot_spc=tot_spc_co)
+        now = datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        print("3. Current Time =", current_time)
+        if len(protein_list) < 1:
+            return [], []
         if present_in_all_samples:
-            protein_list_cutoff = proteins_present_in_all_samples(protein_list_cutoff)
+            protein_list = proteins_present_in_all_samples(protein_list)
         if len(protein_list) > 1:
-            for protein in protein_list_cutoff:
+            for protein in protein_list:
                 triv_names.append(html.Option(value=protein.trivname))
-        return triv_names, protein_list_cutoff
+        now = datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        print("4. Current Time =", current_time)
+        return triv_names, protein_list
 
     else:
         return [], []
@@ -874,10 +889,22 @@ def process_peptide_data_for_fig(n_clicks_generate_peptide_fig, peptide_radioite
         return [], []
 
 
-def create_peptide_fig(processed_peptide_data, sum_or_mean_radio):
+def create_peptide_fig(processed_peptide_data, sum_or_mean_radio, rows, derived_virtual_selected_rows):
+    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
+    if changed_id == 'peptide-info-table.derived_virtual_selected_rows' and rows:
+        selected_rows_df = pd.DataFrame(rows)
+        squares = []
+        x0_array, x1_array = list(selected_rows_df.iloc[derived_virtual_selected_rows, 1].values), list(selected_rows_df.iloc[derived_virtual_selected_rows, 2].values)
+        for x0, x1 in zip(x0_array, x1_array):
+            squares.append((x0, x1))
+        print('squares: ', squares)
+        if not rows:
+            squares = [(0,0)]
+    else:
+        squares = [(0,0)]
     if processed_peptide_data:
         pos_sample, neg_sample, trivname, y_label = processed_peptide_data
-        peptide_fig = stacked_samples_peptide(pos_sample, neg_sample, trivname, y_label, show_difference='show', show_weight ='show', average=sum_or_mean_radio)
+        peptide_fig = stacked_samples_peptide(pos_sample, neg_sample, trivname, y_label, show_difference='show', show_weight ='show', average=sum_or_mean_radio, square=squares)
         return peptide_fig
     else:
         return {}
@@ -1034,6 +1061,8 @@ app.callback(
     Output('peptide-fig', 'figure'),
     Input('processed-peptide-data', 'data'),
     Input('sum-or-mean-radio', 'value'),
+    Input('peptide-info-table', "derived_virtual_data"),
+    Input('peptide-info-table', 'derived_virtual_selected_rows'),
 )(create_peptide_fig)
 
 app.callback(
