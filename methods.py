@@ -16,6 +16,8 @@ import datetime
 from datetime import datetime
 import gzip
 from lists import *
+from protein_methods import *
+from peptide_methods import * 
 
 green = {
     'dark': "#2d662f",
@@ -303,7 +305,7 @@ def amino_acid_piecharts(df_g1, df_g2, **kwargs):
     return fig
 
 
-def create_protein_df_fig(protein_list, **kwargs):
+def create_protein_df_fig(master_df, accession_list, **kwargs):
     default_settings = {
         'difference_metric':'area',
         'color': 'green',
@@ -329,29 +331,30 @@ def create_protein_df_fig(protein_list, **kwargs):
     accession = []
     nbr_of_peptides = []
 
-    for protein in protein_list:
-        trivial_name.append(protein.trivname)
-        accession.append(protein.get_id())
-        nbr_of_peptides.append(sum(protein.get_nbr_of_peptides()))
-        g1_area_sum_temp, g1_area_sum_stdev_temp, g2_area_sum_temp, g2_area_sum_stdev_temp = protein.get_area_sum()
+    for accession in accession_list:
+        protein = master_df.loc[master_df['Accession'] == accession]
+        trivial_name.append(protein['trivname'].values[0])
+        accession.append(protein['Accession'].values[0])
+        nbr_of_peptides.append(np.mean(protein_get_nbr_of_peptides(protein)))
+        g1_area_sum_temp, g1_area_sum_stdev_temp, g2_area_sum_temp, g2_area_sum_stdev_temp = protein_get_area_sum(protein)
         g1_area_sum.append(g1_area_sum_temp)
         g1_area_sum_stdev.append(g1_area_sum_stdev_temp)
         g2_area_sum.append(g2_area_sum_temp)
         g2_area_sum_stdev.append(g2_area_sum_stdev_temp)
         
-        g1_area_mean_temp, g1_area_mean_stdev_temp, g2_area_mean_temp, g2_area_mean_stdev_temp = protein.get_area_mean()
+        g1_area_mean_temp, g1_area_mean_stdev_temp, g2_area_mean_temp, g2_area_mean_stdev_temp = protein_get_area_mean(protein)
         g1_area_mean.append(g1_area_mean_temp)
         g1_area_mean_stdev.append(g1_area_mean_stdev_temp)
         g2_area_mean.append(g2_area_mean_temp)
         g2_area_mean_stdev.append(g2_area_mean_stdev_temp)
 
-        g1_spc_sum_temp, g1_spc_sum_stdev_temp, g2_spc_sum_temp, g2_spc_sum_stdev_temp = protein.get_spectral_count_sum()
+        g1_spc_sum_temp, g1_spc_sum_stdev_temp, g2_spc_sum_temp, g2_spc_sum_stdev_temp = protein_get_spectral_count_sum(protein)
         g1_spc_sum.append(g1_spc_sum_temp)
         g1_spc_sum_stdev.append(g1_spc_sum_stdev_temp)
         g2_spc_sum.append(g2_spc_sum_temp)
         g2_spc_sum_stdev.append(g2_spc_sum_stdev_temp)
 
-        g1_spc_mean_temp, g1_spc_mean_stdev_temp, g2_spc_mean_temp, g2_spc_mean_stdev_temp = protein.get_spectral_count_mean()
+        g1_spc_mean_temp, g1_spc_mean_stdev_temp, g2_spc_mean_temp, g2_spc_mean_stdev_temp = protein_get_spectral_count_mean(protein)
         g1_spc_mean.append(g1_spc_mean_temp)
         g1_spc_mean_stdev.append(g1_spc_mean_stdev_temp)
         g2_spc_mean.append(g2_spc_mean_temp)
@@ -368,7 +371,7 @@ def create_protein_df_fig(protein_list, **kwargs):
         'g1_spc_sum_stdev', 'g2_spc_sum_stdev', 'g1_spc_mean_stdev', 'g2_spc_mean_stdev'])
     return df_fig
 
-def create_protein_fig(df_fig, protein_list, **kwargs):
+def create_protein_fig(df_fig, **kwargs):
     default_settings =  {
         'show_stdev':'',
         'difference_metric':'',
@@ -439,7 +442,7 @@ def ccs_check(df):
         return df
 
 
-def apply_peptide_cutoffs(protein_list, **kwargs):
+def apply_peptide_cutoffs(master_df, **kwargs):
     new_protein_list = []
     default_settings = {
         'area',
@@ -452,77 +455,70 @@ def apply_peptide_cutoffs(protein_list, **kwargs):
     spc_limit = kwargs.get('spc')
     ccs = kwargs.get('ccs')
     rt = kwargs.get('rt')
-    for protein in protein_list:
-        df = protein.df.copy()
-        df.fillna(0, inplace=True)
-        spc_columns = [col for col in df if col.startswith('Spectral')]
-        area_columns = [col for col in df if col.startswith('Intensity')]
-        df[spc_columns] = df[spc_columns].apply(lambda x: [y if y > spc_limit else 0 for y in x])
-        df[area_columns] = df[area_columns].apply(lambda x: [y if y > area_limit else 0 for y in x])
-        if rt == True:
-            df = rt_check(df)
-        if ccs == True:
-            df = ccs_check(df)
-        df.replace(0, np.nan, inplace=True)
-        df = df.dropna(axis=0, how='all', subset=area_columns)
-        df = df.dropna(axis=0, how='all', subset=spc_columns)
-        
-        if len(df.index) != 0:
-            p = Protein(df, protein.accession, protein.fasta, protein.trivname)    
-            new_protein_list.append(p)
-    return new_protein_list
+    df = protein.df.copy()
+    df.fillna(0, inplace=True)
+    spc_columns = [col for col in df if col.startswith('Spectral')]
+    area_columns = [col for col in df if col.startswith('Intensity')]
+    df[spc_columns] = df[spc_columns].apply(lambda x: [y if y > spc_limit else 0 for y in x])
+    df[area_columns] = df[area_columns].apply(lambda x: [y if y > area_limit else 0 for y in x])
+    if rt == True:
+        df = rt_check(df)
+    if ccs == True:
+        df = ccs_check(df)
+    df.replace(0, np.nan, inplace=True)
+    df = df.dropna(axis=0, how='all', subset=area_columns)
+    df = df.dropna(axis=0, how='all', subset=spc_columns)
+    return df
 
-def apply_protein_cutoffs(protein_list, **kwargs):
+def apply_protein_cutoffs(master, accession_list, **kwargs):
     new_protein_list = []
     default_settings = {
         'tot_area',
         'tot_spc',
         'nbr_of_peptides',
     }
+    new_df = pd.DataFrame()
     tot_area_lim = kwargs.get('tot_area')
     tot_nbr_of_peptides_lim = kwargs.get('nbr_of_peptides')
     tot_spc_lim = kwargs.get('tot_spc')
     default_settings.update(kwargs)
-    for protein in protein_list:
+    for accession in accession_list:
+        protein = master.loc[master['Accession'] == accession]
         if len(protein.df.index) > 0:
-            if protein.get_area_sum()[0] > tot_area_lim or protein.get_area_sum()[2] > tot_area_lim:
-                if protein.get_nbr_of_peptides()[0] > tot_nbr_of_peptides_lim or protein.get_nbr_of_peptides()[1] > tot_nbr_of_peptides_lim:
-                    if protein.get_spectral_count_sum()[0] > tot_spc_lim or protein.get_spectral_count_sum()[2] > tot_spc_lim:
-                        new_protein_list.append(protein)
+            if protein_get_area_sum(protein)[0] > tot_area_lim or protein_get_area_sum(protein)[2] > tot_area_lim:
+                if protein_get_nbr_of_peptides(protein)[0] > tot_nbr_of_peptides_lim or protei_.get_nbr_of_peptides(protein)[1] > tot_nbr_of_peptides_lim:
+                    if protein_get_spectral_count_sum(protein)[0] > tot_spc_lim or protein_get_spectral_count_sum(protein)[2] > tot_spc_lim:
+                        new_df.concat([new_df, protein])
 
-    return new_protein_list
+    return new_df
 
 
 def get_thresholds(lst):
     return [int(np.quantile(lst, .3)), int(np.quantile(lst, .5)), int(np.quantile(lst, .6)), int(np.quantile(lst, .65)),
             int(np.quantile(lst, .8))]
 
-def all_sample_bar_chart(protein_list, accession, **kwargs):
+def all_sample_bar_chart(master_df, accession, **kwargs):
     default_settings = {
         'metric':'area'
     }
     default_settings.update(kwargs)
-    selected_protein = ''
-    title=''
-    for protein in protein_list:
-        if protein.accession == accession:
-            selected_protein = protein
-            title = protein.trivname
+    protein = master_df.loc[master_df['Accession'] == accession]
+    title = protein_get_trivname(protein)
     
     if kwargs.get('metric') == 'area_sum':
-        intensities = selected_protein.get_area_sum_all_samples()
+        intensities = protein_get_area_sum_all_samples(protein)
         df = pd.DataFrame(intensities.items(), columns=['Sample', 'Intensity'])
         y='Intensity'
     elif kwargs.get('metric') == 'spc_sum':
-        intensities = selected_protein.get_spectral_count_sum_all_samples()
+        intensities = protein_get_spectral_count_sum_all_samples(protein)
         df = pd.DataFrame(intensities.items(), columns=['Sample', 'Spectral count'])
         y='Spectral count'
     elif kwargs.get('metric') == 'area_mean':
-        intensities = selected_protein.get_area_mean_all_samples()
+        intensities = protein_get_area_mean_all_samples(protein)
         df = pd.DataFrame(intensities.items(), columns=['Sample', 'Intensity'])
         y='Intensity'
     elif kwargs.get('metric') == 'spc_mean':
-        intensities = selected_protein.get_spectral_count_mean_all_samples()
+        intensities = protein_get_spectral_count_mean_all_samples(protein)
         df = pd.DataFrame(intensities.items(), columns=['Sample', 'Spectral count'])
         y='Spectral count'
     fig = px.bar(df, x = 'Sample', y=y, color=y, color_continuous_scale=px.colors.sequential.algae, title=title)
@@ -576,22 +572,23 @@ def create_venn_bar(df_g1, df_g2, accession, complete_proteome = True):
     return fig
 
 
-def pre_process_peptide_fig(peptide_list, difference_metric):
-    fasta = peptide_list[0].protein.fasta
+def pre_process_peptide_fig(master_peptide_df, sequence_list, difference_metric):
+    fasta = master_peptide_df['Sequence'].values[0]
     start = []
     end = []
     intensity_pos = []
     intensity_neg = []
-    for peptide in peptide_list:
-        start.append(peptide.get_start())
-        end.append(peptide.get_end())
+    for sequence in sequence_list:
+        peptide = master_peptide_df.loc[master_peptide_df['Peptide'] == sequence]
+        start.append(peptide_get_start(peptide))
+        end.append(peptide_get_end(peptide))
         if difference_metric == 'area':
-            metric_g1, metric_g2 = peptide.get_area_all_samples()
+            metric_g1, metric_g2 = peptide_get_area_all_samples(peptide)
             intensity_pos.append(metric_g1)
             intensity_neg.append(metric_g2)
             y_axis_label = 'log(Intensity)'
         elif difference_metric == 'spectral_count':
-            metric_g1, metric_g2 = peptide.get_spectral_count_all_samples()
+            metric_g1, metric_g2 = peptide_get_spectral_count_all_samples(peptide)
             intensity_pos.append(metric_g1)
             intensity_neg.append(metric_g2)
             y_axis_label = 'Spectral Count '    
@@ -631,6 +628,7 @@ def pre_process_peptide_fig(peptide_list, difference_metric):
                     if intensity != 0:
                         sample_dict['counter'][i] += 1
         sample_dicts_neg.append(sample_dict)
+
     return sample_dicts_pos, sample_dicts_neg, y_axis_label
     
 
@@ -843,109 +841,93 @@ def create_length_histogram(df_g1, df_g2, **kwargs):
     return fig
 
 
-def get_unique_and_common_proteins(protein_list):
-    unique_protein_list = []
-    common_protein_list = []
-    for protein in protein_list:
-        if protein.get_nbr_of_peptides()[0] == 0 or protein.get_nbr_of_peptides()[1] == 0:
-            unique_protein_list.append(protein)
-        else:
-            common_protein_list.append(protein)
-    return unique_protein_list, common_protein_list
 
-def proteins_present_in_all_samples(protein_list):
-    proteins_present_in_all_samples = []
-    for protein in protein_list:
-        if protein.present_in_all_samples():
-            proteins_present_in_all_samples.append(protein)
+def proteins_present_in_all_samples(master, accession_list):
+    proteins_present_in_all_samples = pd.DataFrame()
+    for accession in accession_list:
+        protein = master.loc[master['Accession'] == accession]
+        if protein_present_in_all_samples(protein):
+            proteins_present_in_all_samples = pd.concat([proteins_present_in_all_samples, protein])
     return proteins_present_in_all_samples
 
-def create_peptide_datatable(peptide_list, difference_metric):
+def create_peptide_datatable(master_peptide_df, sequence_list, difference_metric):
     peptide_info_columns = ['Peptide','Start','End','metric_g1','sd_g1','metric_g2', 'sd_g2']
     df_peptide_info = pd.DataFrame(columns=peptide_info_columns)
-    for peptide in peptide_list:
+    for sequence in sequence_list:
+        peptide= master_peptide_df.loc[master_peptide_df['Peptide'] == sequence] 
         if difference_metric == 'area':
-            metric_g1, sd_g1, metric_g2, sd_g2 = peptide.get_area()
-            df_peptide_info = df_peptide_info.append({'Peptide': str(peptide.get_sequence()), 'Start': peptide.get_start(),'End': peptide.get_end(), 'metric_g1': round(float(metric_g1), 3), 
+            metric_g1, sd_g1, metric_g2, sd_g2 = peptide_get_area(peptide)
+            df_peptide_info = df_peptide_info.append({'Peptide': str(sequence), 'Start': peptide_get_start(peptide),'End': peptide_get_end(peptide), 'metric_g1': round(float(metric_g1), 3), 
             'metric_g2': round(float(metric_g2), 3), 'sd_g1': round(float(sd_g1), 3), 'sd_g2': round(float(sd_g2), 3)}, ignore_index=True)
         elif difference_metric == 'spectral_count':
-            metric_g1, sd_g1, metric_g2, sd_g2 = peptide.get_spectral_count()
-            df_peptide_info = df_peptide_info.append({'Peptide': str(peptide.get_sequence()), 'Start': peptide.get_start(),'End': peptide.get_end(), 'metric_g1': round(float(metric_g1), 3), 
+            metric_g1, sd_g1, metric_g2, sd_g2 = peptide_get_spectral_count(peptide)
+            df_peptide_info = df_peptide_info.append({'Peptide': str(sequence), 'Start': peptide_get_start(peptide),'End': peptide_get_end(peptide), 'metric_g1': round(float(metric_g1), 3), 
             'metric_g2': round(float(metric_g2), 3),'sd_g1': round(float(sd_g1), 3), 'sd_g2': round(float(sd_g2), 3)}, ignore_index=True)
     return df_peptide_info
 
 
-def create_protein_datatable(protein_list, difference_metric):
+def create_protein_datatable(master, accession_list, difference_metric):
     protein_info_columns = ['Protein','UniProt id','#peptides_g1','#peptides_g2','metric_g1', 'sd_g1','metric_g2','sd_g2','p_val']
     df_protein_info = pd.DataFrame(columns=protein_info_columns)
     if difference_metric == 'area_sum':
-        for protein in protein_list:
-            nbr_peptides_g1, nbr_peptides_g2 = protein.get_nbr_of_peptides()
-            metric_g1, sd_g1, metric_g2, sd_g2 = protein.get_area_sum()
-            p_val= protein.get_pvalue('area')
-            df_protein_info = df_protein_info.append({'Protein': str(protein.trivname), 'UniProt id': protein.accession,'#peptides_g1': nbr_peptides_g1, '#peptides_g2': nbr_peptides_g2, 
+        for accession in accession_list:
+            protein = master.loc[master['Accession'] == accession]
+            nbr_peptides_g1, nbr_peptides_g2 = protein_get_nbr_of_peptides(protein)
+            metric_g1, sd_g1, metric_g2, sd_g2 = protein_get_area_sum(protein)
+            p_val= protein_get_pvalue_sum(protein,'area')
+            df_protein_info = df_protein_info.append({'Protein': str(protein_get_trivname(protein)), 'UniProt id': accession,'#peptides_g1': nbr_peptides_g1, '#peptides_g2': nbr_peptides_g2, 
             'metric_g1': round(float(metric_g1), 5), 'sd_g1': round(float(sd_g1), 5),'metric_g2': round(float(metric_g2), 5),  'sd_g2': round(float(sd_g2), 5), 'p_val':round(float(p_val), 5)}, ignore_index=True)
     elif difference_metric == 'area_mean':
-        for protein in protein_list:
-            nbr_peptides_g1, nbr_peptides_g2 = protein.get_nbr_of_peptides()
-            metric_g1, sd_g1, metric_g2, sd_g2 = protein.get_area_mean()
-            p_val = protein.get_pvalue_mean('area')
-            df_protein_info = df_protein_info.append({'Protein': str(protein.trivname), 'UniProt id': protein.accession,'#peptides_g1': nbr_peptides_g1, '#peptides_g2': nbr_peptides_g2, 
+        for accession in accession_list:
+            protein = master.loc[master['Accession'] == accession]
+            nbr_peptides_g1, nbr_peptides_g2 = protein_get_nbr_of_peptides(protein)
+            metric_g1, sd_g1, metric_g2, sd_g2 = protein_get_area_mean(protein)
+            p_val= protein_get_pvalue_mean(protein,'area')
+            df_protein_info = df_protein_info.append({'Protein': str(protein_get_trivname(protein)), 'UniProt id': accession,'#peptides_g1': nbr_peptides_g1, '#peptides_g2': nbr_peptides_g2, 
             'metric_g1': round(float(metric_g1), 5), 'sd_g1': round(float(sd_g1), 5),'metric_g2': round(float(metric_g2), 5),  'sd_g2': round(float(sd_g2), 5), 'p_val':round(float(p_val), 5)}, ignore_index=True)
     elif difference_metric == 'spc_sum':
         for protein in protein_list:
-            nbr_peptides_g1, nbr_peptides_g2 = protein.get_nbr_of_peptides()
-            metric_g1, sd_g1, metric_g2, sd_g2 = protein.get_spectral_count_sum()
-            p_val = protein.get_pvalue('spc')
-            df_protein_info = df_protein_info.append({'Protein': str(protein.trivname), 'UniProt id': protein.accession,'#peptides_g1': nbr_peptides_g1, '#peptides_g2': nbr_peptides_g2, 
+            protein = master.loc[master['Accession'] == accession]
+            nbr_peptides_g1, nbr_peptides_g2 = protein_get_nbr_of_peptides(protein)
+            metric_g1, sd_g1, metric_g2, sd_g2 = protein_get_spectral_count_sum(protein)
+            p_val= protein_get_pvalue_sum(protein,'spc')
+            df_protein_info = df_protein_info.append({'Protein': str(protein_get_trivname(protein)), 'UniProt id': accession,'#peptides_g1': nbr_peptides_g1, '#peptides_g2': nbr_peptides_g2, 
             'metric_g1': round(float(metric_g1), 5), 'sd_g1': round(float(sd_g1), 5),'metric_g2': round(float(metric_g2), 5),  'sd_g2': round(float(sd_g2), 5), 'p_val':round(float(p_val), 5)}, ignore_index=True)
     elif difference_metric == 'spc_mean':
         for protein in protein_list:
-            nbr_peptides_g1, nbr_peptides_g2 = protein.get_nbr_of_peptides()
-            metric_g1, sd_g1, metric_g2, sd_g2 = protein.get_spectral_count_mean()
-            p_val = protein.get_pvalue_mean('spc')
-            df_protein_info = df_protein_info.append({'Protein': str(protein.trivname), 'UniProt id': protein.accession,'#peptides_g1': nbr_peptides_g1, '#peptides_g2': nbr_peptides_g2, 
+            protein = master.loc[master['Accession'] == accession]
+            nbr_peptides_g1, nbr_peptides_g2 = protein_get_nbr_of_peptides(protein)
+            metric_g1, sd_g1, metric_g2, sd_g2 = protein_get_spectral_count_mean(protein)
+            p_val= protein_get_pvalue_mean(protein,'spc')
+            df_protein_info = df_protein_info.append({'Protein': str(protein_get_trivname(protein)), 'UniProt id': accession,'#peptides_g1': nbr_peptides_g1, '#peptides_g2': nbr_peptides_g2, 
             'metric_g1': round(float(metric_g1), 5), 'sd_g1': round(float(sd_g1), 5),'metric_g2': round(float(metric_g2), 5),  'sd_g2': round(float(sd_g2), 5), 'p_val':round(float(p_val), 5)}, ignore_index=True)
     return df_protein_info
 
 
-def normalize_data(protein_list, housekeeping_protein=False):
+def normalize_data(df, accession_list, housekeeping_protein=False):
     new_protein_list = []
     if housekeeping_protein == False:
-        total_intensity_dict = protein_list[0].get_area_sum_all_samples()
-        total_spc_dict = protein_list[0].get_spectral_count_sum_all_samples()
-        for protein in protein_list[1:]:
-            protein_intensity_dict = Counter(protein.get_area_sum_all_samples())
-            protein_spc_dict =  Counter(protein.get_spectral_count_sum_all_samples())
-            total_intensity_dict = Counter(total_intensity_dict) + protein_intensity_dict
-            total_spc_dict = Counter(total_spc_dict) + protein_spc_dict
-        for protein in protein_list:
-            df = protein.df.copy()
-            for key, value in total_intensity_dict.items():
-                df[key] = df[key].apply(lambda x: x/value)
-            for key, value in total_spc_dict.items():
-                df[key] = df[key].apply(lambda x: x/value)
-            p = Protein(df, protein.accession, protein.fasta, protein.trivname)
-            new_protein_list.append(p)
-        return new_protein_list
+        area_columns = [col for col in df if col.startswith('Intensity')]
+        spc_columns = [col for col in df if col.startswith('Spectral')]
+        for col in area_columns:
+            col_sum = df[col].sum(axis=1)
+            df[col] = df[col].apply(lambda x: x/col_sum)
+        for col in spc_columns:
+            col_sum = df[col].sum(axis=1)
+            df[col] = df[col].apply(lambda x: x/col_sum)
+        return df
 
     elif housekeeping_protein != False and housekeeping_protein != '':
-        housekeeping_protein_intensity = {}
-        housekeeping_protein_spc = {}
-        for protein in protein_list:
-            if protein.trivname == housekeeping_protein:
-                housekeeping_protein_intensity = protein.get_area_sum_all_samples()
-                housekeeping_protein_spc = protein.get_spectral_count_sum_all_samples()
-        for protein in protein_list:
-            df = protein.df.copy()
-            for key, value in housekeeping_protein_intensity.items():
-                df[key] = df[key].apply(lambda x: x/value)
-            for key, value in housekeeping_protein_spc.items():
-                df[key] = df[key].apply(lambda x: x/value)
-                
-            p = Protein(df, protein.accession, protein.fasta, protein.trivname)
-            new_protein_list.append(p)
-        return new_protein_list
+        housekeeping_df = df.loc[df['Accession'] == housekeeping_protein]
+        area_columns = [col for col in df if col.startswith('Intensity')]
+        spc_columns = [col for col in df if col.startswith('Spectral')]
+        for col in area_columns:
+            housekeeping_intensity = housekeeping_df[col].sum(axis=1)
+            df[col] = df[col].apply(lambda x: x/housekeeping_intensity)
+        for col in spc_columns:
+            housekeeping_spc = housekeeping_df[col].sum(axis=1)
+            df[col] = df[col].apply(lambda x: x/housekeeping_spc)
+        return df
     else:
         print('Error: Data Normalization')
         return None

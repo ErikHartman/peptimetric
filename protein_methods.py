@@ -8,12 +8,13 @@ from datetime import datetime
 
 
 def protein_create_protein(df, accession):
-    df = df.loc[df['Accession'] == accession]
+    df = df.loc[(df['Accession'] == accession)]
     return df
 
 def protein_create_protein_list(df, species):
     p_df = df.groupby(by='Accession', as_index=False).mean()
-    p_list= []
+    master_df = pd.DataFrame()
+    accession_list = []
     if species == 'homo-sapiens':
         df_proteome = pd.read_csv('./uniprot_proteomes/human_proteome.gz')
     elif species == 'pig':
@@ -40,11 +41,12 @@ def protein_create_protein_list(df, species):
             trivname = df_proteome.loc[df_proteome['accession'] == accession].trivname.array[0]
             df['Sequence'] = seq
             df['trivname'] = trivname
-            df  = protein_create_protein(df, accession)
-            p_list.append(df)
+            df_protein  = protein_create_protein(df, accession)
+            accession_list.append(accession)
+            master_df = pd.concat([master_df, df_protein])
         else:
             print(accession)
-    return p_list
+    return master_df, accession_list
 
 def protein_get_area_sum_all_samples(df):
     area_columns = [col for col in df if col.startswith('Intensity')]
@@ -164,6 +166,9 @@ def protein_get_area_mean(df):
     else:
         return statistics.mean(area_sum_g1), 0, statistics.mean(area_sum_g2), 0
 
+def protein_get_trivname(df):
+    return str(df['trivname'].array[0])
+
 def protein_get_spectral_count_sum(df):
     spc_columns = [col for col in df if col.startswith('Spectral')]
     spc_columns_g1 = [col for col in spc_columns if col.endswith('g1')]
@@ -194,12 +199,12 @@ def protein_get_spectral_count_mean(df):
     for s in spc_columns_g1:
         df_spc = df.copy()
         df_spc.fillna(float(0), inplace=True)
-        df_spc[s] = df_spc[s].astype(float)
+        df_spc[s] = df_spc[s].astype(np.float64)
         spc_sum_g1.append(df_spc[s].mean())
     for s in spc_columns_g2:
         df_spc = df.copy()
         df_spc.fillna(float(0), inplace=True)
-        df_spc[s] = df_spc[s].astype(float)
+        df_spc[s] = df_spc[s].astype(np.float64)
         spc_sum_g2.append(df_spc[s].mean())
     if len(spc_sum_g1) > 1 and len(spc_sum_g2) > 1:
         return statistics.mean(spc_sum_g1), statistics.stdev(spc_sum_g1), statistics.mean(spc_sum_g2), statistics.stdev(spc_sum_g2)

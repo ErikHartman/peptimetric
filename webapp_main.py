@@ -18,7 +18,7 @@ import plotly.graph_objects as go
 from methods import pre_process_peptide_fig, sort_protein_list, sort_peptide_list
 from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, create_protein_list, create_protein_df_fig, create_protein_fig , create_peptide_list, stacked_samples_peptide
 from methods import amino_acid_piecharts, all_sample_bar_chart, create_peptide_list_from_trivname
-from methods import apply_protein_cutoffs, apply_peptide_cutoffs, get_unique_and_common_proteins, create_venn_bar
+from methods import apply_protein_cutoffs, apply_peptide_cutoffs, create_venn_bar
 from methods import proteins_present_in_all_samples, create_protein_datatable, create_peptide_datatable, log_intensity, normalize_data, create_length_histogram
 from texts_for_webapp import how_to_use, Documentation, contact_text
 from datetime import datetime

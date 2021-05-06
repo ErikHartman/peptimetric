@@ -2,21 +2,28 @@ import re
 import statistics
 import numpy as np
 from scipy.stats import ttest_ind_from_stats
+from protein_methods import protein_create_protein
+import pandas as pd
 
-def create_peptide_list(df, accession):
+def peptide_create_peptide_list(df, accession):
     peptide_list = []
-    protein = create_protein(df, accession)
+    master_df = pd.DataFrame()
+    protein = protein_create_protein(df, accession)
     for seq in protein['Peptide']:
         peptide_df = protein.loc[(protein['Peptide'] == seq)]
-        peptide_list.append(peptide_df)
-    return peptide_list
+        master_df = pd.concat([master_df, peptide_df])
+        peptide_list.append(seq)
+    return master_df, peptide_list
 
-def create_peptide(df, peptide):
+def peptide_create_peptide(df, peptide):
     df = df[(df['Peptide'] == peptide)]
-    return df_g1
+    return df
 
 def peptide_get_sequence(df):
     return df['Peptide'].values[0]
+
+def peptide_get_fasta(df):
+    return df['Sequence'].values[0]
 
 def peptide_get_start(df):
     peptide = df['Peptide'].values[0]
@@ -51,7 +58,7 @@ def peptide_unique_or_common(df):
     return g1_count, g2_count
 
 def peptide_get_area(df):
-    area_columns = [col for col in df_g1 if col.startswith('Intensity')]
+    area_columns = [col for col in df if col.startswith('Intensity')]
     area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
     area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
     area_mean_g1 = []
@@ -134,7 +141,7 @@ def peptide_get_number_of_samples(df):
     area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
     return len(area_columns_g1), len(area_columns_g2)
 
-def get_pvalue(df, spc_or_area):
+def peptide_get_pvalue(df, spc_or_area):
     if spc_or_area == 'spc':
         g1_mean, g1_std, g2_mean, g2_std = peptide_get_spectral_count(df)
     else:
