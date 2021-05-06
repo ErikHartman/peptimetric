@@ -1,6 +1,7 @@
-from methods import concatenate_dataframes, merge_dataframes, make_peptide_dfs, create_protein_list, create_protein_datatable, create_peptide_datatable, create_venn_bar
-from methods import create_peptide_list_from_trivname, pre_process_peptide_fig, stacked_samples_peptide, create_length_histogram, log_intensity, generate_local_database
+from methods import concatenate_dataframes, merge_dataframes, make_peptide_dfs, create_protein_datatable, create_peptide_datatable, create_venn_bar
+from methods import pre_process_peptide_fig, stacked_samples_peptide, create_length_histogram, log_intensity, generate_local_database
 from methods import amino_acid_piecharts, create_protein_df_fig, create_protein_fig
+from methods import normalize_data, apply_protein_cutoffs, apply_peptide_cutoffs
 import os
 from datetime import datetime
 import pandas as pd
@@ -20,10 +21,12 @@ g1 = log_intensity(g1)
 g2 = log_intensity(g2)
 master = merge_dataframes(g1,g2)
 master, accession_list = protein_create_protein_list(master, 'homo-sapiens')
-peptide_df, peptide_list = peptide_create_peptide_list(master, 'P69905')
-x,y,z = pre_process_peptide_fig(peptide_df, peptide_list, difference_metric='area')
-fig = stacked_samples_peptide(x,y, 'HBA_HUMAN',z, average=False, square=[(120,140)])
-fig.show()
+master = normalize_data(master, accession_list)
+print(master.index)
+# peptide_df, peptide_list = peptide_create_peptide_list(master, 'P69905')
+# x,y,z = pre_process_peptide_fig(peptide_df, peptide_list, difference_metric='area')
+# fig = stacked_samples_peptide(x,y, 'HBA_HUMAN',z, average=False, square=[(120,140)])
+# fig.show()
 #df_fig = create_protein_df_fig(protein_list)
 
 #fig = create_protein_fig(df_fig, difference_metric = 'area_sum', show_stdev = False)

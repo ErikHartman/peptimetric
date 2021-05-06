@@ -220,29 +220,34 @@ def protein_get_nbr_of_peptides(df):
     spc_columns_g2 = [col for col in spc_columns if col.endswith('g2')]
     df_cols = df.copy()
     df_cols.fillna(0, inplace=True)
-    df_cols[area_columns] = df_cols[area_columns].apply(lambda x: [1 if y > 0 else 0 for y in x])
-    df_cols[spc_columns] = df_cols[spc_columns].apply(lambda x: [1 if y > 0 else 0 for y in x])
-    nbr_of_peptides_g1 = 0
-    nbr_of_peptides_g2 = 0
-    for area_column, spc_column in zip(area_columns_g1, spc_columns_g1):
-        area_count = df_cols[area_column].to_numpy()
-        spc_count = df_cols[spc_column].to_numpy()
-        for i in range(len(area_count)):
-            if area_count[i] == 1 and spc_count[i] == 1:
-                nbr_of_peptides_g1 += 1
-    for area_column, spc_column in zip(area_columns_g2, spc_columns_g2):
-        area_count = df_cols[area_column].to_numpy()
-        spc_count = df_cols[spc_column].to_numpy()
-        for i in range(len(area_count)):
-            if area_count[i] == 1 and spc_count[i] == 1:
-                nbr_of_peptides_g2 += 1
+    if df_cols.empty:
+        return 0,0
+    else:
+        df_cols[area_columns] = df_cols[area_columns].apply(lambda x: [1 if y > 0 else 0 for y in x])
+        df_cols[spc_columns] = df_cols[spc_columns].apply(lambda x: [1 if y > 0 else 0 for y in x])
+        nbr_of_peptides_g1 = 0
+        nbr_of_peptides_g2 = 0
+        for area_column, spc_column in zip(area_columns_g1, spc_columns_g1):
+            area_count = df_cols[area_column].to_numpy()
+            spc_count = df_cols[spc_column].to_numpy()
+            for i in range(len(area_count)):
+                if area_count[i] == 1 and spc_count[i] == 1:
+                    nbr_of_peptides_g1 += 1
+        for area_column, spc_column in zip(area_columns_g2, spc_columns_g2):
+            area_count = df_cols[area_column].to_numpy()
+            spc_count = df_cols[spc_column].to_numpy()
+            for i in range(len(area_count)):
+                if area_count[i] == 1 and spc_count[i] == 1:
+                    nbr_of_peptides_g2 += 1
     return nbr_of_peptides_g1, nbr_of_peptides_g2
 
 
 
 def protein_get_number_of_samples(df):
-    area_columns_g1 = [col for col in df if col.startswith('Intensity')]
-    return len(area_columns_g1)
+    area_columns = [col for col in df if col.startswith('Intensity')]
+    area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
+    area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
+    return len(area_columns_g1), len(area_columns_g2)
 
 def protein_get_pvalue_sum(df, spc_or_area):
     if spc_or_area == 'spc':

@@ -15,6 +15,16 @@ def peptide_create_peptide_list(df, accession):
         peptide_list.append(seq)
     return master_df, peptide_list
 
+def peptide_create_peptide_list_from_trivname(df, trivname):
+    peptide_list = []
+    master_df = pd.DataFrame()
+    protein = df.loc[df['trivname'] == trivname]
+    for seq in protein['Peptide']:
+        peptide_df = protein.loc[(protein['Peptide'] == seq)]
+        master_df = pd.concat([master_df, peptide_df])
+        peptide_list.append(seq)
+    return master_df, peptide_list
+
 def peptide_create_peptide(df, peptide):
     df = df[(df['Peptide'] == peptide)]
     return df
