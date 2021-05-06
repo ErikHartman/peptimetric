@@ -964,7 +964,7 @@ def sort_protein_list(protein_list, difference_metric):
 
 def sort_peptide_list(peptide_list, difference_metric):
     if difference_metric == 'area':
-        sorted_peptide_list = sorted(peptide_list, key=lambda x: (x.get_area()[0]+x.get_area()[2]), reverse=True)
+        sorted_peptide_list = sorted(peptide_list, key=lambda x: np.abs(x.get_area()[0]-x.get_area()[2]), reverse=True)
     elif difference_metric == 'spectral_count':
-        sorted_peptide_list = sorted(peptide_list, key=lambda x: (x.get_spectral_count()[0]+x.get_spectral_count()[2]), reverse=True)
+        sorted_peptide_list = sorted(peptide_list, key=lambda x: np.abs(x.get_spectral_count()[0]-x.get_spectral_count()[2]), reverse=True)
     return sorted_peptide_list

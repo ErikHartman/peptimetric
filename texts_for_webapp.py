@@ -36,49 +36,50 @@ was developed using ''', html.A('Plotly Dash library for Python', href='https://
 Data_processing = html.Div([dbc.Row([html.Img(src = './assets/computer.png', style={'height':'4%', 'width':'4%'}),
         html.H5('Data processing', style={"font-weight": "bold"}),]),
     html.P(['''Peptimetric requires a minimum of one input file per group, however, statistical calculations require at least 
-    three files per group. The input files should either be in a comma separated values (.csv, recommended) or Excel (.xlsx, invalid for large files) format. The files are stored 
+    three files per group. The input files should either be in a comma separated values (.csv, recommended) or Excel (.xlsx, invalid for large files) format. Uploading many large
+    files may result in a ''', html.A('server timeout error',href ='https://devcenter.heroku.com/articles/error-codes#h12-request-timeout'), '''. If this happens to your data, consider concatenating some of your .csv files for faster uploads. The files are cached and stored 
     in your browser during the session and will be lost after closing or refreshing the tab (''', html.A('Dash data storage).', href='https://dash.plotly.com/dash-core-components/store')]),
     dbc.Card([
         html.P( ['''The input files require four columns describing the ''', html.A('''peptide sequence, precursor protein ID, intensity and spectral count. ''', style={'font-weight':'bold'})
-        , '''To accommodate for the use of different dataprocessing softwares we have included the following allowed names for the various columns:
+        , '''To accommodate for the use of different dataprocessing softwares we have included the following allowed names (including some capitalization variation) for the various columns:
     '''], style={'padding-top':15}),
-    html.P('Peptide sequence: ', style={'font-weight':'bold', 'margin-bottom':0}), html.P('Peptide, Sequence, sequence, Sequences, sequences, peptide, peptides', style= {'color':'#c7254e', 'font-family':'monospace'})
-    , html.P('Precursor protein ID:', style={'font-weight':'bold','margin-bottom':0}), html.P('Accession, Protein, protein, accession, uniprot id, UniProt id, Uniprot id', style= {'color':'#c7254e', 'font-family':'monospace'})
-    , html.P('Intensity:', style={'font-weight':'bold','margin-bottom':0}), html.P('Area, Intensity, area, intensity, intensities', style= {'color':'#c7254e', 'font-family':'monospace'})
-    , html.P('Spectral count:', style={'font-weight':'bold','margin-bottom':0}), html.P('Spectral count, SPC, SpC, spc, sc, SC, spectral count, #Feature, spectral counts, #Features', style= {'color':'#c7254e', 'font-family':'monospace'})
+    html.P('Peptide sequence: ', style={'font-weight':'bold', 'margin-bottom':0}), html.P('Peptide, Sequence', style= {'color':'#c7254e', 'font-family':'monospace'})
+    , html.P('Precursor protein ID:', style={'font-weight':'bold','margin-bottom':0}), html.P('Accession, Protein, UniProt id', style= {'color':'#c7254e', 'font-family':'monospace'})
+    , html.P('Intensity:', style={'font-weight':'bold','margin-bottom':0}), html.P('Area, Intensity', style= {'color':'#c7254e', 'font-family':'monospace'})
+    , html.P('Spectral count:', style={'font-weight':'bold','margin-bottom':0}), html.P('Spectral count, SpC, #Feature', style= {'color':'#c7254e', 'font-family':'monospace'})
 
      ], color='#DFF0D8', style={'border':0, }),
-     html.P(['''To fetch protein sequences and names, a local database is used, consisting of data fetched from ''', html.A('UniProt', href='https://uniprot.org/'),'''. You therefore has to 
-     provide a valid UniProt id (accession number) for each peptide in the dataset. To allow for fast searches the database is categorized by 
-     species and the user therefore has to select what species to be used in the sarch when uploading the files. The database was fetched 2021-04-28 and contains 
-     77027 proteins for ''', html.A('Homo sapiens', className='font-italic'), '''. If you want to analyze data from a species which doesn't exist in the 
-     database, feel free to ''', html.A('contact us ', href='mailto:peptimetric@gmail.com'), ''' and we'll add it as soon as possible!'''], style={'padding-top':15}),
+     html.P(['''A local database is used to fetch protein sequences and names. The database consists of a subset of proteomes from ''', html.A('UniProt', href='https://uniprot.org/'),'''. You therefore have to 
+     provide a valid UniProt id (accession number) for each peptide in the dataset and select what species to be used in the search when uploading the files. 
+     The database was fetched 2021-04 and contains the following species ''', html.A('''Homo sapiens, Sus scrofa (pig), Rattus norvegicus (rat), Cricetulus griseus (hamster),
+     Mus musculus (mouse), Danio rerio (zebra fish), Drosophila melanogaster, Caenorhabditis elegans, Candida albicans and Escherichia coli''', className='font-italic'), 
+     '''. If you want to analyze data from a species which do not exist in the database, feel free to ''', html.A('contact us ', href='mailto:peptimetric@gmail.com'), ''' and we'll add it as soon as possible!'''], style={'padding-top':15}),
 ])
 
 Settings = html.Div([dbc.Row([html.Img(src = './assets/settings.png', style={'height':'4%', 'width':'4%'}),
-        html.H5('Settings', style={"font-weight": "bold"}),]),
+        html.H5('Pre processing data', style={"font-weight": "bold"}),]),
 html.H6('Normalization', style={'font-weight':'bold', 'margin-bottom':0, }),
 dbc.Row([dbc.Col([html.P('''
 Peptimetric accommodates for two ways of normalizing your data: using the global sample intensity, and by using a housekeeping protein. Both methods 
 are valid ways of normalizing MS and MSMS data and may reduce the inter-sample biases introduced in sample preparation and loading. 
 ''', style={}),
 html.P('''All the intensity values from the input files are converted to the logarithm (log) scale. If the values present in the input files are 
-already in the logarithmic scale the option in the normalizartion modal has to be marked. The logaritmic scale is generally used when analysing data from MS, as
+already in the logarithmic scale the option in the mark the checkbox in the normalizartion popup. The logaritmic scale is generally used when analysing data from MS, as
 logaritmic intensities tends to be normally distrubuted.''', style={})], width={'size':7}),
 dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/normalization.jpg', style={'height':'100%', 'width':'100%'})), width={'size':4, 'offset':0}),
 ]),
 html.H6('Cutoffs', style={'font-weight':'bold', 'margin-bottom':0, }),
 dbc.Row([dbc.Col([html.P('''
-MS samples often contain proteins of very low quality and/or abundancy. Likely, these contain few peptides, or have very low intensity and spectral
-count. We therefore give you the option to apply cutoffs to your dataset to remove these proteins.
+MS samples may contain proteins and peptides of very low quality and/or abundancy.
+We therefore give you the option to apply cutoffs to your dataset to remove these proteins.
 ''', style={}),
 html.P(' Peptide cutoffs', style={'font-weight':'bold', 'margin-bottom':0, }),
-html.P('''Peptide cutoffs allow you to remove peptides with low intensity and/or low spectral count. We also give you the option
+html.P('''Peptide cutoffs allow you to remove peptides with low quality peptides with low intensity and/or low spectral count. We also give you the option
 to remove retention time (RT) and/or collission crossection surface (CCS) outliers. Outliers are considered to be situated
 three standard deviations from the mean. The peptide cutoffs are applied before the protein cutoffs.
 ''', style={}),
 html.P('Protein cutoffs', style={'font-weight':'bold', 'margin-bottom':0, }),
-html.P('''Protien cutoffs allow you to remove proteins with either low total intensity, low total spectral count or a low amount of peptides.
+html.P('''Protein cutoffs allow you to remove proteins with either low total intensity, low total spectral count or a low amount of peptides.
 These cuttoffs are applied after the peptide cutoffs are applied. Therefore, if a protein contains many peptides of low quality or abundance
 it will be removed from the dataset if the peptide cutoffs are properly applied.
 ''', style={})], width={'size':7}),
@@ -96,13 +97,13 @@ Visualization = html.Div([
     html.P('''
     The protein view gives you an overview of the proteins present in your samples. The size and color indicate the number of peptides found from
     the precursor protein. The axes in the graph correspond to the chosen difference metric for the two groups. You may change the difference metric
-    without significant loading time. The standard deviation is off by default. The graph can be manipulated and saved using the toolbar. Hovering
+    without significant loading time. The standard deviation is off by default and can be toggled. The graph can be manipulated and saved using the toolbar. Hovering
     on a datapoint will reveal a tooltip with information about the protein. It will also generate a bar chart showing the chosen difference metric
     for each sample. Selecting a protein highlights it, making it possible to generate a peptide view.
     '''),
     html.P('''The protein table contain information about the number of peptides and chosen difference metric for the 200 proteins with the largets intensity or spectral count. The table is filterable
-    and sorted by default on the sum of both groups difference metric. The table can further be sorted in multiple ways by using the arrows within the column. Selecting a protein highlights the protein in the protein figure. If you select multiple proteins, only the first protein will be selected
-    for peptide view. The protein datatable can be exported to a .xlsx format using the "Export" button. 
+    and sorted by default on the sum of both groups' difference metric. The table can further be sorted in multiple ways by using the arrows within the column. Selecting a protein highlights the protein in the protein figure. If you select multiple proteins, only the first protein will be selected
+    for generating a peptide view. The protein table can be exported as an Excel file (.xlsx) using the "Export" button. 
     '''),
     dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/protein_view1.jpg', style={'height':'100%', 'width':'100%'})), width= {'size':8, 'offset':2}),
     html.P('''
@@ -115,8 +116,8 @@ Visualization = html.Div([
     and difference between the groups which may be toggled on (default) or off.
     ''', style={} ),
     html.P('''
-    The peptide table showcase the 200 peptides with the largest intensity or spectral count in the dataset. The table may be sorted and filtered. There is no interactivity between the peptide view
-    and peptide table yet. The peptide datatable can be exported to a .xlsx format using the "Export" button. 
+    The peptide table showcase the 200 peptides with the largest intensity or spectral count in the dataset. The table may be sorted and filtered. 
+    Selecting a peptide in the table highlights it in the graph. The peptide table can be exported as an Excel file (.xlsx) using the "Export" button. 
     ''', style={} ),
 
     dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/peptide_view.jpg', style={'height':'100%', 'width':'100%'})), width= {'size':8, 'offset':2}),
@@ -127,8 +128,8 @@ Visualization = html.Div([
 
     html.P('''
     The general characteristics section contain three figures: length distribution, peptidome overlap and amino acid profile. You may select to view these figures
-    for either the complete proteome or the selected protein. Selecting complete proteome may result in long loading times for large datasets. As long as a peptide is present in one of the samples in a group
-    they will be included in the visualization of the general characteristics for that group.
+    for either the complete proteome or the selected protein (visible in the peptide view). Selecting complete proteome may result in long loading times for large datasets.
+     As long as a peptide is present in one of the samples in a group they will be included in the visualization of the general characteristics for that group.
     '''),
 
     dbc.Row([dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/general_info.jpg', style={'height':'100%', 'width':'100%'}))), 
@@ -142,40 +143,37 @@ Visualization = html.Div([
 Interactivity = html.Div([
     dbc.Row([html.Img(src = './assets/interact.png', style={'height':'4%', 'width':'4%'}),
         html.H5('Interactivity', style={"font-weight": "bold",})]),
-html.P('''
-Many of the applications and features in peptrimetric are designed to contain some sort of interactivity. Allowing for an advanced exploration of your dataset and to interact with the graphics
-in an easy way. 
-''', style={}), 
-html.P('''
+    html.P('''
+    Many of the applications and features in peptrimetric are designed to contain some sort of interactivity. Allowing for an dynamic exploration of your dataset and to interact with the graphics
+    in an easy manner. 
+    ''', style={}), 
+    html.P('''
     Search protein
     ''', style={'font-weight':'bold', 'margin-bottom':0, } ),
     html.P(['''
     The search protein function makes it possible to search for all proteins present in the dataset, and those not removed 
-    by any cutoffs. A scrollable and clickable list containing the trivialnames from ''' , html.A('UniProt', href='https://uniprot.org/'),''' also displays the proteins 
-    present in the dataset. A protein is serached by pressing "Enter", and the selected protein will be highlighted in the protein graph. 
+    by any cutoffs. A scrollable and clickable list containing the mnemonic protein identification code (trivial name) from ''' , html.A('UniProt', href='https://uniprot.org/'),'''.
+     The selected protein will be highlighted in the protein graph. 
     '''], style={} ),
     html.P('''
     Modebars
     ''', style={'font-weight':'bold', 'margin-bottom':0, }),
     html.P(['''
-    Peptrimetric uses the built-in ''', html.A('Modebars', href='https://plotly.com/chart-studio-help/getting-to-know-the-plotly-modebar/'),''' from Plotly to allow 
-    the user to interact with the graphs created in both protein view and peptide view. Functions like
-    downloading the plots to .png-format, zooming, autoscale, reset axis and different hover options are therefore available.
+    Peptrimetric uses the built-in ''', html.A('modebars', href='https://plotly.com/chart-studio-help/getting-to-know-the-plotly-modebar/'),''' from Plotly to allow 
+    the user to interact with the graphs. This provides functions such as
+    downloading the publication quality plots to .png-format, zooming, autoscale, reseting axes and allows for different hover options.
     '''], style={} ),
     html.P('''
     Peptide view slider 
     ''', style={'font-weight':'bold', 'margin-bottom':0, }),html.P('''
-    Peptide sequences can be long, and can therefore be hard to draw any conclusions when viewing the entire sequence. The peptide slider at the bottom of the peptide view graph allow you to move along the peptide sequences
-    and also minimize the window to make it easier to visualize differences between the groups. The sections of the sequences that are cutout are shadowed in grey. 
+    The protein sequence slider at the bottom of the peptide view allow you to move along and window the protein sequence. 
     ''', style={} ),
 ])
 
 Cite = html.Div([
     dbc.Row([html.Img(src = './assets/cite.png', style={'height':'4%', 'width':'4%'}),
         html.H5('Cite', style={"font-weight": "bold"}),]),
-    dbc.Card(html.P( '''Erik Hartman, Simon Mahdavi'''), color='#F8F8F8', style={'border':0 }),
-html.P('''
-''')
+    dbc.Card(html.P([ '''Please cite the authors: Erik Hartman and Simon Mahdavi, alongside the URL: ''', html.A('peptimetric.herokuapp.com', href='peptimetric.herokuapp.com')]), color='#F8F8F8', style={'border':0 }),
 ])
 
 Legal = html.Div([
@@ -183,8 +181,7 @@ Legal = html.Div([
         html.H5('Legal', style={"font-weight": "bold", }),]),
     html.P(['''
     Peptimetric is free to use for academic purposes and is available at ''', html.A('GitHub', href="https://github.com/ErikHartman/peptimetric"), ''' under an MIT license. 
-    The uploaded files are stored as JSON files in your browser. No data is saved and no use is monitored
-    using cookies or third party applications. The Dash library is freely available under the MIT license.
+    No data is saved and no use is monitored using cookies or third party applications. The Dash library is freely available under the MIT license.
     '''])
 ])
 

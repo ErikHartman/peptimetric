@@ -748,22 +748,13 @@ def apply_cutoffs_to_protein_list(protein_list, apply_normalization_n_clicks, ap
         tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CCS, present_in_all_samples = 0,0,0,0,0,False,False,False
     triv_names = []
     if protein_list:
-        now = datetime.now()
-        current_time = now.strftime("%H:%M:%S")
-        print("1. Current Time =", current_time)
         if 'global-intensity' in radioitems_normalization:
             protein_list = normalize_data(protein_list, housekeeping_protein=False)
         elif 'housekeeping-protein' in radioitems_normalization and housekeeping_protein != '':
             protein_list = normalize_data(protein_list, housekeeping_protein = housekeeping_protein)
-        now = datetime.now()
-        current_time = now.strftime("%H:%M:%S")
-        print( "2. Current Time =", current_time)
         if cutoff_values and cutoff_values != [0,0,0,0,0,False,False,False]:
             protein_list = apply_peptide_cutoffs(protein_list, area=pep_intensity_co, spc=pep_spc_co, rt=RT, ccs=CCS)
             protein_list = apply_protein_cutoffs(protein_list, nbr_of_peptides=nbr_of_peptides_co, tot_area=tot_intensity_co, tot_spc=tot_spc_co)
-        now = datetime.now()
-        current_time = now.strftime("%H:%M:%S")
-        print("3. Current Time =", current_time)
         if len(protein_list) < 1:
             return [], []
         if present_in_all_samples:
@@ -771,9 +762,6 @@ def apply_cutoffs_to_protein_list(protein_list, apply_normalization_n_clicks, ap
         if len(protein_list) > 1:
             for protein in protein_list:
                 triv_names.append(html.Option(value=protein.trivname))
-        now = datetime.now()
-        current_time = now.strftime("%H:%M:%S")
-        print("4. Current Time =", current_time)
         return triv_names, protein_list
 
     else:
@@ -906,7 +894,6 @@ def create_peptide_fig(processed_peptide_data, sum_or_mean_radio, rows, derived_
         x0_array, x1_array = list(selected_rows_df.iloc[derived_virtual_selected_rows, 1].values), list(selected_rows_df.iloc[derived_virtual_selected_rows, 2].values)
         for x0, x1 in zip(x0_array, x1_array):
             squares.append((x0, x1))
-        print('squares: ', squares)
         if not rows:
             squares = [(0,0)]
     else:
