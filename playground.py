@@ -5,6 +5,7 @@ import os
 from datetime import datetime
 import pandas as pd
 
+from protein_methods import protein_create_protein_list
 import gzip
 
 wd = os.getcwd()
@@ -15,8 +16,9 @@ g2 = concatenate_dataframes(make_peptide_dfs(g2,g2))
 g1 = log_intensity(g1)
 g2 = log_intensity(g2)
 master = merge_dataframes(g1,g2)
-
+protein_list = protein_create_protein_list(master, 'homo-sapiens')
+print(len(protein_list))
 #fig = create_length_histogram(g1,g2, accession='P69905', peptide_or_protein_list = 'peptide_list')
 #fig  = create_venn_bar(g1,g2, accession='P69905', complete_proteome=False)
-fig = amino_acid_piecharts(g1, g2, peptide_or_protein_list = 'protein_list', difference_metric='area')
-fig.show()
+#fig = amino_acid_piecharts(g1, g2, peptide_or_protein_list = 'protein_list', difference_metric='area')
+#fig.show()

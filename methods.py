@@ -89,16 +89,17 @@ def make_peptide_dfs(files, filenames):
             else:
                 accessions.append(row['Accession'])
         df['Accession'] = accessions
-        df['Peptide']=df['Peptide'].str.replace('[^a-zA-Z]','')
+        df['Peptide'] = df['Peptide'].str.replace('[^a-zA-Z]','')
+        df = df.groupby(by=['Peptide', 'Accession'], as_index=False).mean()
         df = df[columns_to_keep]
         if 'Intensity' in df.columns:
-            df['Intensity'] = df['Intensity'].astype(np.float64)
+            df['Intensity'] = df['Intensity'].astype(float)
         if 'Spectral count' in df.columns:
-            df['Spectral count'] = df['Spectral count'].astype(np.float64)
+            df['Spectral count'] = df['Spectral count'].astype(float)
         if 'RT' in df.columns:
-            df['RT'] = df['RT'].astype(np.float64)
+            df['RT'] = df['RT'].astype(float)
         if 'CCS' in df.columns:
-            df['CCS'] = df['CCS'].astype(np.float64)
+            df['CCS'] = df['CCS'].astype(float)
         dfs.append(df)
     return dfs
 
