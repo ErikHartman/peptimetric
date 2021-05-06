@@ -941,8 +941,8 @@ def create_amino_acid_fig(dropdown_values, radioitem_value, peptide_list, df_g1,
     if dropdown_values and 'complete-proteome' in dropdown_values and not df_g1.empty and not df_g2.empty:
         fig = amino_acid_piecharts(df_g1, df_g2, accession = '', peptide_or_protein_list = 'protein_list', difference_metric = radioitem_value)
         return fig
-    elif dropdown_values and 'selected-protein' in dropdown_values and peptide_list:
-        accession = peptide_list[0].protein.accession
+    elif dropdown_values and 'selected-protein' in dropdown_values and not peptide_list.empty:
+        accession = peptide_list['Accession'].values[0]
         fig = amino_acid_piecharts(df_g1, df_g2, accession=accession, peptide_or_protein_list = 'peptide_list', difference_metric = radioitem_value)
         return fig
     else:
@@ -982,8 +982,8 @@ def create_peptide_length_dropdown(length_dropdown_values, peptide_list, df_g1, 
     if length_dropdown_values and 'complete-proteome'  in length_dropdown_values and not df_g1.empty and not df_g2.empty:
         length_fig = create_length_histogram(df_g1, df_g2, peptide_or_protein_list='protein_list')
         return length_fig
-    elif length_dropdown_values and 'selected-protein' in length_dropdown_values and peptide_list:
-        accession = peptide_list[0].protein.accession
+    elif length_dropdown_values and 'selected-protein' in length_dropdown_values and not peptide_list.empty:
+        accession = peptide_list['Accession'].values[0]
         length_fig= create_length_histogram(df_g1, df_g2, accession=accession, peptide_or_protein_list='peptide_list')
         return length_fig
     else:
@@ -993,8 +993,8 @@ def create_venn_bar_fig(length_dropdown_values, peptide_list, df_g1, df_g2):
     if length_dropdown_values and 'complete-proteome'  in length_dropdown_values and not df_g1.empty and not df_g2.empty:
         venn_bar = create_venn_bar(df_g1, df_g2, accession = '', complete_proteome=True)
         return venn_bar
-    elif length_dropdown_values and 'selected-protein' in length_dropdown_values and peptide_list:
-        accession = peptide_list[0].protein.accession
+    elif length_dropdown_values and 'selected-protein' in length_dropdown_values and not peptide_list.empty:
+        accession = peptide_list['Accession'].values[0]
         venn_bar= create_venn_bar(df_g1, df_g2, accession=accession, complete_proteome=False)
         return venn_bar
     else:
