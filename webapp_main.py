@@ -610,7 +610,20 @@ documentation = dbc.Col([
     
 ])
 
-bottom_navbar = html.Div(dbc.Navbar())
+bottom_navbar = html.Div(dbc.Navbar([
+    dbc.Nav([
+    dbc.NavLink("Peptimetric", href = '/', style = {'color':'grey', 'font-size':20,  'font-weight':'bold', 'font':'Roboto', 'text-transform':'lowercase'}),
+    dbc.NavbarBrand('by: Erik Hartman, Simon Mahdavi', style={'color':'#808080','font-size':14, 'margin-left':15}), 
+    ],vertical='md',),
+    dbc.Nav([
+        dbc.NavLink('Documentation', href='/documentation'),
+        dbc.NavLink('Home', href='/')
+        ],
+        navbar=True,
+        horizontal='start',
+        vertical='md',
+        style={'margin-right':30},
+        className="ml-auto")], className='navbar-bottom', fixed=True))
 
 
 hidden_divs = html.Div([
@@ -668,19 +681,21 @@ main_page = dbc.Container([
     ]),  
     dbc.Row(dbc.Col(amino_acid_figs)),
     
-    dbc.Row([dbc.Col(bottom_navbar, width={'size': 12}, className="navbar-bottom", style={'padding-left':0, 'padding-right':0},)]),
+    dbc.Row([dbc.Col(bottom_navbar, width={'size': 12}, style={'padding':0},)]),
 
     hidden_divs,
 ], fluid=True, style={'padding':0})
 
 documentation_page = dbc.Container([
      dbc.Row([
-        dbc.Col(navbar, width={"size":12}, className="mb-4", style={'padding-right':0, 'padding-left':0, 'heigth':'100%'})
+        dbc.Col(navbar, width={"size":12}, className="mb-4", style={'padding-right':0, 'padding-left':0})
     ]),
     dbc.Row([
         documentation,
     ]),
+    dbc.Row([dbc.Col(bottom_navbar, width={'size': 12}, style={'padding':0},)]),
     hidden_divs_documentation,
+
     
 ], fluid=True, style={'padding':0})
 
