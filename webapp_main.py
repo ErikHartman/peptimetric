@@ -610,6 +610,8 @@ documentation = dbc.Col([
     
 ])
 
+bottom_navbar = html.Div(dbc.Navbar())
+
 
 hidden_divs = html.Div([
     dcc.Store(id='cutoff-value-holder'),
@@ -665,13 +667,15 @@ main_page = dbc.Container([
         dbc.Col(venn_bar_fig, width={'size':4}),
     ]),  
     dbc.Row(dbc.Col(amino_acid_figs)),
+    
+    dbc.Row([dbc.Col(bottom_navbar, width={'size': 12}, className="navbar-bottom", style={'padding-left':0, 'padding-right':0},)]),
 
     hidden_divs,
 ], fluid=True, style={'padding':0})
 
 documentation_page = dbc.Container([
      dbc.Row([
-        dbc.Col(navbar, width={"size":12}, className="mb-4", style={'padding-right':0, 'padding-left':0})
+        dbc.Col(navbar, width={"size":12}, className="mb-4", style={'padding-right':0, 'padding-left':0, 'heigth':'100%'})
     ]),
     dbc.Row([
         documentation,

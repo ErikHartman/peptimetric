@@ -67,3 +67,8 @@ h6{
 .nav-tabs{
   background-color: #fff;
 }
+
+.navbar-bottom {
+  min-height: 80px;
+  min-width: 670px;
+}

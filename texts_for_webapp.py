@@ -51,7 +51,7 @@ Data_processing = html.Div([dbc.Row([html.Img(src = './assets/computer.png', sty
      ], color='#DFF0D8', style={'border':0, }),
      html.P(['''A local database is used to fetch protein sequences and names. The database consists of a subset of proteomes from ''', html.A('UniProt', href='https://uniprot.org/'),'''. You therefore have to 
      provide a valid UniProt id (accession number) for each peptide in the dataset and select what species to be used in the search when uploading the files. 
-     The database was fetched 2021-04 and contains the following species ''', html.A('''Homo sapiens, Sus scrofa (pig), Rattus norvegicus (rat), Cricetulus griseus (hamster),
+     The database was fetched 2021-04 and contains the following species ''', html.I('''Homo sapiens, Sus scrofa (pig), Rattus norvegicus (rat), Cricetulus griseus (hamster),
      Mus musculus (mouse), Danio rerio (zebra fish), Drosophila melanogaster, Caenorhabditis elegans, Candida albicans and Escherichia coli''', className='font-italic'), 
      '''. If you want to analyze data from a species which do not exist in the database, feel free to ''', html.A('contact us ', href='mailto:peptimetric@gmail.com'), ''' and we'll add it as soon as possible!'''], style={'padding-top':15}),
 ])
@@ -97,7 +97,7 @@ Visualization = html.Div([
     html.P('''
     The protein view gives you an overview of the proteins present in your samples. The size and color indicate the number of peptides found from
     the precursor protein. The axes in the graph correspond to the chosen difference metric for the two groups. You may change the difference metric
-    without significant loading time. The standard deviation is off by default and can be toggled. The graph can be manipulated and saved using the toolbar. Hovering
+    without significant loading time. The standard deviation is off by default and can be toggled. The graph can be manipulated and saved using the modebar. Hovering
     on a datapoint will reveal a tooltip with information about the protein. It will also generate a bar chart showing the chosen difference metric
     for each sample. Selecting a protein highlights it, making it possible to generate a peptide view.
     '''),
@@ -116,7 +116,7 @@ Visualization = html.Div([
     and difference between the groups which may be toggled on (default) or off.
     ''', style={} ),
     html.P('''
-    The peptide table showcase the 200 peptides with the largest intensity or spectral count in the dataset. The table may be sorted and filtered. 
+    The peptide table showcase the 200 peptides with the biggest intensity or spectral count difference in the dataset. The table may be sorted and filtered. 
     Selecting a peptide in the table highlights it in the graph. The peptide table can be exported as an Excel file (.xlsx) using the "Export" button. 
     ''', style={} ),
 
