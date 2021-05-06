@@ -89,6 +89,7 @@ def make_peptide_dfs(files, filenames):
             else:
                 accessions.append(row['Accession'])
         df['Accession'] = accessions
+        df['Peptide']=df['Peptide'].str.replace('[^a-zA-Z]','')
         df = df[columns_to_keep]
         if 'Intensity' in df.columns:
             df['Intensity'] = df['Intensity'].astype(np.float64)
@@ -152,89 +153,98 @@ def set_color_and_size(nbr_of_peptides, color_thresholds):
             size.append(1)
     return col, size
 
-def amino_acid_frequency(p_list, **kwargs):
+def amino_acid_frequency(df_g1, df_g2, accession, **kwargs):
     default_settings = {
         'peptide_or_protein_list',
         'difference_metric'
     }
     default_settings.update(kwargs)
-    def create_aa_dict():
-        aa_dict = {
-            'A': 0,
-            'G': 0,
-            'V': 0,
-            'L': 0,
-            'I': 0,
-            'P': 0,
-            'F': 0,
-            'W': 0,
-            'M': 0,
-            'S': 0,
-            'T': 0,
-            'C': 0,
-            'Y': 0,
-            'N': 0,
-            'Q': 0,
-            'K': 0,
-            'R': 0,
-            'H': 0,
-            'D': 0,
-            'E': 0
+    def get_letter_frequency(list):
+        letters={
+            'A':0,
+            'G':0,
+            'V':0,
+            'L':0,
+            'I':0,
+            'P':0,
+            'F':0,
+            'W':0,
+            'M':0,
+            'S':0,
+            'T':0,
+            'C':0,
+            'Y':0,
+            'N':0,
+            'Q':0,
+            'K':0,
+            'R':0,
+            'H':0,
+            'D':0,
+            'E':0
         }
-        return aa_dict
-    complete_seq_g1 = create_aa_dict()
-    first_aa_g1 = create_aa_dict()
-    last_aa_g1 = create_aa_dict()
-    complete_seq_g2 = create_aa_dict()
-    first_aa_g2 = create_aa_dict()
-    last_aa_g2 = create_aa_dict()
+        for word in list:
+            for letter in word:
+                letters[letter] +=1
+        return letters
+    
     if kwargs.get('peptide_or_protein_list') == 'peptide_list':
         if kwargs.get('difference_metric') == 'area':
-            for peptide in p_list:
-                first_aa_g1[peptide.get_sequence()[0]] += peptide.get_area()[0]
-                last_aa_g1[peptide.get_sequence()[-1]] += peptide.get_area()[0] 
-                first_aa_g2[peptide.get_sequence()[0]] += peptide.get_area()[2] 
-                last_aa_g2[peptide.get_sequence()[-1]] += peptide.get_area()[2] 
-                for letter in peptide.get_sequence():
-                    complete_seq_g1[letter] += peptide.get_area()[0] 
-                    complete_seq_g2[letter] += peptide.get_area()[2] 
-                    
-
+            metric = 'Intensity'
         elif kwargs.get('difference_metric') == 'spectral_count':
-            for peptide in p_list:
-                first_aa_g1[peptide.get_sequence()[0]] += peptide.get_spectral_count()[0] 
-                last_aa_g1[peptide.get_sequence()[-1]] += peptide.get_spectral_count()[0]
-                first_aa_g2[peptide.get_sequence()[0]] += peptide.get_spectral_count()[2]
-                last_aa_g2[peptide.get_sequence()[-1]] += peptide.get_spectral_count()[2]
-                for letter in peptide.get_sequence():
-                    complete_seq_g1[letter] += peptide.get_spectral_count()[0]
-                    complete_seq_g2[letter] += peptide.get_spectral_count()[2]
+            metric = 'Spectral'
+        df_g1 = df_g1.loc[df_g1['Accession'] == accession]
+        df_g2 = df_g2.loc[df_g2['Accession'] == accession]
+        intensity_columns_g1 = [col for col in df_g1 if col.startswith(metric)]
+        intensity_columns_g2 = [col for col in df_g2 if col.startswith(metric)]
+        df_g1['intensity_sum_g1'] = df_g1.loc[:,intensity_columns_g1].sum(axis=1).astype(int)
+        df_g2['intensity_sum_g2'] = df_g2.loc[:,intensity_columns_g2].sum(axis=1).astype(int)
+        
+        df_g1.replace(0, np.nan, inplace=True)
+        df_g2.replace(0, np.nan, inplace=True)
+        df_g1 = df_g1.dropna(subset=['intensity_sum_g1'], axis=0)
+        df_g2 = df_g2.dropna(subset=['intensity_sum_g2'], axis=0)
+        df_g1['First aa']=df_g1['Peptide'].apply(lambda x: x[0:1])
+        df_g1['Last aa']=df_g1['Peptide'].apply(lambda x: x[-1::1])
+        df_g2['First aa']=df_g2['Peptide'].apply(lambda x: x[0:1])
+        df_g2['Last aa']=df_g2['Peptide'].apply(lambda x: x[-1::1])
+        df_g1['intensity_sum_g1'] = df_g1['intensity_sum_g1'].astype(int)
+        df_g2['intensity_sum_g2'] = df_g2['intensity_sum_g2'].astype(int)
+        first_aa_g1=get_letter_frequency(df_g1['First aa']*df_g1['intensity_sum_g1'])
+        first_aa_g2=get_letter_frequency(df_g2['First aa']*df_g2['intensity_sum_g2'])
+        last_aa_g1=get_letter_frequency(df_g1['Last aa']*df_g1['intensity_sum_g1'])
+        last_aa_g2=get_letter_frequency(df_g2['Last aa']*df_g2['intensity_sum_g2'])
+        complete_seq_g1=get_letter_frequency(df_g1['Peptide']*df_g1['intensity_sum_g1'])
+        complete_seq_g2=get_letter_frequency(df_g2['Peptide']*df_g2['intensity_sum_g2'])
 
     elif kwargs.get('peptide_or_protein_list') == 'protein_list':
-        for protein in p_list:
-            peptide_list = create_peptide_list(p_list, protein.get_id())
-            if kwargs.get('difference_metric') == 'area':
-                for peptide in peptide_list:
-                    first_aa_g1[peptide.get_sequence()[0]] += peptide.get_area()[0] 
-                    last_aa_g1[peptide.get_sequence()[-1]] += peptide.get_area()[0] 
-                    first_aa_g2[peptide.get_sequence()[0]] += peptide.get_area()[2] 
-                    last_aa_g2[peptide.get_sequence()[-1]] += peptide.get_area()[2] 
-                    
-                    for letter in peptide.get_sequence():
-                        complete_seq_g1[letter] += peptide.get_area()[0] 
-                        complete_seq_g2[letter] += peptide.get_area()[2] 
-            elif kwargs.get('difference_metric') == 'spectral_count':
-                for peptide in peptide_list:
-                    first_aa_g1[peptide.get_sequence()[0]] += peptide.get_spectral_count()[0] 
-                    last_aa_g1[peptide.get_sequence()[-1]] += peptide.get_spectral_count()[0]
-                    first_aa_g2[peptide.get_sequence()[0]] += peptide.get_spectral_count()[2]
-                    last_aa_g2[peptide.get_sequence()[-1]] += peptide.get_spectral_count()[2]
-                    for letter in peptide.get_sequence():
-                        complete_seq_g1[letter] += peptide.get_spectral_count()[0]
-                        complete_seq_g2[letter] += peptide.get_spectral_count()[2]
+        if kwargs.get('difference_metric') == 'area':
+            metric = 'Intensity'
+        elif kwargs.get('difference_metric') == 'spectral_count':
+            metric = 'Spectral'
+        intensity_columns_g1 = [col for col in df_g1 if col.startswith(metric)]
+        intensity_columns_g2 = [col for col in df_g2 if col.startswith(metric)]
+        df_g1['intensity_sum_g1'] = df_g1.loc[:,intensity_columns_g1].sum(axis=1).astype(int)
+        df_g2['intensity_sum_g2'] = df_g2.loc[:,intensity_columns_g2].sum(axis=1).astype(int)
+        df_g1.replace(0, np.nan, inplace=True)
+        df_g2.replace(0, np.nan, inplace=True)
+        df_g1 = df_g1.dropna(subset=['intensity_sum_g1'], axis=0)
+        df_g2 = df_g2.dropna(subset=['intensity_sum_g2'], axis=0)
+        df_g1['First aa']=df_g1['Peptide'].apply(lambda x: x[0:1])
+        df_g1['Last aa']=df_g1['Peptide'].apply(lambda x: x[-1::1])
+        df_g2['First aa']=df_g2['Peptide'].apply(lambda x: x[0:1])
+        df_g2['Last aa']=df_g2['Peptide'].apply(lambda x: x[-1::1])
+        df_g1['intensity_sum_g1'] = df_g1['intensity_sum_g1'].astype(int)
+        df_g2['intensity_sum_g2'] = df_g2['intensity_sum_g2'].astype(int)
+        first_aa_g1=get_letter_frequency(df_g1['First aa']*df_g1['intensity_sum_g1'])
+        first_aa_g2=get_letter_frequency(df_g2['First aa']*df_g2['intensity_sum_g2'])
+        last_aa_g1=get_letter_frequency(df_g1['Last aa']*df_g1['intensity_sum_g1'])
+        last_aa_g2=get_letter_frequency(df_g2['Last aa']*df_g2['intensity_sum_g2'])
+        complete_seq_g1=get_letter_frequency(df_g1['Peptide']*df_g1['intensity_sum_g1'])
+        complete_seq_g2=get_letter_frequency(df_g2['Peptide']*df_g2['intensity_sum_g2'])
+
     return complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2    
 
-def amino_acid_piecharts(p_list, **kwargs):
+def amino_acid_piecharts(df_g1, df_g2, **kwargs):
     color_dict = [
             'rgb(230,222,122)',
             'rgb(230,222,122)',
@@ -260,12 +270,11 @@ def amino_acid_piecharts(p_list, **kwargs):
     default_settings = {
         'peptide_or_protein_list'
         'difference_metric'
+        'accession'
     }
     default_settings.update(kwargs)
-    if kwargs.get('peptide_or_protein_list') == 'peptide_list':
-        complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2 = amino_acid_frequency(p_list, peptide_or_protein_list = 'peptide_list', difference_metric=kwargs.get('difference_metric'))
-    elif kwargs.get('peptide_or_protein_list') == 'protein_list':
-        complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2 = amino_acid_frequency(p_list, peptide_or_protein_list = 'protein_list', difference_metric=kwargs.get('difference_metric'))
+    complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2 = amino_acid_frequency(df_g1, df_g1, accession = kwargs.get('accession'), peptide_or_protein_list = kwargs.get('peptide_or_protein_list'), difference_metric=kwargs.get('difference_metric'))
+    
     fig = make_subplots(rows=2, cols=3, specs=[[{"type": "pie"}, {"type": "pie"}, {"type": "pie"}],
            [{"type": "pie"}, {"type": "pie"}, {"type": "pie"}]], horizontal_spacing = 0.1, vertical_spacing= 0.1)
     fig.add_trace(go.Pie(labels=list(complete_seq_g1.keys()), values=list(complete_seq_g1.values())
@@ -291,26 +300,6 @@ def amino_acid_piecharts(p_list, **kwargs):
     ])
 )
     return fig
-
-def group_amino_acids(peptide_list):
-    grouped = []
-    non_polar = ['G', 'A', 'V', 'L', 'I', 'P', 'F', 'W', 'M']
-    polar = ['S', 'T', 'C', 'Y', 'N', 'Q']
-    basic = ['K', 'R', 'H']
-    acidic = ['D', 'E']
-    for sequence in peptide_list:
-        new_item = ''
-        for letter in sequence:
-            if letter in non_polar:
-                new_item += 'N'
-            if letter in polar:
-                new_item += 'P'
-            if letter in basic:
-                new_item += 'B'
-            if letter in acidic:
-                new_item += 'A'
-        grouped.append(new_item)
-    return grouped
 
 
 def create_protein_df_fig(protein_list, **kwargs):
@@ -540,30 +529,36 @@ def all_sample_bar_chart(protein_list, accession, **kwargs):
     
     return fig
 
-def create_venn_bar(p_list, complete_proteome = True):
+def create_venn_bar(df_g1, df_g2, accession, complete_proteome = True):
     group_1_unique = []
     group_2_unique = []
     common = []
+    intensity_columns_g1 = [col for col in df_g1 if col.startswith('Intensity')]
+    intensity_columns_g2 = [col for col in df_g2 if col.startswith('Intensity')]
+    df_g1['intensity_sum_g1'] = df_g1.loc[:,intensity_columns_g1].sum(axis=1)
+    df_g2['intensity_sum_g2'] = df_g2.loc[:,intensity_columns_g2].sum(axis=1)
+    df_g1.replace(0, np.nan, inplace=True)
+    df_g2.replace(0, np.nan, inplace=True)
+    df_g1 = df_g1.dropna(subset=['intensity_sum_g1'], axis=0)
+    df_g2 = df_g2.dropna(subset=['intensity_sum_g2'], axis=0)
     if complete_proteome:
-        for protein in p_list:
-            peptide_list = create_peptide_list(p_list, protein.accession)
-            for peptide in peptide_list:
-                g1, g2 = peptide.unique_or_common()
-                if g1 != 0 and g2 != 0:
-                    common.append(peptide.get_sequence())
-                elif g1 != 0:
-                    group_1_unique.append(peptide.get_sequence())
-                elif g2 != 0:
-                    group_2_unique.append(peptide.get_sequence())
+        merged_df = df_g1.merge(df_g2, on='Peptide', how='inner')
+        merged_df = merged_df.groupby('Peptide').sum()
+        common = range(len(merged_df.index))
+        group_1_unique = df_g1.merge(merged_df, on='Peptide', how='outer', indicator=True)
+        group_2_unique = df_g2.merge(merged_df, on='Peptide', how='outer', indicator=True)
+        group_1_unique=group_1_unique[group_1_unique['_merge']=='left_only']
+        group_2_unique=group_2_unique[group_2_unique['_merge']=='left_only']
     else:
-        for peptide in p_list:
-            g1, g2 = peptide.unique_or_common()
-            if g1 != 0 and g2 != 0:
-                common.append(peptide.get_sequence())
-            elif g1 != 0:
-                group_1_unique.append(peptide.get_sequence())
-            elif g2 != 0:
-                group_2_unique.append(peptide.get_sequence())
+        df_g1 = df_g1.loc[df_g1['Accession'] == accession]
+        df_g2 = df_g2.loc[df_g2['Accession'] == accession]
+        merged_df = df_g1.merge(df_g2, on='Peptide', how='inner')
+        merged_df = merged_df.groupby('Peptide').sum()
+        common = range(len(merged_df.index))
+        group_1_unique = df_g1.merge(merged_df, on='Peptide', how='outer', indicator=True)
+        group_2_unique = df_g2.merge(merged_df, on='Peptide', how='outer', indicator=True)
+        group_1_unique=group_1_unique[group_1_unique['_merge']=='left_only']
+        group_2_unique=group_2_unique[group_2_unique['_merge']=='left_only']
 
     fig = go.Figure()
     fig.update_layout(
@@ -802,34 +797,38 @@ def stacked_samples_peptide(sample_dicts_pos, sample_dicts_neg, trivial_name, y_
     fig.update_yaxes(range=[-maximum_intensity, maximum_intensity])
     return fig
 
-def create_length_histogram(p_list, **kwargs):
+def create_length_histogram(df_g1, df_g2, **kwargs):
     default_settings = {
-        'peptide_or_protein_list'
+        'peptide_or_protein_list',
+        'accession'
     }
     default_settings.update(kwargs)
+    accession = kwargs.get('accession')
     length_g1 = [] 
     length_g2 = []
     colors = ['rgb(208,28,139)','rgb(77,172,38)']
+    df_g1['length'] = df_g1['Peptide'].apply(lambda x: len(x))
+    df_g2['length'] = df_g2['Peptide'].apply(lambda x: len(x))
+    intensity_columns_g1 = [col for col in df_g1 if col.startswith('Intensity')]
+    intensity_columns_g2 = [col for col in df_g2 if col.startswith('Intensity')]
+    df_g1['intensity_sum_g1'] = df_g1.loc[:,intensity_columns_g1].sum(axis=1)
+    df_g2['intensity_sum_g2'] = df_g2.loc[:,intensity_columns_g2].sum(axis=1)
+    df_g1.replace(0, np.nan, inplace=True)
+    df_g2.replace(0, np.nan, inplace=True)
+    df_g1 = df_g1.dropna(subset=['intensity_sum_g1'], axis=0)
+    df_g2 = df_g2.dropna(subset=['intensity_sum_g2'], axis=0)
     if kwargs.get('peptide_or_protein_list') == 'peptide_list':
-        for peptide in p_list:
-            if peptide.get_area()[0] > 0:
-                length_g1.append(len(peptide.get_sequence()))
-            if  peptide.get_area()[2] > 0:
-               length_g2.append(len(peptide.get_sequence())) 
+        df_g1 = df_g1.loc[df_g1['Accession'] == accession]
+        df_g2 = df_g2.loc[df_g2['Accession'] == accession]
+        length_g1 = df_g1['length'].array
+        length_g2 = df_g2['length'].array
         df =pd.DataFrame(dict(
-            Groups=np.concatenate((["Group 1"]*len(length_g1), ["Group 2"]*len(length_g2))), 
-            Length  =np.concatenate((length_g1,length_g2))))
+        Groups=np.concatenate((["Group 1"]*len(length_g1), ["Group 2"]*len(length_g2))), 
+        Length  =np.concatenate((length_g1,length_g2))))
 
     elif kwargs.get('peptide_or_protein_list') == 'protein_list':
-        length_g1 = [] 
-        length_g2 = []
-        for protein in p_list:
-            peptide_list = create_peptide_list(p_list, protein.accession)
-            for peptide in peptide_list:
-                if peptide.get_area()[0] > 0:
-                    length_g1.append(len(peptide.get_sequence()))
-                if peptide.get_area()[2] > 0:
-                    length_g2.append(len(peptide.get_sequence())) 
+        length_g1 = df_g1['length'].array
+        length_g2 = df_g2['length'].array
         df =pd.DataFrame(dict(
             Groups=np.concatenate((["Group 1"]*len(length_g1), ["Group 2"]*len(length_g2))), 
             Length  =np.concatenate((length_g1,length_g2))))

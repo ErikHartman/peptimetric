@@ -927,12 +927,13 @@ def create_peptide_table(sorted_peptide_list, peptide_radioitems_value):
     else: 
         return start_table_df.to_dict('records'), [{'id': '', 'name': ''}]
 
-def amino_acid_dropdown(dropdown_values, radioitem_value, protein_list, peptide_list):
-    if dropdown_values and 'complete-proteome' in dropdown_values and protein_list:
-        fig = amino_acid_piecharts(protein_list, peptide_or_protein_list = 'protein_list', difference_metric = radioitem_value)
+def create_amino_acid_fig(dropdown_values, radioitem_value, peptide_list, df_g1, df_g2):
+    if dropdown_values and 'complete-proteome' in dropdown_values and not df_g1.empty and not df_g2.empty:
+        fig = amino_acid_piecharts(df_g1, df_g2, accession = '', peptide_or_protein_list = 'protein_list', difference_metric = radioitem_value)
         return fig
     elif dropdown_values and 'selected-protein' in dropdown_values and peptide_list:
-        fig = amino_acid_piecharts(peptide_list, peptide_or_protein_list = 'peptide_list', difference_metric = radioitem_value)
+        accession = peptide_list[0].protein.accession
+        fig = amino_acid_piecharts(df_g1, df_g2, accession=accession, peptide_or_protein_list = 'peptide_list', difference_metric = radioitem_value)
         return fig
     else:
         return  {}
@@ -967,23 +968,24 @@ def enable_generate_protein_graph(protein_list):
         else:
             return False
 
-def create_peptide_length_dropdown(length_dropdown_values, protein_list, peptide_list):
-    
-    if length_dropdown_values and 'complete-proteome'  in length_dropdown_values and protein_list:
-        length_fig = create_length_histogram(protein_list, peptide_or_protein_list='protein_list')
+def create_peptide_length_dropdown(length_dropdown_values, peptide_list, df_g1, df_g2):
+    if length_dropdown_values and 'complete-proteome'  in length_dropdown_values and not df_g1.empty and not df_g2.empty:
+        length_fig = create_length_histogram(df_g1, df_g2, peptide_or_protein_list='protein_list')
         return length_fig
     elif length_dropdown_values and 'selected-protein' in length_dropdown_values and peptide_list:
-        length_fig= create_length_histogram(peptide_list, peptide_or_protein_list='peptide_list')
+        accession = peptide_list[0].protein.accession
+        length_fig= create_length_histogram(df_g1, df_g2, accession=accession, peptide_or_protein_list='peptide_list')
         return length_fig
     else:
         return {}
 
-def create_venn_bar_fig(length_dropdown_values, protein_list, peptide_list):
-    if length_dropdown_values and 'complete-proteome'  in length_dropdown_values and protein_list:
-        venn_bar = create_venn_bar(protein_list, complete_proteome=True)
+def create_venn_bar_fig(length_dropdown_values, peptide_list, df_g1, df_g2):
+    if length_dropdown_values and 'complete-proteome'  in length_dropdown_values and not df_g1.empty and not df_g2.empty:
+        venn_bar = create_venn_bar(df_g1, df_g2, accession = '', complete_proteome=True)
         return venn_bar
     elif length_dropdown_values and 'selected-protein' in length_dropdown_values and peptide_list:
-        venn_bar= create_venn_bar(peptide_list, complete_proteome=False)
+        accession = peptide_list[0].protein.accession
+        venn_bar= create_venn_bar(df_g1, df_g2, accession=accession, complete_proteome=False)
         return venn_bar
     else:
         return {}
@@ -1029,23 +1031,26 @@ app.callback(
 app.callback(
     Output('aa-fig', 'figure'),
     Input('amino-acid-pie-dropdown', 'value'),
-    Input('aa-radioitems', 'value'),
-    State('protein-list-holder', 'data'),
+    State('peptide-radioitems','value'),
     State('peptide-list-holder', 'data'),
-)(amino_acid_dropdown)
+    State('df_g1-holder', 'data'),
+    State('df_g2-holder','data')
+)(create_amino_acid_fig)
 
 app.callback(
     Output('peptide-length-fig', 'figure'),
     Input('amino-acid-pie-dropdown', 'value'),
-    State('protein-list-holder', 'data'),
     State('peptide-list-holder', 'data'),
+    State('df_g1-holder', 'data'),
+    State('df_g2-holder','data')
 )(create_peptide_length_dropdown)
 
 app.callback(
     Output('venn-bar', 'figure'),
     Input('amino-acid-pie-dropdown', 'value'),
-    State('protein-list-holder', 'data'),
     State('peptide-list-holder', 'data'),
+    State('df_g1-holder', 'data'),
+    State('df_g2-holder','data'),
 )(create_venn_bar_fig)
 
 app.callback(
