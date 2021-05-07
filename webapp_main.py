@@ -16,7 +16,7 @@ from dash import no_update
 import plotly.graph_objects as go
 
 from methods import pre_process_peptide_fig
-from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, create_protein_df_fig, create_protein_fig , peptide_create_peptide_list, stacked_samples_peptide
+from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, create_protein_df_fig, create_protein_fig , peptide_create_peptide_list, create_peptide_fig
 from methods import amino_acid_piecharts, all_sample_bar_chart, protein_create_protein_list, peptide_create_peptide_list_from_trivname
 from methods import apply_protein_cutoffs, apply_peptide_cutoffs, create_venn_bar
 from methods import proteins_present_in_all_samples, create_protein_datatable, create_peptide_datatable, log_intensity, normalize_data, create_length_histogram
@@ -627,16 +627,17 @@ bottom_navbar = html.Div(dbc.Navbar([
 
 
 hidden_divs = html.Div([
-    dcc.Store(id='cutoff-value-holder'),
+    dcc.Store(id='cutoff-value-holder'), 
     dcc.Store(id='protein-df'),
     dcc.Store(id='protein-df-cutoff'),
     dcc.Store(id='accession-list'),
+    dcc.Store(id='accession-list-cutoff'),
     dcc.Store(id='sequence-list'),
     dcc.Store(id='peptide-df'),
     dcc.Store(id='df_g1-holder'),
     dcc.Store(id='df_g2-holder'),
     dcc.Store(id='peptide-data-holder'),
-    dcc.Store(id='protein-fig-holder'),
+    dcc.Store(id='protein-df-fig-holder'),
     dcc.Store(id='normalization-holder'),
     dcc.Loading(color = '#db77b4', style={'backgroundColor': 'transparent'}, fullscreen = True, type = 'default', id='process-data-loading', children = [dcc.Store(id='protein-datatable-holder')]),
     dcc.Store(id='housekeeping-protein-holder'),
@@ -775,7 +776,7 @@ def apply_cutoffs_to_protein_list(master_df, accession_list, apply_normalization
             master_df = apply_peptide_cutoffs(master_df, area=pep_intensity_co, spc=pep_spc_co, rt=RT, ccs=CCS)
             master_df = apply_protein_cutoffs(master_df, accession_list, nbr_of_peptides=nbr_of_peptides_co, tot_area=tot_intensity_co, tot_spc=tot_spc_co)
         if len(master_df.index) < 1:
-            return [], pd.DataFrame()
+            return [], pd.DataFrame(), []
         if present_in_all_samples:
             master_df = proteins_present_in_all_samples(master_df, accession_list)
         for accession in accession_list:
@@ -783,10 +784,11 @@ def apply_cutoffs_to_protein_list(master_df, accession_list, apply_normalization
             if not protein.empty and len(protein.index) > 1:
                 trivname = protein['trivname'].values[0]
                 triv_names.append(html.Option(value=trivname))
-        return triv_names, master_df
+        return triv_names, master_df, accession_list
 
     else:
-        return [], pd.DataFrame()
+
+        return [], pd.DataFrame(), []
 
 def make_protein_list(n, df_g1, df_g2, species):
     if n and not df_g1.empty and not df_g2.empty:
@@ -797,7 +799,7 @@ def make_protein_list(n, df_g1, df_g2, species):
         return pd.DataFrame(), []
 
 def create_df_fig(master, accession_list):
-    if not master.empty:
+    if len(accession_list) > 1:
         df_fig = create_protein_df_fig(master, accession_list)
         return df_fig
     else:
@@ -806,7 +808,7 @@ def create_df_fig(master, accession_list):
 def create_df_info(master, accession_list, protein_radioitems_value):
     if not protein_radioitems_value:
         protein_radioitems_value == 'area_sum'
-    if not master.empty and accession_list:
+    if len(accession_list) > 1:
         df_protein_info = create_protein_datatable(master, accession_list, protein_radioitems_value)
         df_protein_info.fillna(0, inplace=True)
         return df_protein_info
@@ -900,7 +902,7 @@ def process_peptide_data_for_fig(n_clicks_generate_peptide_fig, peptide_radioite
         return pd.DataFrame(), [], []
 
 
-def create_peptide_fig(processed_peptide_data, sum_or_mean_radio, rows, derived_virtual_selected_rows):
+def create_peptide_fig_callback(processed_peptide_data, sum_or_mean_radio, rows, derived_virtual_selected_rows):
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
     if changed_id == 'peptide-info-table.derived_virtual_selected_rows' and rows:
         selected_rows_df = pd.DataFrame(rows)
@@ -914,7 +916,7 @@ def create_peptide_fig(processed_peptide_data, sum_or_mean_radio, rows, derived_
         squares = [(0,0)]
     if processed_peptide_data:
         pos_sample, neg_sample, trivname, y_label = processed_peptide_data
-        peptide_fig = stacked_samples_peptide(pos_sample, neg_sample, trivname, y_label, show_difference='show', show_weight ='show', average=sum_or_mean_radio, square=squares)
+        peptide_fig = create_peptide_fig(pos_sample, neg_sample, trivname, y_label, show_difference='show', show_weight ='show', average=sum_or_mean_radio, square=squares)
         return peptide_fig
     else:
         return {}
@@ -937,12 +939,12 @@ def create_peptide_table(peptide_df, sequence_list, peptide_radioitems_value):
     else: 
         return start_table_df.to_dict('records'), [{'id': '', 'name': ''}]
 
-def create_amino_acid_fig(dropdown_values, radioitem_value, peptide_list, df_g1, df_g2):
+def create_amino_acid_fig(dropdown_values, radioitem_value, peptide_df, df_g1, df_g2):
     if dropdown_values and 'complete-proteome' in dropdown_values and not df_g1.empty and not df_g2.empty:
         fig = amino_acid_piecharts(df_g1, df_g2, accession = '', peptide_or_protein_list = 'protein_list', difference_metric = radioitem_value)
         return fig
-    elif dropdown_values and 'selected-protein' in dropdown_values and not peptide_list.empty:
-        accession = peptide_list['Accession'].values[0]
+    elif dropdown_values and 'selected-protein' in dropdown_values and not peptide_df.empty:
+        accession = peptide_df['Accession'].values[0]
         fig = amino_acid_piecharts(df_g1, df_g2, accession=accession, peptide_or_protein_list = 'peptide_list', difference_metric = radioitem_value)
         return fig
     else:
@@ -978,23 +980,23 @@ def enable_generate_protein_graph(protein_list):
         else:
             return False
 
-def create_peptide_length_dropdown(length_dropdown_values, peptide_list, df_g1, df_g2):
+def create_peptide_length_dropdown(length_dropdown_values, peptide_df, df_g1, df_g2):
     if length_dropdown_values and 'complete-proteome'  in length_dropdown_values and not df_g1.empty and not df_g2.empty:
         length_fig = create_length_histogram(df_g1, df_g2, peptide_or_protein_list='protein_list')
         return length_fig
-    elif length_dropdown_values and 'selected-protein' in length_dropdown_values and not peptide_list.empty:
-        accession = peptide_list['Accession'].values[0]
+    elif length_dropdown_values and 'selected-protein' in length_dropdown_values and not peptide_df.empty:
+        accession = peptide_df['Accession'].values[0]
         length_fig= create_length_histogram(df_g1, df_g2, accession=accession, peptide_or_protein_list='peptide_list')
         return length_fig
     else:
         return {}
 
-def create_venn_bar_fig(length_dropdown_values, peptide_list, df_g1, df_g2):
+def create_venn_bar_fig(length_dropdown_values, peptide_df, df_g1, df_g2):
     if length_dropdown_values and 'complete-proteome'  in length_dropdown_values and not df_g1.empty and not df_g2.empty:
         venn_bar = create_venn_bar(df_g1, df_g2, accession = '', complete_proteome=True)
         return venn_bar
-    elif length_dropdown_values and 'selected-protein' in length_dropdown_values and not peptide_list.empty:
-        accession = peptide_list['Accession'].values[0]
+    elif length_dropdown_values and 'selected-protein' in length_dropdown_values and not peptide_df.empty:
+        accession = peptide_df['Accession'].values[0]
         venn_bar= create_venn_bar(df_g1, df_g2, accession=accession, complete_proteome=False)
         return venn_bar
     else:
@@ -1067,7 +1069,7 @@ app.callback(
     Input('sum-or-mean-radio', 'value'),
     Input('peptide-info-table', "derived_virtual_data"),
     Input('peptide-info-table', 'derived_virtual_selected_rows'),
-)(create_peptide_fig)
+)(create_peptide_fig_callback)
 
 app.callback(
     Output('peptide-info-table', 'data'),
@@ -1096,6 +1098,7 @@ app.callback(
 app.callback(
     Output('protein-list', 'children'),
     ServersideOutput('protein-df-cutoff', 'data'),
+    ServersideOutput('accession-list-cutoff', 'data'),
     Input('protein-df', 'data'),
     Input('accession-list','data'),
     Input('close-modal-normalization', 'n_clicks'),
@@ -1117,16 +1120,16 @@ app.callback(
 
 
 app.callback(
-    ServersideOutput('protein-fig-holder', 'data'),
+    ServersideOutput('protein-df-fig-holder', 'data'),
     Input('protein-df-cutoff', 'data'),
-    Input('accession-list','data'),
+    Input('accession-list-cutoff','data'),
     memoize=True,
     )(create_df_fig)
 
 app.callback(
     ServersideOutput('protein-datatable-holder','data'),
     Input('protein-df-cutoff', 'data'),
-    Input('accession-list','data'),
+    Input('accession-list-cutoff','data'),
     Input('protein-radioitems','value'),
     memoize=True,
     )(create_df_info)
@@ -1144,7 +1147,7 @@ app.callback(
     Input('protein-radioitems','value'),
     Input('protein-checklist', 'value'),
     Input('generate-protein-graph', 'n_clicks'),
-    Input('protein-fig-holder', 'data'),
+    Input('protein-df-fig-holder', 'data'),
     Input('protein-datatable-holder','data'),
     State('protein-fig', 'figure'),
 )(create_protein_figure_and_table)

@@ -243,7 +243,6 @@ def amino_acid_frequency(df_g1, df_g2, accession, **kwargs):
         last_aa_g2=get_letter_frequency(df_g2['Last aa']*df_g2['intensity_sum_g2'])
         complete_seq_g1=get_letter_frequency(df_g1['Peptide']*df_g1['intensity_sum_g1'])
         complete_seq_g2=get_letter_frequency(df_g2['Peptide']*df_g2['intensity_sum_g2'])
-
     return complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2    
 
 def amino_acid_piecharts(df_g1, df_g2, **kwargs):
@@ -275,7 +274,7 @@ def amino_acid_piecharts(df_g1, df_g2, **kwargs):
         'accession'
     }
     default_settings.update(kwargs)
-    complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2 = amino_acid_frequency(df_g1, df_g1, accession = kwargs.get('accession'), peptide_or_protein_list = kwargs.get('peptide_or_protein_list'), difference_metric=kwargs.get('difference_metric'))
+    complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2 = amino_acid_frequency(df_g1, df_g2, accession = kwargs.get('accession'), peptide_or_protein_list = kwargs.get('peptide_or_protein_list'), difference_metric=kwargs.get('difference_metric'))
     
     fig = make_subplots(rows=2, cols=3, specs=[[{"type": "pie"}, {"type": "pie"}, {"type": "pie"}],
            [{"type": "pie"}, {"type": "pie"}, {"type": "pie"}]], horizontal_spacing = 0.1, vertical_spacing= 0.1)
@@ -304,7 +303,7 @@ def amino_acid_piecharts(df_g1, df_g2, **kwargs):
     return fig
 
 
-def create_protein_df_fig(master_df, accession_list, **kwargs):
+def create_protein_df_fig(protein_df, accession_list, **kwargs):
     default_settings = {
         'difference_metric':'area',
         'color': 'green',
@@ -328,11 +327,11 @@ def create_protein_df_fig(master_df, accession_list, **kwargs):
     g2_spc_mean_stdev = []
     trivial_name = []
     nbr_of_peptides = []
-
+    
     for accession in accession_list:
-        protein = master_df.loc[master_df['Accession'] == accession]
+        protein = protein_df.loc[protein_df['Accession'] == accession]
         if not protein.empty:
-            trivial_name.append(protein['trivname'].values[0])
+            trivial_name.append(protein_get_trivname(protein))
             nbr_of_peptides.append(np.sum(protein_get_nbr_of_peptides(protein)))
             g1_area_sum_temp, g1_area_sum_stdev_temp, g2_area_sum_temp, g2_area_sum_stdev_temp = protein_get_area_sum(protein)
             g1_area_sum.append(g1_area_sum_temp)
@@ -442,7 +441,6 @@ def ccs_check(df):
 
 
 def apply_peptide_cutoffs(df, **kwargs):
-    new_protein_list = []
     default_settings = {
         'area',
         'spc',
@@ -504,12 +502,12 @@ def get_thresholds(lst):
     return [int(np.quantile(lst, .3)), int(np.quantile(lst, .5)), int(np.quantile(lst, .6)), int(np.quantile(lst, .65)),
             int(np.quantile(lst, .8))]
 
-def all_sample_bar_chart(master_df, accession, **kwargs):
+def all_sample_bar_chart(protein_df, accession, **kwargs):
     default_settings = {
         'metric':'area'
     }
     default_settings.update(kwargs)
-    protein = master_df.loc[master_df['Accession'] == accession]
+    protein = protein_df.loc[protein_df['Accession'] == accession]
     title = protein_get_trivname(protein)
     
     if kwargs.get('metric') == 'area_sum':
@@ -579,14 +577,14 @@ def create_venn_bar(df_g1, df_g2, accession, complete_proteome = True):
     return fig
 
 
-def pre_process_peptide_fig(master_peptide_df, sequence_list, difference_metric):
-    fasta = master_peptide_df['Sequence'].values[0]
+def pre_process_peptide_fig(peptide_df, sequence_list, difference_metric):
+    fasta = peptide_df['Sequence'].values[0]
     start = []
     end = []
     intensity_pos = []
     intensity_neg = []
     for sequence in sequence_list:
-        peptide = master_peptide_df.loc[master_peptide_df['Peptide'] == sequence]
+        peptide = peptide_df.loc[peptide_df['Peptide'] == sequence]
         start.append(peptide_get_start(peptide))
         end.append(peptide_get_end(peptide))
         if difference_metric == 'area':
@@ -639,7 +637,7 @@ def pre_process_peptide_fig(master_peptide_df, sequence_list, difference_metric)
     return sample_dicts_pos, sample_dicts_neg, y_axis_label
     
 
-def stacked_samples_peptide(sample_dicts_pos, sample_dicts_neg, trivial_name, y_axis_label, **kwargs):
+def create_peptide_fig(sample_dicts_pos, sample_dicts_neg, trivial_name, y_axis_label, **kwargs):
     default_settings = {
         'average': False,
         'square': (0,0)
@@ -857,11 +855,12 @@ def proteins_present_in_all_samples(master, accession_list):
             proteins_present_in_all_samples = pd.concat([proteins_present_in_all_samples, protein])
     return proteins_present_in_all_samples
 
-def create_peptide_datatable(master_peptide_df, sequence_list, difference_metric):
+def create_peptide_datatable(peptide_df, sequence_list, difference_metric):
     peptide_info_columns = ['Peptide','Start','End','metric_g1','sd_g1','metric_g2', 'sd_g2']
     df_peptide_info = pd.DataFrame(columns=peptide_info_columns)
+    sequence_list = get_top_peptides(peptide_df)
     for sequence in sequence_list:
-        peptide= master_peptide_df.loc[master_peptide_df['Peptide'] == sequence] 
+        peptide= peptide_df.loc[peptide_df['Peptide'] == sequence] 
         if difference_metric == 'area':
             metric_g1, sd_g1, metric_g2, sd_g2 = peptide_get_area(peptide)
             df_peptide_info = df_peptide_info.append({'Peptide': str(sequence), 'Start': peptide_get_start(peptide),'End': peptide_get_end(peptide), 'metric_g1': round(float(metric_g1), 3), 
@@ -877,6 +876,7 @@ def create_peptide_datatable(master_peptide_df, sequence_list, difference_metric
 def create_protein_datatable(master, accession_list, difference_metric):
     protein_info_columns = ['Protein','UniProt id','#peptides_g1','#peptides_g2','metric_g1', 'sd_g1','metric_g2','sd_g2','p_val']
     df_protein_info = pd.DataFrame(columns=protein_info_columns)
+    accession_list = get_top_proteins(master)
     for accession in accession_list:
         protein = master.loc[master['Accession'] == accession]
         if protein.empty:
@@ -901,11 +901,11 @@ def create_protein_datatable(master, accession_list, difference_metric):
                 df_protein_info = df_protein_info.append({'Protein': str(protein_get_trivname(protein)), 'UniProt id': accession,'#peptides_g1': nbr_peptides_g1, '#peptides_g2': nbr_peptides_g2, 
                 'metric_g1': round(float(metric_g1), 5), 'sd_g1': round(float(sd_g1), 5),'metric_g2': round(float(metric_g2), 5),  'sd_g2': round(float(sd_g2), 5), 'p_val':round(float(p_val), 5)}, ignore_index=True)
             else:                
-                    nbr_peptides_g1, nbr_peptides_g2 = protein_get_nbr_of_peptides(protein)
-                    metric_g1, sd_g1, metric_g2, sd_g2 = protein_get_spectral_count_mean(protein)
-                    p_val= protein_get_pvalue_mean(protein,'spc')
-                    df_protein_info = df_protein_info.append({'Protein': str(protein_get_trivname(protein)), 'UniProt id': accession,'#peptides_g1': nbr_peptides_g1, '#peptides_g2': nbr_peptides_g2, 
-                    'metric_g1': round(float(metric_g1), 5), 'sd_g1': round(float(sd_g1), 5),'metric_g2': round(float(metric_g2), 5),  'sd_g2': round(float(sd_g2), 5), 'p_val':round(float(p_val), 5)}, ignore_index=True)
+                nbr_peptides_g1, nbr_peptides_g2 = protein_get_nbr_of_peptides(protein)
+                metric_g1, sd_g1, metric_g2, sd_g2 = protein_get_spectral_count_mean(protein)
+                p_val= protein_get_pvalue_mean(protein,'spc')
+                df_protein_info = df_protein_info.append({'Protein': str(protein_get_trivname(protein)), 'UniProt id': accession,'#peptides_g1': nbr_peptides_g1, '#peptides_g2': nbr_peptides_g2, 
+                'metric_g1': round(float(metric_g1), 5), 'sd_g1': round(float(sd_g1), 5),'metric_g2': round(float(metric_g2), 5),  'sd_g2': round(float(sd_g2), 5), 'p_val':round(float(p_val), 5)}, ignore_index=True)
     df_protein_info.sort_values(by=['metric_g1','metric_g2'], ascending=False, inplace=True)
     return df_protein_info
 
@@ -924,20 +924,21 @@ def normalize_data(df, accession_list, housekeeping_protein=False):
 
     elif housekeeping_protein != False and housekeeping_protein != '':
         housekeeping_df = df.loc[df['trivname'] == housekeeping_protein]
-        print(df.columns)
-        print(housekeeping_protein)
-        print(housekeeping_df)
         area_columns = [col for col in df if col.startswith('Intensity')]
         spc_columns = [col for col in df if col.startswith('Spectral')]
         for col in area_columns:
             housekeeping_intensity = housekeeping_df[col].sum()
-            print(housekeeping_intensity)
             df[col] = df[col].apply(lambda x: x/housekeeping_intensity)
         for col in spc_columns:
             housekeeping_spc = housekeeping_df[col].sum()
-            print(housekeeping_spc)
             df[col] = df[col].apply(lambda x: x/housekeeping_spc)
         return df
     else:
         print('Error: Data Normalization')
         return None
+
+
+def get_current_time():
+    now = datetime.now()
+    current_time = now.strftime("%H:%M:%S")
+    return current_time

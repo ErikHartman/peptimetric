@@ -43,7 +43,7 @@ def protein_create_protein_list(df, species):
             df['trivname'] = trivname
             df_protein  = protein_create_protein(df, accession)
             accession_list.append(accession)
-            master_df = pd.concat([master_df, df_protein])
+            master_df = master_df.append(df_protein)
         else:
             print(accession)
     return master_df, accession_list
@@ -56,11 +56,9 @@ def protein_get_area_sum_all_samples(df):
     area_sum_g2 = []
     for a in area_columns_g1:
         df_area_g1 = df.copy()
-        df_area_g1.fillna(0, inplace=True)
         area_sum_g1.append(df_area_g1[a].sum())
     for a in area_columns_g2:
         df_area_g2 = df.copy()
-        df_area_g2.fillna(0, inplace=True)
         area_sum_g2.append(df_area_g2[a].sum())
     area_g1_dict = dict(zip(area_columns_g1, area_sum_g1))
     area_g2_dict = dict(zip(area_columns_g2, area_sum_g2))
@@ -75,11 +73,9 @@ def protein_get_area_mean_all_samples(df):
     area_sum_g2 = []
     for a in area_columns_g1:
         df_area_g1 = df.copy()
-        df_area_g1.fillna(0, inplace=True)
         area_sum_g1.append(df_area_g1[a].mean())
     for a in area_columns_g2:
         df_area_g2 = df.copy()
-        df_area_g2.fillna(0, inplace=True)
         area_sum_g2.append(df_area_g2[a].mean())
     area_g1_dict = dict(zip(area_columns_g1, area_sum_g1))
     area_g2_dict = dict(zip(area_columns_g2, area_sum_g2))
@@ -136,11 +132,9 @@ def protein_get_area_sum(df):
         area_sum_g2 = []
         for a in area_columns_g1:
             df_area = df.copy()
-            df_area.fillna(float(0), inplace=True)
             area_sum_g1.append(df_area[a].sum(axis=0))
         for a in area_columns_g2:
             df_area = df.copy()
-            df_area.fillna(float(0), inplace=True)
             area_sum_g2.append(df_area[a].sum(axis=0))
         if len(area_sum_g1) > 1 and len(area_sum_g2) > 1:
             return statistics.mean(area_sum_g1), statistics.stdev(area_sum_g1), statistics.mean(area_sum_g2), statistics.stdev(area_sum_g2)
@@ -155,11 +149,9 @@ def protein_get_area_mean(df):
     area_sum_g2 = []
     for a in area_columns_g1:
         df_area = df.copy()
-        df_area.fillna(float(0), inplace=True)
         area_sum_g1.append(df_area[a].mean(axis=0))
     for a in area_columns_g2:
         df_area = df.copy()
-        df_area.fillna(float(0), inplace=True)
         area_sum_g2.append(df_area[a].mean(axis=0))
     if len(area_sum_g1) > 1 and len(area_sum_g2) > 1:
         return statistics.mean(area_sum_g1), statistics.stdev(area_sum_g1), statistics.mean(area_sum_g2), statistics.stdev(area_sum_g2)
@@ -177,12 +169,10 @@ def protein_get_spectral_count_sum(df):
     spc_sum_g2 = []
     for s in spc_columns_g1:
         df_spc = df.copy()
-        df_spc.fillna(float(0), inplace=True)
         df_spc[s] = df_spc[s].astype(np.float64)
         spc_sum_g1.append(df_spc[s].sum())
     for s in spc_columns_g2:
         df_spc = df.copy()
-        df_spc.fillna(float(0), inplace=True)
         df_spc[s] = df_spc[s].astype(np.float64)
         spc_sum_g2.append(df_spc[s].sum())
     if len(spc_sum_g1) > 1 and len(spc_sum_g2) > 1:
@@ -198,15 +188,15 @@ def protein_get_spectral_count_mean(df):
     spc_sum_g2 = []
     for s in spc_columns_g1:
         df_spc = df.copy()
-        df_spc.fillna(float(0), inplace=True)
         df_spc[s] = df_spc[s].astype(np.float64)
         spc_sum_g1.append(df_spc[s].mean())
     for s in spc_columns_g2:
         df_spc = df.copy()
-        df_spc.fillna(float(0), inplace=True)
         df_spc[s] = df_spc[s].astype(np.float64)
         spc_sum_g2.append(df_spc[s].mean())
     if len(spc_sum_g1) > 1 and len(spc_sum_g2) > 1:
+        print(spc_sum_g1, statistics.mean(spc_sum_g1))
+        print(spc_sum_g2, statistics.mean(spc_sum_g2))
         return statistics.mean(spc_sum_g1), statistics.stdev(spc_sum_g1), statistics.mean(spc_sum_g2), statistics.stdev(spc_sum_g2)
     else:
         return statistics.mean(spc_sum_g1), 0, statistics.mean(spc_sum_g2), 0
@@ -219,12 +209,10 @@ def protein_get_nbr_of_peptides(df):
     spc_columns_g1 = [col for col in spc_columns if col.endswith('g1')]
     spc_columns_g2 = [col for col in spc_columns if col.endswith('g2')]
     df_cols = df.copy()
-    df_cols.fillna(0, inplace=True)
     if df_cols.empty:
-        return 0,0
+        return 0, 0
     else:
-        df_cols[area_columns] = df_cols[area_columns].apply(lambda x: [1 if y > 0 else 0 for y in x])
-        df_cols[spc_columns] = df_cols[spc_columns].apply(lambda x: [1 if y > 0 else 0 for y in x])
+        df_cols[area_columns+spc_columns] = df_cols[area_columns+spc_columns].apply(lambda x: [1 if y > 0 else 0 for y in x])
         nbr_of_peptides_g1 = 0
         nbr_of_peptides_g2 = 0
         for area_column, spc_column in zip(area_columns_g1, spc_columns_g1):
@@ -285,3 +273,10 @@ def protein_present_in_all_samples(df):
             if area  < 0:
                 return False
         return True
+
+def get_top_proteins(df):
+    df['nbr_of_peptides'] = 1
+    df = df.groupby(by='Accession', as_index=False).sum()
+    df.sort_values(by='nbr_of_peptides', ascending=False, inplace=True)
+    top_proteins = df['Accession'].array[0:100]
+    return top_proteins

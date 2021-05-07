@@ -162,3 +162,12 @@ def peptide_get_pvalue(df, spc_or_area):
     else:
         ttest, pvalue = ttest_ind_from_stats(g1_mean, g1_std, n1, g2_mean, g2_std, n2)
         return pvalue
+
+def get_top_peptides(df):
+    area_columns = [col for col in df if col.startswith('Intensity')]
+    area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
+    area_columns_g2 = [col for col in area_columns if col.endswith('g2')] 
+    df['intensity_g1'] = df[area_columns_g1].sum(axis=1)
+    df['intensity_g2'] = df[area_columns_g2].sum(axis=1)
+    df = df.sort_values(by=['intensity_g1', 'intensity_g2'], ascending=False)[0:200]
+    return df['Peptide'].array

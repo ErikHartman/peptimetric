@@ -36,7 +36,7 @@ was developed using ''', html.A('Plotly Dash library for Python', href='https://
 Data_processing = html.Div([dbc.Row([html.Img(src = './assets/computer.png', style={'height':'4%', 'width':'4%'}),
         html.H5('Data processing', style={"font-weight": "bold"}),]),
     html.P(['''Peptimetric requires a minimum of one input file per group, however, statistical calculations require at least 
-    three files per group. The input files should either be in a comma separated values (.csv, recommended) or Excel (.xlsx, invalid for large files) format. Uploading many large
+    three files per group. The input files should be provided in a comma separated values (.csv, recommended) format. Uploading many large
     files may result in a ''', html.A('server timeout error',href ='https://devcenter.heroku.com/articles/error-codes#h12-request-timeout'), '''. If this happens to your data, consider concatenating some of your .csv files for faster uploads. The files are cached and stored 
     in your browser during the session and will be lost after closing or refreshing the tab (''', html.A('Dash data storage).', href='https://dash.plotly.com/dash-core-components/store')]),
     dbc.Card([
@@ -173,7 +173,7 @@ Interactivity = html.Div([
 Cite = html.Div([
     dbc.Row([html.Img(src = './assets/cite.png', style={'height':'4%', 'width':'4%'}),
         html.H5('Cite', style={"font-weight": "bold"}),]),
-    dbc.Card(html.P([ '''Please cite the authors: Erik Hartman and Simon Mahdavi, alongside the URL: ''', html.A('peptimetric.herokuapp.com', href='peptimetric.herokuapp.com')]), color='#F8F8F8', style={'border':0 }),
+    dbc.Card(html.P([ '''Please cite the authors: Erik Hartman and Simon Mahdavi, alongside the URL: ''', html.A('peptimetric.herokuapp.com', href='peptimetric.herokuapp.com')], style={'margin-top':'16px'}), color='#F8F8F8', style={'border':0 }),
 ])
 
 Legal = html.Div([
