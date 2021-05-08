@@ -16,8 +16,8 @@ from dash import no_update
 import plotly.graph_objects as go
 
 from methods import pre_process_peptide_fig
-from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, create_protein_df_fig, create_protein_fig , peptide_create_peptide_list, create_peptide_fig
-from methods import amino_acid_piecharts, all_sample_bar_chart, protein_create_protein_list, peptide_create_peptide_list_from_trivname
+from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, create_protein_df_fig, create_protein_fig , create_peptide_fig
+from methods import amino_acid_piecharts, all_sample_bar_chart, protein_create_protein_list
 from methods import apply_protein_cutoffs, apply_peptide_cutoffs, create_venn_bar
 from methods import proteins_present_in_all_samples, create_protein_datatable, create_peptide_datatable, log_intensity, normalize_data, create_length_histogram
 from texts_for_webapp import how_to_use, Documentation, contact_text
@@ -36,6 +36,14 @@ app.layout = html.Div([
 
 #---------------------------------------PAGE-ELEMENTS------------------------------------------------
 file_columns = ['Sample', 'File']
+sample_g1 = ['./example_files/peptide_sample_13.csv', './example_files/peptide_sample_21.csv', './example_files/peptide_sample_33.csv']
+sample_g2 = ['./example_files/peptide_sample_31.csv', './example_files/peptide_sample_34.csv', './example_files/peptide_sample_39.csv']
+sample_g1 = concatenate_dataframes(make_peptide_dfs(sample_g1,sample_g1))
+sample_g2 = concatenate_dataframes(make_peptide_dfs(sample_g2,sample_g2))
+sample_g1 = log_intensity(sample_g1)
+sample_g2 = log_intensity(sample_g2)
+sample_files = merge_dataframes(sample_g1,sample_g2)
+sample_files = protein_create_protein_list(sample_files, 'homo-sapiens')
 
 modal_file = html.Div([
 
@@ -326,7 +334,7 @@ how_to_use_collapse = html.Div(
             dbc.CardBody(
                 how_to_use, style={"maxHeight": "300px", "overflowY": "scroll"}
             ),
-            dbc.CardFooter(dbc.Button('Load example data', id='load-example-data', color='primary')
+            dbc.CardFooter(dbc.Button('Load example data', id='load-sample-data', color='primary')
             ),
             
             ]),
@@ -421,7 +429,7 @@ protein_fig_radioitems = html.Div([
 
 protein_fig = html.Div([
     dbc.Row([
-        html.Img(src = app.get_asset_url ('scatter.png'), style={'height':'6%', 'width':'6%'}),
+        html.Img(src = app.get_asset_url ('scatter.jpg'), style={'height':'3%', 'width':'3%'}),
         html.H3('Protein View'),
     ]),
         dbc.Row([
@@ -477,7 +485,7 @@ peptide_fig_radioitems_sum_or_mean = html.Div([
 
 peptide_fig = html.Div([
         dbc.Row([
-        html.Img(src = app.get_asset_url ('bar.png'), style={'height':'6%', 'width':'6%'}),
+        html.Img(src = app.get_asset_url ('bar.jpg'), style={'height':'3%', 'width':'3%'}),
         html.H3('Peptide View'),
     ]),
         dbc.Row([
@@ -544,7 +552,7 @@ protein_info = html.Div(dash_table.DataTable(
             filter_action='native',
             virtualization=True,
             row_selectable="multi",
-            export_format='xlsx',
+            export_format='csv',
             selected_rows=[],
             style_data_conditional = [{
                 'if' : {'row_index':'odd'},
@@ -577,7 +585,7 @@ peptide_info = html.Div(dash_table.DataTable(id='peptide-info-table',
             filter_action='native',
             virtualization=True,
             row_selectable="multi",
-            export_format='xlsx',
+            export_format='csv',
             selected_rows=[],
 
             style_data_conditional = [{
@@ -603,7 +611,7 @@ peptide_info = html.Div(dash_table.DataTable(id='peptide-info-table',
 )
 
 documentation = dbc.Col([
-    dbc.Row([html.Img(src = app.get_asset_url ('document.png'), style={'height':'5%', 'width':'5%'}),
+    dbc.Row([html.Img(src = app.get_asset_url ('document.jpg'), style={'height':'5%', 'width':'5%'}),
         dbc.Col(html.H1('Documentation'))]),
     html.Hr(),
     Documentation,
@@ -630,9 +638,6 @@ hidden_divs = html.Div([
     dcc.Store(id='cutoff-value-holder'), 
     dcc.Store(id='protein-df'),
     dcc.Store(id='protein-df-cutoff'),
-    dcc.Store(id='accession-list'),
-    dcc.Store(id='accession-list-cutoff'),
-    dcc.Store(id='sequence-list'),
     dcc.Store(id='peptide-df'),
     dcc.Store(id='df_g1-holder'),
     dcc.Store(id='df_g2-holder'),
@@ -672,7 +677,7 @@ main_page = dbc.Container([
         dbc.Col(peptide_info, width={'size':4})
     ]),
        dbc.Row([
-        html.Img(src = app.get_asset_url ('pie.png'), style={'height':'4%', 'width':'4%'}),
+        html.Img(src = app.get_asset_url ('pie.jpg'), style={'height':'3%', 'width':'3%'}),
         html.H3('General characteristics', style={'bottom-margin':0}),
     ]),
     dbc.Row([dbc.Col(amino_acid_pie_dropdown, width=2, style={'padding':15})]),
@@ -761,7 +766,7 @@ def set_cutoffs(tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_
     return [tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CCS, present_in_all_samples]
 
 
-def apply_cutoffs_to_protein_list(master_df, accession_list, apply_normalization_n_clicks, apply_cutoffs_button, cutoff_values, radioitems_normalization, housekeeping_protein):
+def apply_cutoffs_to_protein_list(master_df, apply_normalization_n_clicks, apply_cutoffs_button, cutoff_values, radioitems_normalization, housekeeping_protein):
     if cutoff_values:
         tot_intensity_co, tot_spc_co, nbr_of_peptides_co, pep_intensity_co, pep_spc_co, RT, CCS, present_in_all_samples = cutoff_values
     else:
@@ -769,47 +774,48 @@ def apply_cutoffs_to_protein_list(master_df, accession_list, apply_normalization
     triv_names = []
     if not master_df.empty:
         if radioitems_normalization and 'global-intensity' in radioitems_normalization:
-            master_df = normalize_data(master_df, accession_list, housekeeping_protein=False)
+            master_df = normalize_data(master_df, housekeeping_protein=False)
         elif radioitems_normalization and 'housekeeping-protein' in radioitems_normalization and housekeeping_protein != '':
-            master_df = normalize_data(master_df, accession_list, housekeeping_protein = housekeeping_protein)
+            master_df = normalize_data(master_df, housekeeping_protein = housekeeping_protein)
         if cutoff_values and cutoff_values != [0,0,0,0,0,False,False,False]:
             master_df = apply_peptide_cutoffs(master_df, area=pep_intensity_co, spc=pep_spc_co, rt=RT, ccs=CCS)
-            master_df = apply_protein_cutoffs(master_df, accession_list, nbr_of_peptides=nbr_of_peptides_co, tot_area=tot_intensity_co, tot_spc=tot_spc_co)
+            master_df = apply_protein_cutoffs(master_df, nbr_of_peptides=nbr_of_peptides_co, tot_area=tot_intensity_co, tot_spc=tot_spc_co)
         if len(master_df.index) < 1:
             return [], pd.DataFrame(), []
         if present_in_all_samples:
-            master_df = proteins_present_in_all_samples(master_df, accession_list)
-        for accession in accession_list:
-            protein = master_df.loc[master_df['Accession'] == accession]
-            if not protein.empty and len(protein.index) > 1:
-                trivname = protein['trivname'].values[0]
-                triv_names.append(html.Option(value=trivname))
-        return triv_names, master_df, accession_list
+            master_df = proteins_present_in_all_samples(master_df)
+    
+        trivnames = master_df['trivname'].unique()
+        for name in trivnames:
+            triv_names.append(html.Option(value=name))
+        return triv_names, master_df
 
     else:
 
-        return [], pd.DataFrame(), []
+        return [], pd.DataFrame()
 
-def make_protein_list(n, df_g1, df_g2, species):
-    if n and not df_g1.empty and not df_g2.empty:
+def make_protein_list(n, load_sample_file_n_clicks, df_g1, df_g2, species):
+    if load_sample_file_n_clicks and load_sample_file_n_clicks > n:
+        return sample_files
+    if n and n > load_sample_file_n_clicks and not df_g1.empty and not df_g2.empty:
         master = merge_dataframes(df_g1,df_g2)  
-        master, accession_list = protein_create_protein_list(master, species)
-        return master, accession_list
+        master = protein_create_protein_list(master, species)
+        return master
     else:
-        return pd.DataFrame(), []
+        return pd.DataFrame()
 
-def create_df_fig(master, accession_list):
-    if len(accession_list) > 1:
-        df_fig = create_protein_df_fig(master, accession_list)
+def create_df_fig(master):
+    if not master.empty:
+        df_fig = create_protein_df_fig(master)
         return df_fig
     else:
         return pd.DataFrame()
 
-def create_df_info(master, accession_list, protein_radioitems_value):
+def create_df_info(master, protein_radioitems_value):
     if not protein_radioitems_value:
         protein_radioitems_value == 'area_sum'
-    if len(accession_list) > 1:
-        df_protein_info = create_protein_datatable(master, accession_list, protein_radioitems_value)
+    if not master.empty:
+        df_protein_info = create_protein_datatable(master, protein_radioitems_value)
         df_protein_info.fillna(0, inplace=True)
         return df_protein_info
     else:
@@ -895,11 +901,11 @@ def get_normalization_data(radioitems_normalization, housekeeping_protein):
 def process_peptide_data_for_fig(n_clicks_generate_peptide_fig, peptide_radioitems_value, master, button_label):
     if n_clicks_generate_peptide_fig and not master.empty:
         trivname = button_label.split(' ')[-1]
-        peptide_df, sequence_list = peptide_create_peptide_list_from_trivname(master, trivname)
-        pos_sample, neg_sample, y_label = pre_process_peptide_fig(peptide_df, sequence_list, difference_metric = peptide_radioitems_value)
-        return peptide_df, [pos_sample, neg_sample, trivname, y_label], sequence_list
+        peptide_df = master[master['trivname'] == trivname]
+        pos_sample, neg_sample, y_label = pre_process_peptide_fig(peptide_df, trivname, difference_metric = peptide_radioitems_value)
+        return peptide_df, [pos_sample, neg_sample, trivname, y_label]
     else:
-        return pd.DataFrame(), [], []
+        return pd.DataFrame(), []
 
 
 def create_peptide_fig_callback(processed_peptide_data, sum_or_mean_radio, rows, derived_virtual_selected_rows):
@@ -921,7 +927,7 @@ def create_peptide_fig_callback(processed_peptide_data, sum_or_mean_radio, rows,
     else:
         return {}
 
-def create_peptide_table(peptide_df, sequence_list, peptide_radioitems_value):
+def create_peptide_table(peptide_df, peptide_radioitems_value):
     if peptide_radioitems_value == 'area':
         sort = ['intensity G1','intensity G2']
         rename = {'metric_g1':'intensity G1', 'sd_g1':'SD 1','metric_g2':'intensity G2','sd_g2':'SD 2'}
@@ -929,7 +935,7 @@ def create_peptide_table(peptide_df, sequence_list, peptide_radioitems_value):
         sort = ['SpC G1','SpC G2']
         rename = {'metric_g1':'SpC G1', 'sd_g1':'SD 1','metric_g2':'SpC G2','sd_g2':'SD 2'}
     if not peptide_df.empty:
-        df_peptide_info = create_peptide_datatable(peptide_df, sequence_list, difference_metric=peptide_radioitems_value)
+        df_peptide_info = create_peptide_datatable(peptide_df, difference_metric=peptide_radioitems_value)
         df_peptide_info.fillna(0, inplace=True)
         df_peptide_info.rename(columns=rename, inplace=True)
         df_peptide_info.sort_values(by=sort, ascending=False, inplace=True)
@@ -1056,7 +1062,6 @@ app.callback(
 app.callback(
     ServersideOutput('peptide-df', 'data'), 
     ServersideOutput('processed-peptide-data', 'data'),
-    Output('sequence-list', 'data'),
     Input('generate-peptide-fig', 'n_clicks'),
     Input('peptide-radioitems', 'value'),
     State('protein-df-cutoff', 'data'),
@@ -1075,7 +1080,6 @@ app.callback(
     Output('peptide-info-table', 'data'),
     Output('peptide-info-table', 'columns'),
     Input('peptide-df', 'data'),
-    Input('sequence-list','data'),
     Input('peptide-radioitems', 'value'),
 )(create_peptide_table)
 
@@ -1098,9 +1102,7 @@ app.callback(
 app.callback(
     Output('protein-list', 'children'),
     ServersideOutput('protein-df-cutoff', 'data'),
-    ServersideOutput('accession-list-cutoff', 'data'),
     Input('protein-df', 'data'),
-    Input('accession-list','data'),
     Input('close-modal-normalization', 'n_clicks'),
     Input('close-modal-cutoff', 'n_clicks'),
     State('cutoff-value-holder', 'children'),
@@ -1110,8 +1112,8 @@ app.callback(
 
 app.callback(
     ServersideOutput('protein-df', 'data'),
-    ServersideOutput('accession-list','data'),
-    Input("close-modal-file", "n_clicks"),
+    Input("close-modal-file", "n_clicks_timestamp"),
+    Input('load-sample-data','n_clicks_timestamp'),
     State('df_g1-holder', 'data'),
     State('df_g2-holder', 'data'),
     State('select-species','value'),
@@ -1122,14 +1124,12 @@ app.callback(
 app.callback(
     ServersideOutput('protein-df-fig-holder', 'data'),
     Input('protein-df-cutoff', 'data'),
-    Input('accession-list-cutoff','data'),
     memoize=True,
     )(create_df_fig)
 
 app.callback(
     ServersideOutput('protein-datatable-holder','data'),
     Input('protein-df-cutoff', 'data'),
-    Input('accession-list-cutoff','data'),
     Input('protein-radioitems','value'),
     memoize=True,
     )(create_df_info)

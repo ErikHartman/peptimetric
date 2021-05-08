@@ -5,25 +5,6 @@ from scipy.stats import ttest_ind_from_stats
 from protein_methods import protein_create_protein
 import pandas as pd
 
-def peptide_create_peptide_list(df, accession):
-    peptide_list = []
-    master_df = pd.DataFrame()
-    protein = protein_create_protein(df, accession)
-    for seq in protein['Peptide']:
-        peptide_df = protein.loc[(protein['Peptide'] == seq)]
-        master_df = pd.concat([master_df, peptide_df])
-        peptide_list.append(seq)
-    return master_df, peptide_list
-
-def peptide_create_peptide_list_from_trivname(df, trivname):
-    peptide_list = []
-    master_df = pd.DataFrame()
-    protein = df.loc[df['trivname'] == trivname]
-    for seq in protein['Peptide']:
-        peptide_df = protein.loc[(protein['Peptide'] == seq)]
-        master_df = pd.concat([master_df, peptide_df])
-        peptide_list.append(seq)
-    return master_df, peptide_list
 
 def peptide_create_peptide(df, peptide):
     df = df[(df['Peptide'] == peptide)]
@@ -33,20 +14,18 @@ def peptide_get_sequence(df):
     return df['Peptide'].values[0]
 
 def peptide_get_fasta(df):
-    return df['Sequence'].values[0]
+    return df['seq'].values(0)
 
-def peptide_get_start(df):
-    peptide = df['Peptide'].values[0]
-    sequence = df['Sequence'].values[0]
+def peptide_get_start(row):
+    sequence = row['seq']
     for i in range(len(sequence)):
-        if peptide == sequence[i:i+len(peptide)]:
+        if row['Peptide'] == sequence[i:i+len(row['Peptide'])]:
             return i
 
-def peptide_get_end(df):
-    peptide = df['Peptide'].values[0]
-    if peptide_get_start(df) is None:
+def peptide_get_end(row):
+    if peptide_get_start(row) is None:
         return None 
-    return peptide_get_start(df) + len(peptide)
+    return peptide_get_start(row) + len(row['Peptide'])
 
 def peptide_create_array(df):
     return list(peptide_get_sequence(df))
@@ -101,6 +80,7 @@ def peptide_get_area_all_samples(df):
         df_area.fillna(0, inplace=True)
         area_g2.append(df_area[a].mean())
     return area_g1, area_g2
+    [3, 4, 5], [3,1,1]
 
 def peptide_get_spectral_count_all_samples(df):
     spc_columns = [col for col in df if col.startswith('Spectral')]

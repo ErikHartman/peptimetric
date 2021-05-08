@@ -8,7 +8,6 @@ import pandas as pd
 
 from protein_methods import protein_create_protein_list, protein_create_protein, protein_get_nbr_of_peptides, protein_get_area_sum, protein_get_area_mean, protein_get_spectral_count_sum, protein_get_spectral_count_mean
 
-from peptide_methods import peptide_create_peptide_list 
 
 import gzip
 
@@ -20,11 +19,12 @@ g2 = concatenate_dataframes(make_peptide_dfs(g2,g2))
 g1 = log_intensity(g1)
 g2 = log_intensity(g2)
 master = merge_dataframes(g1,g2)
-master, accession_list = protein_create_protein_list(master, 'homo-sapiens')
-master = normalize_data(master, accession_list)
-protein = protein_create_protein(master, 'P69905')
-print(protein.columns)
-print(protein)
+master = protein_create_protein_list(master, 'homo-sapiens')
+trivname='HBA_HUMAN'
+peptide_df =  master[master['trivname'] == trivname]
+x,y ,z  = pre_process_peptide_fig(peptide_df, 'HBA_HUMAN', difference_metric='area')
+fig = create_peptide_fig(x,y,trivname,z, average=False, square=[(100,110)])
+fig.show()
 
 # peptide_df, peptide_list = peptide_create_peptide_list(master, 'P69905')
 # x,y,z = pre_process_peptide_fig(peptide_df, peptide_list, difference_metric='area')
