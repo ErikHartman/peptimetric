@@ -297,7 +297,7 @@ def amino_acid_piecharts(df_g1, df_g2, **kwargs):
     fig.update_traces(
     hovertemplate="<br>".join([
         "Amino acid: %{label}",
-        "Intensity: %{values}",
+        "Intensity: %{value}",
     ])
 )
     return fig
@@ -406,7 +406,7 @@ def create_protein_fig(df_fig, **kwargs):
 
     df_fig.rename(columns={'trivial_name':'Trivial name', 'nbr_of_peptides':'# Peptides', 'accession':'Accession'}, inplace=True)
     fig = px.scatter(df_fig, x=g2_intensity, y=g1_intensity,
-        color='# Peptides', color_continuous_scale=px.colors.diverging.PiYG, 
+        color='# Peptides', color_continuous_scale=px.colors.diverging.PiYG, opacity=0.6,
         size='# Peptides', hover_data=['Trivial name', '# Peptides', 'Accession'])
     fig.update_layout(yaxis=dict(title=y_label), xaxis=dict(title=x_label), hoverlabel=dict(font_family='Roboto'))
     
@@ -499,7 +499,7 @@ def apply_protein_cutoffs(master, accession_list, **kwargs):
 
 
 def get_thresholds(lst):
-    return [int(np.quantile(lst, .3)), int(np.quantile(lst, .5)), int(np.quantile(lst, .6)), int(np.quantile(lst, .65)),
+    return [int(np.quantile(lst, .4)), int(np.quantile(lst, .5)), int(np.quantile(lst, .6)), int(np.quantile(lst, .7)),
             int(np.quantile(lst, .8))]
 
 def all_sample_bar_chart(protein_df, accession, **kwargs):
@@ -568,9 +568,9 @@ def create_venn_bar(df_g1, df_g2, accession, complete_proteome = True):
         paper_bgcolor='rgb(255, 255, 255)',
         plot_bgcolor='rgb(255, 255, 255)',
         )
-    fig.add_trace(go.Bar(x=[''], y=[len(group_1_unique)], name='Group 1: Unique', marker=dict(color=green['light'])))
+    fig.add_trace(go.Bar(x=[''], y=[len(group_2_unique)], name='Group 2: Unique', marker=dict(color='rgb(208,28,139)')))
     fig.add_trace(go.Bar(x=[''], y=[len(common)], name='Common', marker=dict(color=green['medium'])))
-    fig.add_trace(go.Bar(x=[''], y=[len(group_2_unique)], name='Group 2: Unique', marker=dict(color=green['dark'])))
+    fig.add_trace(go.Bar(x=[''], y=[len(group_1_unique)], name='Group 1: Unique', marker=dict(color='rgb(77,172,38)')))
     fig.update_traces(hovertemplate="<br>".join(["Number of peptides: %{y}<extra></extra>"]))
     fig.update_yaxes(title_text='Number of peptides')
     fig.update_layout(hoverlabel_align = 'left')
@@ -836,13 +836,14 @@ def create_length_histogram(df_g1, df_g2, **kwargs):
         df =pd.DataFrame(dict(
             Groups=np.concatenate((["Group 1"]*len(length_g1), ["Group 2"]*len(length_g2))), 
             Length  =np.concatenate((length_g1,length_g2))))
+    print(df)
     fig = px.histogram(df, x="Length", color="Groups", barmode="overlay",  marginal="box",
     color_discrete_sequence=colors)
     fig.update_layout(
         paper_bgcolor='rgb(255, 255, 255)',
         plot_bgcolor='rgb(255, 255, 255)',
         )
-    fig.update_yaxes(title_text='Number of peptides')
+    fig.update_yaxes(title_text='Number of peptides', row=1, col=1)
     return fig
 
 

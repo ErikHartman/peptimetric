@@ -33,8 +33,8 @@ Peptimetric was developed by Erik Hartman and Simon Mahdavi @ Lunds University t
 was developed using ''', html.A('Plotly Dash library for Python', href='https://plotly.com/dash/'), ''' and published on the cloud plattoform ''', html.A('Heroku.', href='https://www.heroku.com/')],
  style={'font-weight':'light'}),  color='#F8F8F8', style={'border':0, 'padding-top':10 })
 
-Data_processing = html.Div([dbc.Row([html.Img(src = './assets/computer.png', style={'height':'4%', 'width':'4%'}),
-        html.H5('Data processing', style={"font-weight": "bold"}),]),
+Data_processing = html.Div([dbc.Row([html.Img(src = './assets/computer.jpg', style={'height':'2%', 'width':'2%',}),
+        html.H5('Data processing', style={"font-weight": "bold", 'margin-top':10}),]),
     html.P(['''Peptimetric requires a minimum of one input file per group, however, statistical calculations require at least 
     three files per group. The input files should be provided in a comma separated values (.csv, recommended) format. Uploading many large
     files may result in a ''', html.A('server timeout error',href ='https://devcenter.heroku.com/articles/error-codes#h12-request-timeout'), '''. If this happens to your data, consider concatenating some of your .csv files for faster uploads. The files are cached and stored 
@@ -56,8 +56,8 @@ Data_processing = html.Div([dbc.Row([html.Img(src = './assets/computer.png', sty
      '''. If you want to analyze data from a species which do not exist in the database, feel free to ''', html.A('contact us ', href='mailto:peptimetric@gmail.com'), ''' and we'll add it as soon as possible!'''], style={'padding-top':15}),
 ])
 
-Settings = html.Div([dbc.Row([html.Img(src = './assets/settings.png', style={'height':'4%', 'width':'4%'}),
-        html.H5('Pre processing data', style={"font-weight": "bold"}),]),
+Settings = html.Div([dbc.Row([html.Img(src = './assets/settings.jpg', style={'height':'2%', 'width':'2%',}),
+        html.H5('Pre processing data', style={"font-weight": "bold", 'margin-top':10, }),]),
 html.H6('Normalization', style={'font-weight':'bold', 'margin-bottom':0, }),
 dbc.Row([dbc.Col([html.P('''
 Peptimetric accommodates for two ways of normalizing your data: using the global sample intensity, and by using a housekeeping protein. Both methods 
@@ -89,11 +89,11 @@ dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/cutoff.jpg', style={'height':'100%',
 ])
 
 Visualization = html.Div([
-    dbc.Row([html.Img(src = './assets/scatter.png', style={'height':'4%', 'width':'4%'}),
+    dbc.Row([html.Img(src = './assets/scatter.jpg', style={'height':'2%', 'width':'2%',}),
         html.H5('Visualization', style={"font-weight": "bold",})]),
     html.P('''
     Protein View
-    ''', style={'font-weight':'bold', 'margin-bottom':0, } ),
+    ''', style={'font-weight':'bold', 'margin-bottom':0,'margin-top':10 } ),
     html.P('''
     The protein view gives you an overview of the proteins present in your samples. The size and color indicate the number of peptides found from
     the precursor protein. The axes in the graph correspond to the chosen difference metric for the two groups. You may change the difference metric
@@ -141,8 +141,8 @@ Visualization = html.Div([
 
 
 Interactivity = html.Div([
-    dbc.Row([html.Img(src = './assets/interact.png', style={'height':'4%', 'width':'4%'}),
-        html.H5('Interactivity', style={"font-weight": "bold",})]),
+    dbc.Row([html.Img(src = './assets/interact.jpg', style={'height':'2%', 'width':'2%',}),
+        html.H5('Interactivity', style={"font-weight": "bold", 'margin-top':10})]),
     html.P('''
     Many of the applications and features in peptrimetric are designed to contain some sort of interactivity. Allowing for an dynamic exploration of your dataset and to interact with the graphics
     in an easy manner. 
@@ -171,14 +171,14 @@ Interactivity = html.Div([
 ])
 
 Cite = html.Div([
-    dbc.Row([html.Img(src = './assets/cite.png', style={'height':'4%', 'width':'4%'}),
-        html.H5('Cite', style={"font-weight": "bold"}),]),
+    dbc.Row([html.Img(src = './assets/cite.jpg', style={'height':'2%', 'width':'2%',}),
+        html.H5('Cite', style={"font-weight": "bold", 'margin-top':10}),]),
     dbc.Card(html.P([ '''Please cite the authors: Erik Hartman and Simon Mahdavi, alongside the URL: ''', html.A('peptimetric.herokuapp.com', href='peptimetric.herokuapp.com')], style={'margin-top':'16px'}), color='#F8F8F8', style={'border':0 }),
 ])
 
 Legal = html.Div([
-    dbc.Row([html.Img(src = './assets/legal.png', style={'height':'4%', 'width':'4%'}),
-        html.H5('Legal', style={"font-weight": "bold", }),]),
+    dbc.Row([html.Img(src = './assets/legal.jpg', style={'height':'2%', 'width':'2%',}),
+        html.H5('Legal', style={"font-weight": "bold", 'margin-top':10}),]),
     html.P(['''
     Peptimetric is free to use for academic purposes and is available at ''', html.A('GitHub', href="https://github.com/ErikHartman/peptimetric"), ''' under an MIT license. 
     No data is saved and no use is monitored using cookies or third party applications. The Dash library is freely available under the MIT license.
@@ -193,7 +193,7 @@ contact_text = html.P(['''
 
 
 Contact = html.Div([
-    dbc.Row([html.Img(src = './assets/contact.png', style={'height':'4%', 'width':'4%'}),
+    dbc.Row([html.Img(src = './assets/contact.jpg', style={'height':'2%', 'width':'2%',}),
         html.H5('Contact', style={"font-weight": "bold", }),]),
     contact_text,
 ])

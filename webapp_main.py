@@ -603,7 +603,7 @@ peptide_info = html.Div(dash_table.DataTable(id='peptide-info-table',
 )
 
 documentation = dbc.Col([
-    dbc.Row([html.Img(src = app.get_asset_url ('document.png'), style={'height':'4%', 'width':'4%'}),
+    dbc.Row([html.Img(src = app.get_asset_url ('document.png'), style={'height':'5%', 'width':'5%'}),
         dbc.Col(html.H1('Documentation'))]),
     html.Hr(),
     Documentation,
@@ -1025,7 +1025,7 @@ app.callback(
     Output('hover-all-protein-samples', 'figure'),
     Input('protein-fig','hoverData'),
     Input('protein-radioitems', 'value'),
-    State('protein-df','data'),
+    State('protein-df-cutoff','data'),
 )(generate_hover_graphs)
 
 app.callback(
