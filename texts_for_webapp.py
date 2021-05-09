@@ -30,7 +30,7 @@ _Complete proteome_ in the dropdown under **General Characteristics** (_selectin
 General = dbc.Card(html.P(children=['''
 Peptimetric was developed by Erik Hartman and Simon Mahdavi @ Lunds University to help researchers visualize and explore differences in the proteome and peptidome of sample groups.
  The main features of the peptimetric are: normalizing data, applying cutoffs and showcasing the proteome and peptidome of a dataset. There are many interactive elements to allow for easy manipulation and explorations of the users dataset. The webapp
-was developed using ''', html.A('Plotly Dash library for Python', href='https://plotly.com/dash/'), ''' and published on the cloud plattoform ''', html.A('Heroku.', href='https://www.heroku.com/')],
+was developed using ''', html.A('Plotly Dash library for Python', href='https://plotly.com/dash/'), ''' and published on the cloud platform ''', html.A('Heroku.', href='https://www.heroku.com/')],
  style={'font-weight':'light'}),  color='#F8F8F8', style={'border':0, 'padding-top':10 })
 
 Data_processing = html.Div([dbc.Row([html.Img(src = './assets/computer.jpg', style={'height':'2%', 'width':'2%',}),
@@ -64,23 +64,23 @@ Peptimetric accommodates for two ways of normalizing your data: using the global
 are valid ways of normalizing MS and MSMS data and may reduce the inter-sample biases introduced in sample preparation and loading. 
 ''', style={}),
 html.P('''All the intensity values from the input files are converted to the logarithm (log) scale. If the values present in the input files are 
-already in the logarithmic scale the option in the mark the checkbox in the normalizartion popup. The logaritmic scale is generally used when analysing data from MS, as
-logaritmic intensities tends to be normally distrubuted.''', style={})], width={'size':7}),
+already in the logarithmic scale the option in the mark the checkbox in the normalization popup. The logarithmic scale is generally used when analysing data from MS, as
+logarithmic intensities tend to be normally distributed.''', style={})], width={'size':7}),
 dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/normalization.jpg', style={'height':'100%', 'width':'100%'})), width={'size':4, 'offset':0}),
 ]),
 html.H6('Cutoffs', style={'font-weight':'bold', 'margin-bottom':0, }),
 dbc.Row([dbc.Col([html.P('''
-MS samples may contain proteins and peptides of very low quality and/or abundancy.
+MS samples may contain proteins and peptides of very low quality and/or abundance.
 We therefore give you the option to apply cutoffs to your dataset to remove these proteins.
 ''', style={}),
 html.P(' Peptide cutoffs', style={'font-weight':'bold', 'margin-bottom':0, }),
 html.P('''Peptide cutoffs allow you to remove peptides with low quality peptides with low intensity and/or low spectral count. We also give you the option
-to remove retention time (RT) and/or collission crossection surface (CCS) outliers. Outliers are considered to be situated
+to remove retention time (RT) and/or collision crossection surface (CCS) outliers. Outliers are considered to be situated
 three standard deviations from the mean. The peptide cutoffs are applied before the protein cutoffs.
 ''', style={}),
 html.P('Protein cutoffs', style={'font-weight':'bold', 'margin-bottom':0, }),
 html.P('''Protein cutoffs allow you to remove proteins with either low total intensity, low total spectral count or a low amount of peptides.
-These cuttoffs are applied after the peptide cutoffs are applied. Therefore, if a protein contains many peptides of low quality or abundance
+These cutoffs are applied after the peptide cutoffs are applied. Therefore, if a protein contains many peptides of low quality or abundance
 it will be removed from the dataset if the peptide cutoffs are properly applied.
 ''', style={})], width={'size':7}),
 dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/cutoff.jpg', style={'height':'100%', 'width':'100%'})), width={'size':4, 'offset':0}),
@@ -101,7 +101,7 @@ Visualization = html.Div([
     on a datapoint will reveal a tooltip with information about the protein. It will also generate a bar chart showing the chosen difference metric
     for each sample. Selecting a protein highlights it, making it possible to generate a peptide view.
     '''),
-    html.P('''The protein table contain information about the number of peptides and chosen difference metric for the 200 proteins with the largets intensity or spectral count. The table is filterable
+    html.P('''The protein table contains information about the number of peptides and chosen difference metric for the 200 proteins with the largest intensity or spectral count. The table is filterable
     and sorted by default on the sum of both groups' difference metric. The table can further be sorted in multiple ways by using the arrows within the column. Selecting a protein highlights the protein in the protein figure. If you select multiple proteins, only the first protein will be selected
     for generating a peptide view. The protein table can be exported as an Excel file (.xlsx) using the "Export" button. 
     '''),
@@ -110,13 +110,13 @@ Visualization = html.Div([
     Peptide View
     ''', style={'font-weight':'bold', 'margin-bottom':0, }),
     html.P('''
-    The peptide view showcases the peptides for the selected precursor protein present in the dataset. There are two modes for demonstrating peptide abundancy:
+    The peptide view showcases the peptides for the selected precursor protein present in the dataset. There are two modes for demonstrating peptide abundance:
     stacking each sample and viewing them separately or taking the mean of the group. When viewing each sample, the sample may be toggled by clicking 
-    on the sample legend. When viewing the mean the standard deviations may be toggled in the same fashion. The figure also contain the weight 
+    on the sample legend. When viewing the mean the standard deviations may be toggled in the same fashion. The figure also contains the weight 
     and difference between the groups which may be toggled on (default) or off.
     ''', style={} ),
     html.P('''
-    The peptide table showcase the 200 peptides with the biggest intensity or spectral count difference in the dataset. The table may be sorted and filtered. 
+    The peptide table showcases the 200 peptides with the biggest intensity or spectral count difference in the dataset. The table may be sorted and filtered. 
     Selecting a peptide in the table highlights it in the graph. The peptide table can be exported as an Excel file (.xlsx) using the "Export" button. 
     ''', style={} ),
 
@@ -127,7 +127,7 @@ Visualization = html.Div([
     ''', style={'font-weight':'bold', 'margin-bottom':0, }),
 
     html.P('''
-    The general characteristics section contain three figures: length distribution, peptidome overlap and amino acid profile. You may select to view these figures
+    The general characteristics section contains three figures: length distribution, peptidome overlap and amino acid profile. You may select to view these figures
     for either the complete proteome or the selected protein (visible in the peptide view). Selecting complete proteome may result in long loading times for large datasets.
      As long as a peptide is present in one of the samples in a group they will be included in the visualization of the general characteristics for that group.
     '''),
@@ -144,7 +144,7 @@ Interactivity = html.Div([
     dbc.Row([html.Img(src = './assets/interact.jpg', style={'height':'2%', 'width':'2%',}),
         html.H5('Interactivity', style={"font-weight": "bold", 'margin-top':10})]),
     html.P('''
-    Many of the applications and features in peptrimetric are designed to contain some sort of interactivity. Allowing for an dynamic exploration of your dataset and to interact with the graphics
+    Many of the applications and features in peptrimetric are designed to contain some sort of interactivity. Allowing for a dynamic exploration of your dataset and to interact with the graphics
     in an easy manner. 
     ''', style={}), 
     html.P('''
@@ -161,12 +161,12 @@ Interactivity = html.Div([
     html.P(['''
     Peptrimetric uses the built-in ''', html.A('modebars', href='https://plotly.com/chart-studio-help/getting-to-know-the-plotly-modebar/'),''' from Plotly to allow 
     the user to interact with the graphs. This provides functions such as
-    downloading the publication quality plots to .png-format, zooming, autoscale, reseting axes and allows for different hover options.
+    downloading the publication quality plots to .png-format, zooming, autoscale, resetting axes and allows for different hover options.
     '''], style={} ),
     html.P('''
     Peptide view slider 
     ''', style={'font-weight':'bold', 'margin-bottom':0, }),html.P('''
-    The protein sequence slider at the bottom of the peptide view allow you to move along and window the protein sequence. 
+    The protein sequence slider at the bottom of the peptide view allows you to move along and window the protein sequence. 
     ''', style={} ),
 ])
 

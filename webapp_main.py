@@ -516,8 +516,8 @@ amino_acid_figs = html.Div([
         dbc.Row(dbc.Col(amino_acid_radioitems)),
         dcc.Loading(type='cube', color = '#76b382',
             children=[ dbc.Row([
-                dbc.Col(dcc.Graph(id='aa-fig', figure={}, style={'height': '700px'}, config={'displaylogo': False, 'modeBarButtonsToRemove': ['toggleSpikelines','hoverCompareCartesian','zoom2d', 'pan2d', 'select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d',
-                'autoScale2d', 'resetScale2d']})),
+                dbc.Col(dcc.Graph(id='aa-fig', figure={}, style={'height': '700px'}, config={'displaylogo': False, 'modeBarButtonsToRemove': ['toggleSpikelines','hoverCompareCartesian','zoom2d', 'pan2d', 'select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d','hoverClosestGl2d',
+                'hoverClosestPie', 'hoverClosestCartesian', 'autoScale2d', 'resetScale2d']})),
             ]) 
             ]
         )
@@ -528,7 +528,8 @@ peptide_length_fig = html.Div([
     dcc.Loading(type='cube', color = '#76b382',
         children=[    
         dbc.Row([
-            dbc.Col(dcc.Graph(id='peptide-length-fig', figure={}, config={'displayModeBar': False}))
+            dbc.Col(dcc.Graph(id='peptide-length-fig', figure={}, config={'displaylogo': False, 'modeBarButtonsToRemove': ['toggleSpikelines','hoverCompareCartesian','zoom2d', 'pan2d', 'select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d','hoverClosestGl2d',
+                'hoverClosestGl2d','hoverClosestPie', 'hoverClosestCartesian', 'autoScale2d', 'resetScale2d']}))
         ]),])
 ])
 
@@ -538,7 +539,8 @@ venn_bar_fig = html.Div([
         children=[    
         dbc.Row([
             dbc.Col([
-                dcc.Graph(id='venn-bar', figure={}, config={'displayModeBar': False})]),
+                dcc.Graph(id='venn-bar', figure={}, config={'displaylogo': False, 'modeBarButtonsToRemove': ['toggleSpikelines','hoverCompareCartesian','zoom2d', 'pan2d', 'select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d','hoverClosestGl2d',
+                'hoverClosestGl2d','hoverClosestPie', 'hoverClosestCartesian', 'autoScale2d', 'resetScale2d']})]),
         ])]
     )
 ])
