@@ -155,7 +155,7 @@ def set_color_and_size(nbr_of_peptides, color_thresholds):
             size.append(1)
     return col, size
 
-def amino_acid_frequency(df_g1, df_g2, accession, **kwargs):
+def amino_acid_frequency(df, accession, **kwargs):
     default_settings = {
         'peptide_or_protein_list',
         'difference_metric'
@@ -194,17 +194,16 @@ def amino_acid_frequency(df_g1, df_g2, accession, **kwargs):
             metric = 'Intensity'
         elif kwargs.get('difference_metric') == 'spectral_count':
             metric = 'Spectral'
-        df_g1 = df_g1.loc[df_g1['Accession'] == accession]
-        df_g2 = df_g2.loc[df_g2['Accession'] == accession]
-        intensity_columns_g1 = [col for col in df_g1 if col.startswith(metric)]
-        intensity_columns_g2 = [col for col in df_g2 if col.startswith(metric)]
-        df_g1['intensity_sum_g1'] = df_g1.loc[:,intensity_columns_g1].sum(axis=1).astype(int)
-        df_g2['intensity_sum_g2'] = df_g2.loc[:,intensity_columns_g2].sum(axis=1).astype(int)
+        df = df.loc[df['Accession'] == accession]
+        intensity_columns = [col for col in df if col.startswith(metric)]
+        intensity_columns_g1 = [col for col in intensity_columns if col.endswith('g1')]
+        intensity_columns_g2 = [col for col in intensity_columns if col.endswith('g2')]
+        df['intensity_sum_g1'] = df.loc[:,intensity_columns_g1].sum(axis=1).astype(int)
+        df['intensity_sum_g2'] = df.loc[:,intensity_columns_g2].sum(axis=1).astype(int)
         
-        df_g1.replace(0, np.nan, inplace=True)
-        df_g2.replace(0, np.nan, inplace=True)
-        df_g1 = df_g1.dropna(subset=['intensity_sum_g1'], axis=0)
-        df_g2 = df_g2.dropna(subset=['intensity_sum_g2'], axis=0)
+        df.replace(0, np.nan, inplace=True)
+        df_g1 = df.dropna(subset=['intensity_sum_g1'], axis=0)
+        df_g2 = df.dropna(subset=['intensity_sum_g2'], axis=0)
         df_g1['First aa']=df_g1['Peptide'].apply(lambda x: x[0:1])
         df_g1['Last aa']=df_g1['Peptide'].apply(lambda x: x[-1::1])
         df_g2['First aa']=df_g2['Peptide'].apply(lambda x: x[0:1])
@@ -223,14 +222,14 @@ def amino_acid_frequency(df_g1, df_g2, accession, **kwargs):
             metric = 'Intensity'
         elif kwargs.get('difference_metric') == 'spectral_count':
             metric = 'Spectral'
-        intensity_columns_g1 = [col for col in df_g1 if col.startswith(metric)]
-        intensity_columns_g2 = [col for col in df_g2 if col.startswith(metric)]
-        df_g1['intensity_sum_g1'] = df_g1.loc[:,intensity_columns_g1].sum(axis=1).astype(int)
-        df_g2['intensity_sum_g2'] = df_g2.loc[:,intensity_columns_g2].sum(axis=1).astype(int)
-        df_g1.replace(0, np.nan, inplace=True)
-        df_g2.replace(0, np.nan, inplace=True)
-        df_g1 = df_g1.dropna(subset=['intensity_sum_g1'], axis=0)
-        df_g2 = df_g2.dropna(subset=['intensity_sum_g2'], axis=0)
+        intensity_columns = [col for col in df if col.startswith(metric)]
+        intensity_columns_g1 = [col for col in intensity_columns if col.endswith('g1')]
+        intensity_columns_g2 = [col for col in intensity_columns if col.endswith('g2')]
+        df['intensity_sum_g1'] = df.loc[:,intensity_columns_g1].sum(axis=1).astype(int)
+        df['intensity_sum_g2'] = df.loc[:,intensity_columns_g2].sum(axis=1).astype(int)
+        df.replace(0, np.nan, inplace=True)
+        df_g1 = df.dropna(subset=['intensity_sum_g1'], axis=0)
+        df_g2 = df.dropna(subset=['intensity_sum_g2'], axis=0)
         df_g1['First aa']=df_g1['Peptide'].apply(lambda x: x[0:1])
         df_g1['Last aa']=df_g1['Peptide'].apply(lambda x: x[-1::1])
         df_g2['First aa']=df_g2['Peptide'].apply(lambda x: x[0:1])
@@ -245,7 +244,7 @@ def amino_acid_frequency(df_g1, df_g2, accession, **kwargs):
         complete_seq_g2=get_letter_frequency(df_g2['Peptide']*df_g2['intensity_sum_g2'])
     return complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2    
 
-def amino_acid_piecharts(df_g1, df_g2, **kwargs):
+def amino_acid_piecharts(df, **kwargs):
     color_dict = [
             'rgb(230,222,122)',
             'rgb(230,222,122)',
@@ -274,7 +273,7 @@ def amino_acid_piecharts(df_g1, df_g2, **kwargs):
         'accession'
     }
     default_settings.update(kwargs)
-    complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2 = amino_acid_frequency(df_g1, df_g2, accession = kwargs.get('accession'), peptide_or_protein_list = kwargs.get('peptide_or_protein_list'), difference_metric=kwargs.get('difference_metric'))
+    complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2 = amino_acid_frequency(df, accession = kwargs.get('accession'), peptide_or_protein_list = kwargs.get('peptide_or_protein_list'), difference_metric=kwargs.get('difference_metric'))
     
     fig = make_subplots(rows=2, cols=3, specs=[[{"type": "pie"}, {"type": "pie"}, {"type": "pie"}],
            [{"type": "pie"}, {"type": "pie"}, {"type": "pie"}]], horizontal_spacing = 0.1, vertical_spacing= 0.1)
@@ -558,18 +557,15 @@ def all_sample_bar_chart(protein_df, accession, **kwargs):
     
     return fig
 
-def create_venn_bar(df_g1, df_g2, accession, complete_proteome = True):
-    group_1_unique = []
-    group_2_unique = []
-    common = []
-    intensity_columns_g1 = [col for col in df_g1 if col.startswith('Intensity')]
-    intensity_columns_g2 = [col for col in df_g2 if col.startswith('Intensity')]
-    df_g1['intensity_sum_g1'] = df_g1.loc[:,intensity_columns_g1].sum(axis=1)
-    df_g2['intensity_sum_g2'] = df_g2.loc[:,intensity_columns_g2].sum(axis=1)
-    df_g1.replace(0, np.nan, inplace=True)
-    df_g2.replace(0, np.nan, inplace=True)
-    df_g1 = df_g1.dropna(subset=['intensity_sum_g1'], axis=0)
-    df_g2 = df_g2.dropna(subset=['intensity_sum_g2'], axis=0)
+def create_venn_bar(df, accession, complete_proteome = True):
+    intensity_columns = [col for col in df if col.startswith('Intensity')]
+    intensity_columns_g1 = [col for col in intensity_columns if col.endswith('g1')]
+    intensity_columns_g2 = [col for col in intensity_columns if col.endswith('g2')]
+    df['intensity_sum_g1'] = df.loc[:,intensity_columns_g1].sum(axis=1).astype(int)
+    df['intensity_sum_g2'] = df.loc[:,intensity_columns_g2].sum(axis=1).astype(int)
+    df.replace(0, np.nan, inplace=True)
+    df_g1 = df.dropna(subset=['intensity_sum_g1'], axis=0)
+    df_g2 = df.dropna(subset=['intensity_sum_g2'], axis=0)
     if complete_proteome:
         merged_df = df_g1.merge(df_g2, on='Peptide', how='inner')
         merged_df = merged_df.groupby('Peptide').sum()
@@ -835,7 +831,7 @@ def create_peptide_fig(sample_dicts_pos, sample_dicts_neg, trivial_name, y_axis_
     fig.update_yaxes(range=[-maximum_intensity, maximum_intensity])
     return fig
 
-def create_length_histogram(df_g1, df_g2, **kwargs):
+def create_length_histogram(df, **kwargs):
     default_settings = {
         'peptide_or_protein_list',
         'accession'
@@ -845,6 +841,13 @@ def create_length_histogram(df_g1, df_g2, **kwargs):
     length_g1 = [] 
     length_g2 = []
     colors = ['rgb(208,28,139)','rgb(77,172,38)']
+    intensity_columns = [col for col in df if col.startswith('Intensity')]
+    intensity_columns_g1 = [col for col in intensity_columns if col.endswith('g1')]
+    intensity_columns_g2 = [col for col in intensity_columns if col.endswith('g2')]
+    df['intensity_sum_g1'] = df.loc[:,intensity_columns_g1].sum(axis=1).astype(int)
+    df['intensity_sum_g2'] = df.loc[:,intensity_columns_g2].sum(axis=1).astype(int)
+    df_g1 = df.dropna(subset=['intensity_sum_g1'], axis=0)
+    df_g2 = df.dropna(subset=['intensity_sum_g2'], axis=0)
     df_g1['length'] = df_g1['Peptide'].apply(lambda x: len(x))
     df_g2['length'] = df_g2['Peptide'].apply(lambda x: len(x))
     intensity_columns_g1 = [col for col in df_g1 if col.startswith('Intensity')]
@@ -994,6 +997,7 @@ def normalize_data(df, housekeeping_protein=False):
         for col in spc_columns:
             housekeeping_spc = housekeeping_df[col].sum()
             df[col] = df[col].apply(lambda x: x/housekeeping_spc)
+        print(df)
         return df
     else:
         print('Error: Data Normalization')
