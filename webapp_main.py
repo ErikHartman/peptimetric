@@ -1037,7 +1037,7 @@ app.callback(
 app.callback(
     Output('aa-fig', 'figure'),
     Input('amino-acid-pie-dropdown', 'value'),
-    Input('peptide-radioitems','value'),
+    Input('aa-radioitems','value'),
     State('peptide-df', 'data'),
     State('protein-df-cutoff', 'data'),
 )(create_amino_acid_fig)

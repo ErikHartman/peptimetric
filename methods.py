@@ -273,7 +273,8 @@ def amino_acid_piecharts(df, **kwargs):
         'accession'
     }
     default_settings.update(kwargs)
-    complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2 = amino_acid_frequency(df, accession = kwargs.get('accession'), peptide_or_protein_list = kwargs.get('peptide_or_protein_list'), difference_metric=kwargs.get('difference_metric'))
+    difference_metric = kwargs.get('difference_metric')
+    complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2 = amino_acid_frequency(df, accession = kwargs.get('accession'), peptide_or_protein_list = kwargs.get('peptide_or_protein_list'), difference_metric=difference_metric)
     
     fig = make_subplots(rows=2, cols=3, specs=[[{"type": "pie"}, {"type": "pie"}, {"type": "pie"}],
            [{"type": "pie"}, {"type": "pie"}, {"type": "pie"}]], horizontal_spacing = 0.1, vertical_spacing= 0.1)
@@ -292,13 +293,18 @@ def amino_acid_piecharts(df, **kwargs):
     fig.update_layout(
     annotations=[dict(text='Group 1', x=0, y=0.82, font_size=20, showarrow=False,  textangle=-90),
                  dict(text='Group 2', x=0, y=0.18, font_size=20, showarrow=False,  textangle=-90)])
-
-    fig.update_traces(
-    hovertemplate="<br>".join([
+    if difference_metric == 'area':
+        fig.update_traces(
+        hovertemplate="<br>".join([
         "Amino acid: %{label}",
         "Intensity: %{value}",
-    ])
-)
+        ]))
+    else:
+        fig.update_traces(
+        hovertemplate="<br>".join([
+        "Amino acid: %{label}",
+        "Spectral count: %{value}",
+        ]))
     return fig
 
 
