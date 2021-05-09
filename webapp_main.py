@@ -92,7 +92,7 @@ modal_file = html.Div([
                                 data=[],
                                 style_data_conditional = [{
                                         'if' : {'row_index':'odd'},
-                                        'backgroundColor' : '#92dbb0'
+                                        'backgroundColor' : '#9ccb86'
                                     }
                                     ],
                                     style_header={
@@ -114,7 +114,7 @@ modal_file = html.Div([
                                 data=[],
                                 style_data_conditional = [{
                                         'if' : {'row_index':'odd'},
-                                        'backgroundColor' : '#92dbb0'
+                                        'backgroundColor' : '#9ccb86'
                                     }
                                     ],
                                     style_header={
@@ -368,7 +368,7 @@ sample_collapse = html.Div(
                                 data=[],
                                 style_data_conditional = [{
                                         'if' : {'row_index':'odd'},
-                                        'backgroundColor' : '#92dbb0'
+                                        'backgroundColor' : '#9ccb86'
                                     }
                                     ],
                                     style_header={
@@ -390,7 +390,7 @@ sample_collapse = html.Div(
                                 data=[],
                                 style_data_conditional = [{
                                         'if' : {'row_index':'odd'},
-                                        'backgroundColor' : '#92dbb0'
+                                        'backgroundColor' : '#9ccb86'
                                     }
                                     ],
                                     style_header={
@@ -415,7 +415,7 @@ sample_collapse = html.Div(
 
 protein_fig_radioitems = html.Div([
     dcc.Dropdown(
-        placeholder = 'Select difference metric...',
+        placeholder = 'Select abundance metric...',
         options=[
         {'label': 'Intensity sum', 'value': 'area_sum'},
         {'label': 'Intensity mean', 'value': 'area_mean'},
@@ -556,7 +556,7 @@ protein_info = html.Div(dash_table.DataTable(
             selected_rows=[],
             style_data_conditional = [{
                 'if' : {'row_index':'odd'},
-                'backgroundColor' : '#92dbb0'
+                'backgroundColor' : '#9ccb86'
             }
             ],
             style_header={
@@ -590,7 +590,7 @@ peptide_info = html.Div(dash_table.DataTable(id='peptide-info-table',
 
             style_data_conditional = [{
                 'if' : {'row_index':'odd'},
-                'backgroundColor' : '#92dbb0'
+                'backgroundColor' : '#9ccb86'
             }
             ],
             style_header={
@@ -611,7 +611,7 @@ peptide_info = html.Div(dash_table.DataTable(id='peptide-info-table',
 )
 
 documentation = dbc.Col([
-    dbc.Row([html.Img(src = app.get_asset_url ('document.jpg'), style={'height':'5%', 'width':'5%'}),
+    dbc.Row([html.Img(src = app.get_asset_url ('document.jpg'), style={'height':'2%', 'width':'2%'}),
         dbc.Col(html.H1('Documentation'))]),
     html.Hr(),
     Documentation,
@@ -654,6 +654,7 @@ hidden_divs_documentation = html.Div([
     sample_collapse,
     search_protein,
     protein_fig_radioitems,
+    how_to_use_collapse,
 ], style={'display':'none'})
 #---------------------------PAGES---------------------------------------------------------------
 main_page = dbc.Container([
@@ -677,7 +678,7 @@ main_page = dbc.Container([
         dbc.Col(peptide_info, width={'size':4})
     ]),
        dbc.Row([
-        html.Img(src = app.get_asset_url ('pie.jpg'), style={'height':'3%', 'width':'3%'}),
+        html.Img(src = app.get_asset_url ('pie.jpg'), style={'height':'2%', 'width':'2%'}),
         html.H3('General characteristics', style={'bottom-margin':0}),
     ]),
     dbc.Row([dbc.Col(amino_acid_pie_dropdown, width=2, style={'padding':15})]),
@@ -852,25 +853,25 @@ checkbox_values, generate_protein_graph_n_clicks, df_fig, df_protein_info, prote
     if not df_fig.empty:
         if protein_radioitems_value:
             if 'spc_mean' in protein_radioitems_value:
-                difference_metric = 'spc_mean'
+                abundance_metric = 'spc_mean'
                 rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2','metric_g1': 'SpC G1',  'sd_g1': 'SD 1', 'metric_g2':'SpC G2',  'sd_g2':'SD 2', 'p_val':'p-value'
                 }
                 
             elif 'area_mean' in protein_radioitems_value:
-                difference_metric = 'area_mean'
+                abundance_metric = 'area_mean'
                 rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2','metric_g1': 'intensity G1', 'sd_g1':'SD 1', 'metric_g2':'intensity G2', 'sd_g2': 'SD 2', 'p_val':'p-value'
                 }
             elif 'spc_sum' in protein_radioitems_value:
-                difference_metric = 'spc_sum'
+                abundance_metric = 'spc_sum'
                 rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2','metric_g1': 'SpC G1',  'sd_g1': 'SD 1', 'metric_g2':'SpC G2',  'sd_g2':'SD 2', 'p_val':'p-value'
                 }
             else:
-                difference_metric = 'area_sum'
+                abundance_metric = 'area_sum'
                 rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2', 'metric_g1': 'intensity G1', 'sd_g1':'SD 1', 'metric_g2':'intensity G2',  'sd_g2': 'SD 2', 'p_val':'p-value'
                 }
                 
         else:
-            difference_metric = 'area_sum'
+            abundance_metric = 'area_sum'
             rename = {'#peptides_g1': '#peptides G1', '#peptides_g2': '#peptides G2', 'metric_g1': 'intensity G1', 'sd_g1':'SD 1', 'metric_g2':'intensity G2',  'sd_g2': 'SD 2', 'p_val':'p-value'
             }
         
@@ -879,9 +880,9 @@ checkbox_values, generate_protein_graph_n_clicks, df_fig, df_protein_info, prote
         protein_info_columns=[{"name": str(i), "id": str(i)} for i in df_protein_info.columns]
         if str(changed_id) == 'generate-protein-graph.n_clicks' or str(changed_id) == 'protein-radioitems.value' or str(changed_id) == 'protein-checkbox.value':
             if checkbox_values and 'show-stdev' in checkbox_values :
-                protein_fig = create_protein_fig(df_fig, show_stdev = True,  difference_metric = difference_metric)
+                protein_fig = create_protein_fig(df_fig, show_stdev = True,  abundance_metric = abundance_metric)
             else:
-                protein_fig = create_protein_fig(df_fig, difference_metric = difference_metric)
+                protein_fig = create_protein_fig(df_fig, abundance_metric = abundance_metric)
         if len(highlighted_triv_names) < 1:
             highlighted_triv_names = ['Choose protein']
             disabled = True
@@ -902,7 +903,7 @@ def process_peptide_data_for_fig(n_clicks_generate_peptide_fig, peptide_radioite
     if n_clicks_generate_peptide_fig and not master.empty:
         trivname = button_label.split(' ')[-1]
         peptide_df = master[master['trivname'] == trivname]
-        pos_sample, neg_sample, y_label = pre_process_peptide_fig(peptide_df, trivname, difference_metric = peptide_radioitems_value)
+        pos_sample, neg_sample, y_label = pre_process_peptide_fig(peptide_df, trivname, abundance_metric = peptide_radioitems_value)
         return peptide_df, [pos_sample, neg_sample, trivname, y_label]
     else:
         return pd.DataFrame(), []
@@ -935,7 +936,7 @@ def create_peptide_table(peptide_df, peptide_radioitems_value):
         sort = ['SpC G1','SpC G2']
         rename = {'metric_g1':'SpC G1', 'sd_g1':'SD 1','metric_g2':'SpC G2','sd_g2':'SD 2'}
     if not peptide_df.empty:
-        df_peptide_info = create_peptide_datatable(peptide_df, difference_metric=peptide_radioitems_value)
+        df_peptide_info = create_peptide_datatable(peptide_df, abundance_metric=peptide_radioitems_value)
         df_peptide_info.fillna(0, inplace=True)
         df_peptide_info.rename(columns=rename, inplace=True)
         df_peptide_info.sort_values(by=sort, ascending=False, inplace=True)
@@ -947,11 +948,11 @@ def create_peptide_table(peptide_df, peptide_radioitems_value):
 
 def create_amino_acid_fig(dropdown_values, radioitem_value, peptide_df, df):
     if dropdown_values and 'complete-proteome' in dropdown_values and not df.empty:
-        fig = amino_acid_piecharts(df, accession = '', peptide_or_protein_list = 'protein_list', difference_metric = radioitem_value)
+        fig = amino_acid_piecharts(df, accession = '', peptide_or_protein_list = 'protein_list', abundance_metric = radioitem_value)
         return fig
     elif dropdown_values and 'selected-protein' in dropdown_values and not peptide_df.empty:
         accession = peptide_df['Accession'].values[0]
-        fig = amino_acid_piecharts(df, accession=accession, peptide_or_protein_list = 'peptide_list', difference_metric = radioitem_value)
+        fig = amino_acid_piecharts(df, accession=accession, peptide_or_protein_list = 'peptide_list', abundance_metric = radioitem_value)
         return fig
     else:
         return  {}
@@ -962,7 +963,7 @@ def generate_hover_graphs(hoverData, protein_radioitems_value, master_df):
         protein_radioitems_value='area_sum'
 
     if hoverData:
-        accession = hoverData['points'][0]['customdata'][-1]
+        accession = hoverData['points'][0]['customdata'][-2]
         fig = all_sample_bar_chart(master_df, accession, metric = protein_radioitems_value)
         return fig
     else:
@@ -1037,7 +1038,7 @@ app.callback(
 app.callback(
     Output('aa-fig', 'figure'),
     Input('amino-acid-pie-dropdown', 'value'),
-    Input('peptide-radioitems','value'),
+    Input('aa-radioitems','value'),
     State('peptide-df', 'data'),
     State('protein-df-cutoff', 'data'),
 )(create_amino_acid_fig)

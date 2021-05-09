@@ -3,7 +3,7 @@ import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 
 how_to_use = html.Div([
-dbc.Row([html.Img(src = './assets/checklist.svg', style={'height':'6%', 'width':'6%'}),
+dbc.Row([html.Img(src = './assets/checklist.jpg', style={'height':'3%', 'width':'3%'}),
 html.H3('How to use', style={'padding-left':5})]),
 html.Hr(style={'margin':5}),
 dcc.Markdown('''

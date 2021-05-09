@@ -158,7 +158,7 @@ def set_color_and_size(nbr_of_peptides, color_thresholds):
 def amino_acid_frequency(df, accession, **kwargs):
     default_settings = {
         'peptide_or_protein_list',
-        'difference_metric'
+        'abundance_metric'
     }
     default_settings.update(kwargs)
     def get_letter_frequency(list):
@@ -190,9 +190,9 @@ def amino_acid_frequency(df, accession, **kwargs):
         return letters
     
     if kwargs.get('peptide_or_protein_list') == 'peptide_list':
-        if kwargs.get('difference_metric') == 'area':
+        if kwargs.get('abundance_metric') == 'area':
             metric = 'Intensity'
-        elif kwargs.get('difference_metric') == 'spectral_count':
+        elif kwargs.get('abundance_metric') == 'spectral_count':
             metric = 'Spectral'
         df = df.loc[df['Accession'] == accession]
         intensity_columns = [col for col in df if col.startswith(metric)]
@@ -218,9 +218,9 @@ def amino_acid_frequency(df, accession, **kwargs):
         complete_seq_g2=get_letter_frequency(df_g2['Peptide']*df_g2['intensity_sum_g2'])
 
     elif kwargs.get('peptide_or_protein_list') == 'protein_list':
-        if kwargs.get('difference_metric') == 'area':
+        if kwargs.get('abundance_metric') == 'area':
             metric = 'Intensity'
-        elif kwargs.get('difference_metric') == 'spectral_count':
+        elif kwargs.get('abundance_metric') == 'spectral_count':
             metric = 'Spectral'
         intensity_columns = [col for col in df if col.startswith(metric)]
         intensity_columns_g1 = [col for col in intensity_columns if col.endswith('g1')]
@@ -269,11 +269,11 @@ def amino_acid_piecharts(df, **kwargs):
     ]
     default_settings = {
         'peptide_or_protein_list'
-        'difference_metric'
+        'abundance_metric'
         'accession'
     }
     default_settings.update(kwargs)
-    complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2 = amino_acid_frequency(df, accession = kwargs.get('accession'), peptide_or_protein_list = kwargs.get('peptide_or_protein_list'), difference_metric=kwargs.get('difference_metric'))
+    complete_seq_g1, first_aa_g1, last_aa_g1, complete_seq_g2, first_aa_g2, last_aa_g2 = amino_acid_frequency(df, accession = kwargs.get('accession'), peptide_or_protein_list = kwargs.get('peptide_or_protein_list'), abundance_metric=kwargs.get('abundance_metric'))
     
     fig = make_subplots(rows=2, cols=3, specs=[[{"type": "pie"}, {"type": "pie"}, {"type": "pie"}],
            [{"type": "pie"}, {"type": "pie"}, {"type": "pie"}]], horizontal_spacing = 0.1, vertical_spacing= 0.1)
@@ -304,7 +304,7 @@ def amino_acid_piecharts(df, **kwargs):
 
 def create_protein_df_fig(protein_df, **kwargs):
     default_settings = {
-        'difference_metric':'area',
+        'abundance_metric':'area',
         'color': 'green',
     }
     default_settings.update(**kwargs)
@@ -371,42 +371,44 @@ def create_protein_df_fig(protein_df, **kwargs):
 def create_protein_fig(df_fig, **kwargs):
     default_settings =  {
         'show_stdev':'',
-        'difference_metric':'',
+        'abundance_metric':'',
     }
     default_settings.update(kwargs)
     
-    if kwargs.get('difference_metric') == 'area_sum':
+    if kwargs.get('abundance_metric') == 'area_sum':
         df_fig.rename(columns={'g1_area_sum':'G1','g2_area_sum':'G2'}, inplace=True)
         g1_intensity, g2_intensity = 'G1','G2'
         g1_std, g2_std = 'g1_area_sum_stdev', 'g2_area_sum_stdev'
         x_label = 'Group 1: log(Sum of peptide intensity)'
         y_label = 'Group 2: log(Sum of peptide intensity)'
+        df_fig['Difference'] = np.abs(df_fig['G1'] - df_fig['G2'])
 
-    elif kwargs.get('difference_metric') == 'area_mean':
+    elif kwargs.get('abundance_metric') == 'area_mean':
         df_fig.rename(columns={'g1_area_mean':'G1','g2_area_mean':'G2'}, inplace=True)
         g1_intensity, g2_intensity = 'G1','G2'
         g1_std, g2_std = 'g1_area_mean_stdev', 'g2_area_mean_stdev'
         x_label = 'Group 1: log(Peptide intensity mean)'
         y_label = 'Group 2: log(Peptide intensity mean)'
 
-    elif kwargs.get('difference_metric') == 'spc_sum':
+    elif kwargs.get('abundance_metric') == 'spc_sum':
         df_fig.rename(columns={'g1_spc_sum':'G1','g2_spc_sum':'G2'}, inplace=True)
         g1_intensity, g2_intensity = 'G1', 'G2'
         g1_std, g2_std = 'g1_spc_sum_stdev', 'g2_spc_sum_stdev'
         x_label = 'Group 1: Sum of spectral count'
         y_label = 'Group 2: Sum of spectral count'
 
-    elif kwargs.get('difference_metric') == 'spc_mean':
+    elif kwargs.get('abundance_metric') == 'spc_mean':
         df_fig.rename(columns={'g1_spc_mean':'G1','g2_spc_mean':'G2'}, inplace=True)
         g1_intensity, g2_intensity = 'G1', 'G2'
         g1_std, g2_std = 'g1_spc_mean_stdev', 'g2_spc_mean_stdev'
         x_label = 'Group 1: Mean of spectral count'
         y_label = 'Group 2: Mean of spectral count'
 
+    df_fig['Difference'] = np.abs(df_fig['G1'] - df_fig['G2'])
     df_fig.rename(columns={'trivial_name':'Trivial name', 'nbr_of_peptides':'# Peptides', 'accession':'Accession'}, inplace=True)
     fig = px.scatter(df_fig, x=g2_intensity, y=g1_intensity,
-        color='# Peptides', color_continuous_scale=px.colors.diverging.PiYG, opacity=0.6,
-        size='# Peptides', hover_data=['Trivial name', '# Peptides', 'Accession'])
+        color='Difference', color_continuous_scale=px.colors.diverging.Temps, opacity=0.6,
+        size='# Peptides', hover_data=['Trivial name', '# Peptides', 'Accession', 'Difference'])
     fig.update_layout(yaxis=dict(title=y_label), xaxis=dict(title=x_label), hoverlabel=dict(font_family='Roboto'))
     
     g1_intensity = list(df_fig[g1_intensity])
@@ -415,13 +417,13 @@ def create_protein_fig(df_fig, **kwargs):
     maximum = max(g1_intensity + g2_intensity)
     fig.add_shape(type="line",x0=minimum, y0=minimum, x1=maximum, y1=maximum, line=dict(color="#919499",width=1, dash='dash'))
     fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}, 
-    coloraxis_colorbar=dict(title='Number of peptides'),
+    coloraxis_colorbar=dict(title='Difference'),
     modebar ={
                     'bgcolor': 'rgba(255,255,255,1)'
                 })
     if kwargs.get('show_stdev') == True:
         fig.update_traces(error_x= dict(array=df_fig[g1_std].array, thickness=1), error_y=dict(array=df_fig[g2_std].array, thickness=1))
-
+    print(px.colors.diverging.Temps)
     return fig
 
 def rt_check(df):
@@ -526,7 +528,7 @@ def apply_protein_cutoffs(protein_df, **kwargs):
 
 def get_thresholds(lst):
     return [int(np.quantile(lst, .4)), int(np.quantile(lst, .5)), int(np.quantile(lst, .6)), int(np.quantile(lst, .7)),
-            int(np.quantile(lst, .8))]
+            int(np.quantile(lst, .9))]
 
 def all_sample_bar_chart(protein_df, accession, **kwargs):
     default_settings = {
@@ -542,18 +544,18 @@ def all_sample_bar_chart(protein_df, accession, **kwargs):
         y='Intensity'
     elif kwargs.get('metric') == 'spc_sum':
         intensities = protein_get_spectral_count_sum_all_samples(protein)
-        df = pd.DataFrame(intensities.items(), columns=['Sample', 'Spectral count'])
-        y='Spectral count'
+        df = pd.DataFrame(intensities.items(), columns=['Sample', 'SpC'])
+        y='SpC'
     elif kwargs.get('metric') == 'area_mean':
         intensities = protein_get_area_mean_all_samples(protein)
         df = pd.DataFrame(intensities.items(), columns=['Sample', 'Intensity'])
         y='Intensity'
     elif kwargs.get('metric') == 'spc_mean':
         intensities = protein_get_spectral_count_mean_all_samples(protein)
-        df = pd.DataFrame(intensities.items(), columns=['Sample', 'Spectral count'])
-        y='Spectral count'
-    fig = px.bar(df, x = 'Sample', y=y, color=y, color_continuous_scale=px.colors.sequential.algae, title=title)
-    fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}, showlegend=False, coloraxis_showscale=False)
+        df = pd.DataFrame(intensities.items(), columns=['Sample', 'SpC'])
+        y='SpC'
+    fig = px.bar(df, x = 'Sample', y=y, color=y, color_continuous_scale=px.colors.diverging.Temps, title=title)
+    fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}, showlegend=False)
     
     return fig
 
@@ -600,7 +602,7 @@ def create_venn_bar(df, accession, complete_proteome = True):
     return fig
 
 
-def pre_process_peptide_fig(peptide_df, trivname, difference_metric):
+def pre_process_peptide_fig(peptide_df, trivname, abundance_metric):
     peptide_df = peptide_df.copy()
     peptide_df.fillna(0, inplace=True)
     fasta = peptide_df['seq'].values[0]
@@ -615,13 +617,13 @@ def pre_process_peptide_fig(peptide_df, trivname, difference_metric):
     spc_columns_g1 = [col for col in spc_columns if col.endswith('g1')]
     spc_columns_g2 = [col for col in spc_columns if col.endswith('g2')]
     
-    if difference_metric == 'area':
+    if abundance_metric == 'area':
         peptide_area_pos = peptide_df[area_columns_g1]
         peptide_area_neg = peptide_df[area_columns_g2]
         intensity_pos = peptide_area_pos.values
         intensity_neg = peptide_area_neg.values
         y_axis_label = 'log(Intensity)'
-    elif difference_metric == 'spectral_count':
+    elif abundance_metric == 'spectral_count':
         peptide_spc_pos = peptide_df[spc_columns_g1]
         peptide_spc_neg = peptide_df[spc_columns_g2]
         intensity_pos = peptide_spc_pos.values
@@ -631,10 +633,9 @@ def pre_process_peptide_fig(peptide_df, trivname, difference_metric):
     sample_dicts_neg = []
     for sample in range(len(intensity_pos[0])):
         sample_dict = {"index": [], "counter": [], "intensity": []}
-        for i in range(len(fasta)):
-            sample_dict["index"].append(i)
-            sample_dict["counter"].append(0)
-            sample_dict["intensity"].append(0)
+        sample_dict["index"] = list(range(len(fasta)))
+        sample_dict["counter"] = [0]*len(fasta)
+        sample_dict["intensity"] = [0]*len(fasta)
         for index in range(len(intensity_pos)):
             s = start[index]
             e = end[index]
@@ -648,11 +649,9 @@ def pre_process_peptide_fig(peptide_df, trivname, difference_metric):
 
     for sample in range(len(intensity_neg[0])):
         sample_dict = {"index": [], "counter": [], "intensity": []}
-        for i in range(len(fasta)):
-            sample_dict["index"].append(i)
-            sample_dict["counter"].append(0)
-            sample_dict["intensity"].append(0)
-
+        sample_dict["index"] = list(range(len(fasta)))
+        sample_dict["counter"] = [0]*len(fasta)
+        sample_dict["intensity"] = [0]*len(fasta)
         for index in range(len(intensity_neg)):
             s = start[index]
             e = end[index]
@@ -840,12 +839,13 @@ def create_length_histogram(df, **kwargs):
     accession = kwargs.get('accession')
     length_g1 = [] 
     length_g2 = []
-    colors = ['rgb(208,28,139)','rgb(77,172,38)']
+    colors = ['rgb(57, 177, 133)','rgb(207, 89, 126)']
     intensity_columns = [col for col in df if col.startswith('Intensity')]
     intensity_columns_g1 = [col for col in intensity_columns if col.endswith('g1')]
     intensity_columns_g2 = [col for col in intensity_columns if col.endswith('g2')]
     df['intensity_sum_g1'] = df.loc[:,intensity_columns_g1].sum(axis=1).astype(int)
     df['intensity_sum_g2'] = df.loc[:,intensity_columns_g2].sum(axis=1).astype(int)
+    df.replace(0, np.nan, inplace=True)
     df_g1 = df.dropna(subset=['intensity_sum_g1'], axis=0)
     df_g2 = df.dropna(subset=['intensity_sum_g2'], axis=0)
     df_g1['length'] = df_g1['Peptide'].apply(lambda x: len(x))
@@ -873,7 +873,6 @@ def create_length_histogram(df, **kwargs):
         df =pd.DataFrame(dict(
             Groups=np.concatenate((["Group 1"]*len(length_g1), ["Group 2"]*len(length_g2))), 
             Length  =np.concatenate((length_g1,length_g2))))
-    print(df)
     fig = px.histogram(df, x="Length", color="Groups", barmode="overlay",  marginal="box",
     color_discrete_sequence=colors)
     fig.update_layout(
@@ -893,12 +892,12 @@ def proteins_present_in_all_samples(master):
     proteins_present_in_all_samples.fillna(0, inplace=True)
     return proteins_present_in_all_samples
 
-def create_peptide_datatable(peptide_df, difference_metric):
+def create_peptide_datatable(peptide_df, abundance_metric):
     columns_to_keep = ['Peptide', 'Start', 'End', 'metric_g1','sd_g1','metric_g2','sd_g2']
     peptide_df = peptide_df.copy()
     peptide_df['Start'] = peptide_df.apply (lambda row: peptide_get_start(row), axis=1)
     peptide_df['End'] = peptide_df.apply(lambda row: peptide_get_end(row), axis=1)
-    if difference_metric == 'area':
+    if abundance_metric == 'area':
         area_columns = [col for col in peptide_df if col.startswith('Intensity')]
         area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
         area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
@@ -907,7 +906,7 @@ def create_peptide_datatable(peptide_df, difference_metric):
         peptide_df['sd_g1'] = peptide_df[area_columns_g1].std(axis=1)
         peptide_df['sd_g2'] = peptide_df[area_columns_g2].std(axis=1)
         
-    elif difference_metric == 'spectral_count':
+    elif abundance_metric == 'spectral_count':
         spc_columns = [col for col in peptide_df if col.startswith('Spectral')]
         spc_columns_g1 = [col for col in spc_columns if col.endswith('g1')]
         spc_columns_g2 = [col for col in spc_columns if col.endswith('g2')]
@@ -921,7 +920,7 @@ def create_peptide_datatable(peptide_df, difference_metric):
     return peptide_df
 
 
-def create_protein_datatable(protein_df, difference_metric):
+def create_protein_datatable(protein_df, abundance_metric):
     columns_to_keep = ['Protein','UniProt id','#peptides_g1','#peptides_g2','metric_g1', 'sd_g1','metric_g2','sd_g2','p_val']
     protein_df = protein_df.copy()
     area_columns = [col for col in protein_df if col.startswith('Intensity')]
@@ -940,21 +939,21 @@ def create_protein_datatable(protein_df, difference_metric):
     if protein_df.empty:
         pass
     else:
-        if difference_metric == 'area_sum':
+        if abundance_metric == 'area_sum':
             protein_df = protein_df.groupby(by=['Accession','trivname','seq'], as_index=False).sum()
             protein_df['metric_g1'] = protein_df[area_columns_g1].mean(axis=1)
             protein_df['metric_g2'] = protein_df[area_columns_g2].mean(axis=1)
             protein_df['sd_g1'] = protein_df[area_columns_g1].std(axis=1)
             protein_df['sd_g2'] = protein_df[area_columns_g2].std(axis=1)
             protein_df['p_val'] = protein_df.apply (lambda row: protein_get_pvalue(row), axis=1)
-        elif difference_metric == 'area_mean':
+        elif abundance_metric == 'area_mean':
             protein_df = protein_df.groupby(by=['Accession','trivname','seq'], as_index=False).mean()
             protein_df['metric_g1'] = protein_df[area_columns_g1].mean(axis=1)
             protein_df['metric_g2'] = protein_df[area_columns_g2].mean(axis=1)
             protein_df['sd_g1'] = protein_df[area_columns_g1].std(axis=1)
             protein_df['sd_g2'] = protein_df[area_columns_g2].std(axis=1)
             protein_df['p_val'] = protein_df.apply (lambda row: protein_get_pvalue(row), axis=1)
-        elif difference_metric == 'spc_sum':
+        elif abundance_metric == 'spc_sum':
             protein_df = protein_df.groupby(by=['Accession','trivname','seq'], as_index=False).sum()
             protein_df['metric_g1'] = protein_df[spc_columns_g1].mean(axis=1)
             protein_df['metric_g2'] = protein_df[spc_columns_g2].mean(axis=1)
