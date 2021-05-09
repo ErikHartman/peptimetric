@@ -499,6 +499,7 @@ peptide_fig = html.Div([
         ])
 
 amino_acid_radioitems = html.Div([
+        dbc.Label('Abundance metric'),
         dbc.RadioItems(
             options=[
                 {"label": "Intensity", "value": 'area'},
@@ -513,7 +514,6 @@ amino_acid_radioitems = html.Div([
 
 amino_acid_figs = html.Div([
         html.H3('Amino Acid Profile'),
-        dbc.Row(dbc.Col(amino_acid_radioitems)),
         dcc.Loading(type='cube', color = '#76b382',
             children=[ dbc.Row([
                 dbc.Col(dcc.Graph(id='aa-fig', figure={}, style={'height': '700px'}, config={'displaylogo': False, 'modeBarButtonsToRemove': ['toggleSpikelines','hoverCompareCartesian','zoom2d', 'pan2d', 'select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d',
@@ -682,7 +682,8 @@ main_page = dbc.Container([
         html.Img(src = app.get_asset_url ('pie.jpg'), style={'height':'2%', 'width':'2%'}),
         html.H3('General characteristics', style={'bottom-margin':0}),
     ]),
-    dbc.Row([dbc.Col(amino_acid_pie_dropdown, width=2, style={'padding':15})]),
+    dbc.Row([dbc.Col(amino_acid_pie_dropdown, width=2, style={'padding':15}),
+    dbc.Col(amino_acid_radioitems, style={'padding':15})]),
     dbc.Row([
         dbc.Col(peptide_length_fig, width={'size':8}),
         dbc.Col(venn_bar_fig, width={'size':4}),
@@ -988,13 +989,13 @@ def enable_generate_protein_graph(protein_list):
         else:
             return False
 
-def create_peptide_length_dropdown(length_dropdown_values, peptide_df, df):
+def create_peptide_length_dropdown(length_dropdown_values, amino_acid_radioitems, peptide_df, df):
     if length_dropdown_values and 'complete-proteome'  in length_dropdown_values and not df.empty:
-        length_fig = create_length_histogram(df, peptide_or_protein_list='protein_list')
+        length_fig = create_length_histogram(df, abundance_metric=amino_acid_radioitems, peptide_or_protein_list='protein_list')
         return length_fig
     elif length_dropdown_values and 'selected-protein' in length_dropdown_values and not peptide_df.empty:
         accession = peptide_df['Accession'].values[0]
-        length_fig= create_length_histogram(df, accession=accession, peptide_or_protein_list='peptide_list')
+        length_fig= create_length_histogram(df, accession=accession, abundance_metric=amino_acid_radioitems, peptide_or_protein_list='peptide_list')
         return length_fig
     else:
         return {}
@@ -1047,6 +1048,7 @@ app.callback(
 app.callback(
     Output('peptide-length-fig', 'figure'),
     Input('amino-acid-pie-dropdown', 'value'),
+    Input('aa-radioitems','value'),
     State('peptide-df', 'data'),
     State('protein-df-cutoff', 'data'),
 )(create_peptide_length_dropdown)

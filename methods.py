@@ -862,37 +862,52 @@ def create_length_histogram(df, **kwargs):
     df_g2 = df.dropna(subset=['intensity_sum_g2'], axis=0)
     df_g1['length'] = df_g1['Peptide'].apply(lambda x: len(x))
     df_g2['length'] = df_g2['Peptide'].apply(lambda x: len(x))
-    intensity_columns_g1 = [col for col in df_g1 if col.startswith('Intensity')]
-    intensity_columns_g2 = [col for col in df_g2 if col.startswith('Intensity')]
-    df_g1['intensity_sum_g1'] = df_g1.loc[:,intensity_columns_g1].sum(axis=1)
-    df_g2['intensity_sum_g2'] = df_g2.loc[:,intensity_columns_g2].sum(axis=1)
-    df_g1.replace(0, np.nan, inplace=True)
-    df_g2.replace(0, np.nan, inplace=True)
-    df_g1 = df_g1.dropna(subset=['intensity_sum_g1'], axis=0)
-    df_g2 = df_g2.dropna(subset=['intensity_sum_g2'], axis=0)
     if kwargs.get('peptide_or_protein_list') == 'peptide_list':
         df_g1 = df_g1.loc[df_g1['Accession'] == accession]
         df_g2 = df_g2.loc[df_g2['Accession'] == accession]
-        length_g1 = df_g1['length'].array 
-        length_g2 = df_g2['length'].array 
+        length_g1 = df_g1['length'].array
+        length_g2 = df_g2['length'].array
+        intensity_g1 = df_g1['intensity_sum_g1'].astype(int).array
+        intensity_g2 = df_g2['intensity_sum_g2'].astype(int).array
+        tot_length_g1 = []
+        tot_length_g2 = []
+        i=0
+        for length in length_g1:
+            tot_length_g1 += [length]*intensity_g1[i]
+            i += 1
+        i=0
+        for length in length_g2:
+            tot_length_g2 += [length]*intensity_g2[i]
+            i += 1
         df = pd.DataFrame(dict(
-        Groups = np.concatenate((["Group 1"]*len(length_g1), ["Group 2"]*len(length_g2))), 
-        Length = np.concatenate((length_g1,length_g2))))
+            Groups = np.concatenate((["Group 1"]*len(tot_length_g1), ["Group 2"]*len(tot_length_g2))), 
+            Length = np.concatenate((tot_length_g1, tot_length_g2))))
 
     elif kwargs.get('peptide_or_protein_list') == 'protein_list':
-        length_g1 = df_g1['length'].array 
-        length_g2 = df_g2['length'].array 
-        df =pd.DataFrame(dict(
-            Groups=np.concatenate((["Group 1"]*len(length_g1), ["Group 2"]*len(length_g2))), 
-            Length  =np.concatenate((length_g1,length_g2))))
-    print(df)
+        length_g1 = df_g1['length'].array
+        length_g2 = df_g2['length'].array
+        intensity_g1 = df_g1['intensity_sum_g1'].astype(int).array
+        intensity_g2 = df_g2['intensity_sum_g2'].astype(int).array
+        tot_length_g1 = []
+        tot_length_g2 = []
+        i=0
+        for length in length_g1:
+            tot_length_g1 += [length]*intensity_g1[i]
+            i += 1
+        i=0
+        for length in length_g2:
+            tot_length_g2 += [length]*intensity_g2[i]
+            i += 1
+        df = pd.DataFrame(dict(
+            Groups = np.concatenate((["Group 1"]*len(tot_length_g1), ["Group 2"]*len(tot_length_g2))), 
+            Length = np.concatenate((tot_length_g1, tot_length_g2))))
     fig = px.histogram(df, x="Length", color="Groups", barmode="overlay",  marginal="box",
     color_discrete_sequence=colors)
     fig.update_layout(
         paper_bgcolor='rgb(255, 255, 255)',
         plot_bgcolor='rgb(255, 255, 255)',
         )
-    fig.update_yaxes(title_text='Number of peptides', row=1, col=1)
+    fig.update_yaxes(title_text='Abundance', row=1, col=1)
     return fig
 
 

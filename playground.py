@@ -22,7 +22,7 @@ master = merge_dataframes(g1,g2)
 master = protein_create_protein_list(master, 'homo-sapiens')
 trivname='HBA_HUMAN'
 peptide_df =  master[master['trivname'] == trivname]
-fig = create_length_histogram(peptide_df, peptide_or_protein_list='peptide_list', accession='P69905', abundance_metric='area')
+fig = create_length_histogram(master, peptide_or_protein_list='protein_list', abundance_metric='area')
 fig.show()
 
 

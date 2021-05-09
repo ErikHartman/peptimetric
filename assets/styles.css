@@ -75,10 +75,6 @@ h6{
 }
 
 img{
-  padding-left: 15px;
-  padding-top:15px;
-  padding-bottom: 15px;
-  padding-right:15px;
-  min-width: 50px;
-  min-height: 50px;
+  max-width: 30;
+  max-height: 30;
 }
