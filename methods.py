@@ -293,7 +293,7 @@ def amino_acid_piecharts(df, **kwargs):
     fig.update_layout(
     annotations=[dict(text='Group 1', x=0, y=0.82, font_size=20, showarrow=False,  textangle=-90),
                  dict(text='Group 2', x=0, y=0.18, font_size=20, showarrow=False,  textangle=-90)])
-    if difference_metric == 'area':
+    if kwargs.get('abundance_metric') == 'area':
         fig.update_traces(
         hovertemplate="<br>".join([
         "Amino acid: %{label}",
@@ -840,13 +840,19 @@ def create_length_histogram(df, **kwargs):
     default_settings = {
         'peptide_or_protein_list',
         'accession'
+        'abundance metric'
     }
     default_settings.update(kwargs)
     accession = kwargs.get('accession')
+    if kwargs.get('abundance_metric') == 'area':
+        metric = 'Intensity'
+    else:
+        metric = 'Spectral'
     length_g1 = [] 
     length_g2 = []
+
     colors = ['rgb(57, 177, 133)','rgb(207, 89, 126)']
-    intensity_columns = [col for col in df if col.startswith('Intensity')]
+    intensity_columns = [col for col in df if col.startswith(metric)]
     intensity_columns_g1 = [col for col in intensity_columns if col.endswith('g1')]
     intensity_columns_g2 = [col for col in intensity_columns if col.endswith('g2')]
     df['intensity_sum_g1'] = df.loc[:,intensity_columns_g1].sum(axis=1).astype(int)
@@ -867,18 +873,19 @@ def create_length_histogram(df, **kwargs):
     if kwargs.get('peptide_or_protein_list') == 'peptide_list':
         df_g1 = df_g1.loc[df_g1['Accession'] == accession]
         df_g2 = df_g2.loc[df_g2['Accession'] == accession]
-        length_g1 = df_g1['length'].array
-        length_g2 = df_g2['length'].array
-        df =pd.DataFrame(dict(
-        Groups=np.concatenate((["Group 1"]*len(length_g1), ["Group 2"]*len(length_g2))), 
-        Length  =np.concatenate((length_g1,length_g2))))
+        length_g1 = df_g1['length'].array 
+        length_g2 = df_g2['length'].array 
+        df = pd.DataFrame(dict(
+        Groups = np.concatenate((["Group 1"]*len(length_g1), ["Group 2"]*len(length_g2))), 
+        Length = np.concatenate((length_g1,length_g2))))
 
     elif kwargs.get('peptide_or_protein_list') == 'protein_list':
-        length_g1 = df_g1['length'].array
-        length_g2 = df_g2['length'].array
+        length_g1 = df_g1['length'].array 
+        length_g2 = df_g2['length'].array 
         df =pd.DataFrame(dict(
             Groups=np.concatenate((["Group 1"]*len(length_g1), ["Group 2"]*len(length_g2))), 
             Length  =np.concatenate((length_g1,length_g2))))
+    print(df)
     fig = px.histogram(df, x="Length", color="Groups", barmode="overlay",  marginal="box",
     color_discrete_sequence=colors)
     fig.update_layout(
