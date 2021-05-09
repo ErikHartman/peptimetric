@@ -1,7 +1,7 @@
 from methods import concatenate_dataframes, merge_dataframes, make_peptide_dfs, create_protein_datatable, create_peptide_datatable, create_venn_bar
 from methods import pre_process_peptide_fig, create_peptide_fig, create_length_histogram, log_intensity, generate_local_database
 from methods import amino_acid_piecharts, create_protein_df_fig, create_protein_fig
-from methods import normalize_data, apply_protein_cutoffs, apply_peptide_cutoffs
+from methods import normalize_data, apply_protein_cutoffs, apply_peptide_cutoffs, create_length_histogram
 import os
 from datetime import datetime
 import pandas as pd
@@ -22,10 +22,8 @@ master = merge_dataframes(g1,g2)
 master = protein_create_protein_list(master, 'homo-sapiens')
 trivname='HBA_HUMAN'
 peptide_df =  master[master['trivname'] == trivname]
-peptide_df['Start'] = peptide_df.apply (lambda row: peptide_get_start(row), axis=1)
-peptide_df['End'] = peptide_df.apply(lambda row: peptide_get_end(row), axis=1)
-fasta_len = len(peptide_df['seq'].values[0])
-
+fig = create_length_histogram(peptide_df, peptide_or_protein_list='peptide_list', accession='P69905', abundance_metric='area')
+fig.show()
 
 
 # peptide_df, peptide_list = peptide_create_peptide_list(master, 'P69905')
