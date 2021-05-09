@@ -456,8 +456,8 @@ protein_fig = html.Div([
 
 all_samples_protein_fig = html.Div([
     dcc.Graph(id='hover-all-protein-samples', figure={}, style={'height': 300, 'width':500},
-    config={'displayModeBar': False}
-)])
+    config={'displaylogo': False, 'modeBarButtonsToRemove': ['toggleSpikelines','hoverCompareCartesian','zoom2d', 'pan2d', 'select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d','hoverClosestGl2d',
+                'hoverClosestGl2d','hoverClosestPie', 'hoverClosestCartesian', 'autoScale2d', 'resetScale2d']})])
 
 peptide_fig_radioitems = html.Div([
     dbc.RadioItems(
