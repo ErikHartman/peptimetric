@@ -46,6 +46,10 @@ column_names_dict = {
     'Spectral count': ['Spectral count','SPC', 'SpC', 'spc', 'sc', 'SC', 'spectral count', '#Feature', 'spectral counts', '#Features']
 }
 
+def get_current_time():
+    now = datetime.now()
+    current_time = now.strftime("%H:%M:%S")
+    print("Current Time =", current_time)
 
 def generate_local_database(uniprot_gzip_filename, file_output_name):
     accession_list, trivname_list, seq_list = [], [], []
@@ -608,21 +612,20 @@ def create_venn_bar(df, accession, complete_proteome = True):
     return fig
 
 
-def pre_process_peptide_fig(peptide_df, trivname, abundance_metric):
+def pre_process_peptide_fig(peptide_df, abundance_metric):
     peptide_df = peptide_df.copy()
     peptide_df.fillna(0, inplace=True)
-    fasta = peptide_df['seq'].values[0]
     peptide_df['Start'] = peptide_df.apply (lambda row: peptide_get_start(row), axis=1)
     peptide_df['End'] = peptide_df.apply(lambda row: peptide_get_end(row), axis=1)
     start = peptide_df['Start'].array
     end = peptide_df['End'].array
+    fasta = peptide_df['seq'].values[0]
     area_columns = [col for col in peptide_df if col.startswith('Intensity')]
     area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
     area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
     spc_columns = [col for col in peptide_df if col.startswith('Spectral')]
     spc_columns_g1 = [col for col in spc_columns if col.endswith('g1')]
     spc_columns_g2 = [col for col in spc_columns if col.endswith('g2')]
-    
     if abundance_metric == 'area':
         peptide_area_pos = peptide_df[area_columns_g1]
         peptide_area_neg = peptide_df[area_columns_g2]
@@ -683,11 +686,11 @@ def create_peptide_fig(sample_dicts_pos, sample_dicts_neg, trivial_name, y_axis_
     
     if kwargs.get('average') == False:
         nbr_of_peptides = []
+        
         for sample_dict in sample_dicts_pos:
             nbr_of_peptides = nbr_of_peptides + sample_dict['counter']
         for sample_dict in sample_dicts_neg:
             nbr_of_peptides = nbr_of_peptides + sample_dict['counter']
-        
         nbr_of_peptides = [i for i in nbr_of_peptides if i > 0]
         color_thresholds = get_thresholds(nbr_of_peptides)
         i=0
@@ -1031,7 +1034,3 @@ def normalize_data(df, housekeeping_protein=False):
         return None
 
 
-def get_current_time():
-    now = datetime.now()
-    current_time = now.strftime("%H:%M:%S")
-    return current_time

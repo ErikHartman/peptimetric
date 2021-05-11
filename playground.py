@@ -1,3 +1,4 @@
+from numpy.lib.function_base import average
 from methods import concatenate_dataframes, merge_dataframes, make_peptide_dfs, create_protein_datatable, create_peptide_datatable, create_venn_bar
 from methods import pre_process_peptide_fig, create_peptide_fig, create_length_histogram, log_intensity, generate_local_database
 from methods import amino_acid_piecharts, create_protein_df_fig, create_protein_fig
@@ -7,9 +8,10 @@ from datetime import datetime
 import pandas as pd
 
 from protein_methods import protein_create_protein_list, protein_create_protein, protein_get_nbr_of_peptides, protein_get_area_sum, protein_get_area_mean, protein_get_spectral_count_sum, protein_get_spectral_count_mean
-from peptide_methods import peptide_get_start, peptide_get_end
+from methods import get_current_time
 
 import gzip
+import numpy as np
 
 wd = os.getcwd()
 g2 = [wd+'/example_files/peptide_sample_33.csv', wd+'/example_files/peptide_sample_31.csv', wd+'/example_files/peptide_sample_34.csv', wd+'/example_files/peptide_sample_21.csv']
@@ -20,10 +22,17 @@ g1 = log_intensity(g1)
 g2 = log_intensity(g2)
 master = merge_dataframes(g1,g2)
 master = protein_create_protein_list(master, 'homo-sapiens')
-trivname='HBA_HUMAN'
+trivname='TITIN_HUMAN'
 peptide_df =  master[master['trivname'] == trivname]
-fig = create_length_histogram(master, peptide_or_protein_list='protein_list', abundance_metric='area')
+peptide_df.fillna(0, inplace=True)
+c = get_current_time()
+x,y,z = pre_process_peptide_fig(peptide_df, abundance_metric='area')
+c = get_current_time()
+fig = create_peptide_fig(x,y, trivname, z, average=False, square=[(10, 30)])
+c = get_current_time()
 fig.show()
+
+
 
 
 # peptide_df, peptide_list = peptide_create_peptide_list(master, 'P69905')

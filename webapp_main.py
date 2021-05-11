@@ -92,7 +92,7 @@ modal_file = html.Div([
                                 data=[],
                                 style_data_conditional = [{
                                         'if' : {'row_index':'odd'},
-                                        'backgroundColor' : '#9ccb86'
+                                        'backgroundColor' : '#9ce286'
                                     }
                                     ],
                                     style_header={
@@ -114,7 +114,7 @@ modal_file = html.Div([
                                 data=[],
                                 style_data_conditional = [{
                                         'if' : {'row_index':'odd'},
-                                        'backgroundColor' : '#9ccb86'
+                                        'backgroundColor' : '#9ce286'
                                     }
                                     ],
                                     style_header={
@@ -319,7 +319,7 @@ search_protein = html.Div([
             disabled=True,
         )
     ]),
-    dcc.Loading(color = '#db77b4', style={'backgroundColor': 'transparent'}, className = 'loader-wrapper', fullscreen = True, type = 'default', id='process-data-loading', children = [html.Datalist( id = 'protein-list', children=[])]),
+    dcc.Loading(color = '#cf597e', style={'backgroundColor': 'transparent'}, className = 'loader-wrapper', fullscreen = True, type = 'default', id='process-data-loading', children = [html.Datalist( id = 'protein-list', children=[])]),
 ])
 how_to_use_collapse = html.Div(
     [
@@ -368,7 +368,7 @@ sample_collapse = html.Div(
                                 data=[],
                                 style_data_conditional = [{
                                         'if' : {'row_index':'odd'},
-                                        'backgroundColor' : '#9ccb86'
+                                        'backgroundColor' : '#9ce286'
                                     }
                                     ],
                                     style_header={
@@ -390,7 +390,7 @@ sample_collapse = html.Div(
                                 data=[],
                                 style_data_conditional = [{
                                         'if' : {'row_index':'odd'},
-                                        'backgroundColor' : '#9ccb86'
+                                        'backgroundColor' : '#9ce286'
                                     }
                                     ],
                                     style_header={
@@ -448,7 +448,7 @@ protein_fig = html.Div([
             dbc.Col(protein_fig_radioitems),
             dbc.Col(dbc.Button('Generate protein graph', id='generate-protein-graph', color='success'))
         ]),
-        dcc.Loading(type='cube', color = '#76b382',
+        dcc.Loading(type='cube', color = '#9ce286',
             children=dcc.Graph(id='protein-fig', figure={}, config={'displaylogo':False})
         )
         
@@ -493,7 +493,7 @@ peptide_fig = html.Div([
             dbc.Col(peptide_fig_radioitems)    ,
             dbc.Col(dbc.Button('Choose a protein', disabled=True, id='generate-peptide-fig', color='success'))             
         ]),
-        dcc.Loading(type='cube', color = '#76b382',
+        dcc.Loading(type='cube', color = '#9ce286',
             children=dcc.Graph(id='peptide-fig', figure={}, config={'displaylogo': False})
         ),
         ])
@@ -514,7 +514,7 @@ amino_acid_radioitems = html.Div([
 
 amino_acid_figs = html.Div([
         html.H3('Amino Acid Profile'),
-        dcc.Loading(type='cube', color = '#76b382',
+        dcc.Loading(type='cube', color = '#9ce286',
             children=[ dbc.Row([
                 dbc.Col(dcc.Graph(id='aa-fig', figure={}, style={'height': '700px'}, config={'displaylogo': False, 'modeBarButtonsToRemove': ['toggleSpikelines','hoverCompareCartesian','zoom2d', 'pan2d', 'select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d','hoverClosestGl2d',
                 'hoverClosestPie', 'hoverClosestCartesian', 'autoScale2d', 'resetScale2d']})),
@@ -525,7 +525,7 @@ amino_acid_figs = html.Div([
 
 peptide_length_fig = html.Div([
     html.H3('Peptide Length'),
-    dcc.Loading(type='cube', color = '#76b382',
+    dcc.Loading(type='cube', color = '#9ce286',
         children=[    
         dbc.Row([
             dbc.Col(dcc.Graph(id='peptide-length-fig', figure={}, config={'displaylogo': False, 'modeBarButtonsToRemove': ['toggleSpikelines','hoverCompareCartesian','zoom2d', 'pan2d', 'select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d','hoverClosestGl2d',
@@ -535,7 +535,7 @@ peptide_length_fig = html.Div([
 
 venn_bar_fig = html.Div([
     html.H3('Peptide overlap'),
-    dcc.Loading(type='cube', color = '#76b382',
+    dcc.Loading(type='cube', color = '#9ce286',
         children=[    
         dbc.Row([
             dbc.Col([
@@ -559,7 +559,7 @@ protein_info = html.Div(dash_table.DataTable(
             selected_rows=[],
             style_data_conditional = [{
                 'if' : {'row_index':'odd'},
-                'backgroundColor' : '#9ccb86'
+                'backgroundColor' : '#9ce286'
             }
             ],
             style_header={
@@ -593,7 +593,7 @@ peptide_info = html.Div(dash_table.DataTable(id='peptide-info-table',
 
             style_data_conditional = [{
                 'if' : {'row_index':'odd'},
-                'backgroundColor' : '#9ccb86'
+                'backgroundColor' : '#9ce286'
             }
             ],
             style_header={
@@ -647,7 +647,7 @@ hidden_divs = html.Div([
     dcc.Store(id='peptide-data-holder'),
     dcc.Store(id='protein-df-fig-holder'),
     dcc.Store(id='normalization-holder'),
-    dcc.Loading(color = '#db77b4', style={'backgroundColor': 'transparent'}, fullscreen = True, type = 'default', id='process-data-loading', children = [dcc.Store(id='protein-datatable-holder')]),
+    dcc.Loading(color = '#cf597e', style={'backgroundColor': 'transparent'}, fullscreen = True, type = 'default', id='process-data-loading', children = [dcc.Store(id='protein-datatable-holder')]),
     dcc.Store(id='housekeeping-protein-holder'),
     dcc.Store(id='processed-peptide-data')
 ])

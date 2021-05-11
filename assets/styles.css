@@ -27,6 +27,21 @@ h6{
   border-color: #92dbb0 ;
 }
 
+.btn-success{
+  background-color: #9ce286;
+  border-color: #9ce286 ;
+}
+
+.btn-success:hover, .btn-success:focus{
+  background-color: #90c181;
+  border-color: #90c181 ;
+}
+.btn-success:disabled{
+  background-color: #9ce286;
+  border-color: #9ce286 ;
+}
+
+
 .btn-info:focus{
   background-color: #27854d;
   border-color: #75e0a0 ;
@@ -86,3 +101,4 @@ img{
 h5{
   margin-top: 10px;
 }
+

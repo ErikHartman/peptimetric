@@ -18,9 +18,8 @@ def peptide_get_fasta(df):
 
 def peptide_get_start(row):
     sequence = row['seq']
-    for i in range(len(sequence)):
-        if row['Peptide'] == sequence[i:i+len(row['Peptide'])]:
-            return i
+    peptide =row['Peptide']
+    return sequence.find(peptide)
 
 def peptide_get_end(row):
     if peptide_get_start(row) is None:
