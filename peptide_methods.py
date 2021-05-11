@@ -150,3 +150,16 @@ def get_top_peptides(df):
     df['intensity_g2'] = df[area_columns_g2].sum(axis=1)
     df = df.sort_values(by=['intensity_g1', 'intensity_g2'], ascending=False)[0:200]
     return df['Peptide'].array
+
+def peptide_get_pvalue(row):
+    g1 = row['metric_g1']
+    g2 = row['metric_g2']
+    sd_g1 = row['sd_g1']
+    sd_g2 = row['sd_g2']
+    n1 = row['n1']
+    n2 = row['n2']
+    if n1 > 2 and n2 > 2 and g1 > 0 and g2 > 0 and sd_g1 > 0 and sd_g2 > 0:
+        ttest, pvalue = ttest_ind_from_stats(g1, sd_g1, n1, g2, sd_g2, n2)
+    else: 
+        pvalue = -1
+    return pvalue

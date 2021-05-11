@@ -907,7 +907,7 @@ def process_peptide_data_for_fig(n_clicks_generate_peptide_fig, peptide_radioite
     if n_clicks_generate_peptide_fig and not master.empty:
         trivname = button_label.split(' ')[-1]
         peptide_df = master[master['trivname'] == trivname]
-        pos_sample, neg_sample, y_label = pre_process_peptide_fig(peptide_df, trivname, abundance_metric = peptide_radioitems_value)
+        pos_sample, neg_sample, y_label = pre_process_peptide_fig(peptide_df, abundance_metric = peptide_radioitems_value)
         return peptide_df, [pos_sample, neg_sample, trivname, y_label]
     else:
         return pd.DataFrame(), []

@@ -433,7 +433,6 @@ def create_protein_fig(df_fig, **kwargs):
                 })
     if kwargs.get('show_stdev') == True:
         fig.update_traces(error_x= dict(array=df_fig[g1_std].array, thickness=1), error_y=dict(array=df_fig[g2_std].array, thickness=1))
-    print(px.colors.diverging.Temps)
     return fig
 
 def rt_check(df):
@@ -683,10 +682,8 @@ def create_peptide_fig(sample_dicts_pos, sample_dicts_neg, trivial_name, y_axis_
 
     default_settings.update(**kwargs)
     fig  = go.Figure()
-    
     if kwargs.get('average') == False:
         nbr_of_peptides = []
-        
         for sample_dict in sample_dicts_pos:
             nbr_of_peptides = nbr_of_peptides + sample_dict['counter']
         for sample_dict in sample_dicts_neg:
@@ -718,10 +715,10 @@ def create_peptide_fig(sample_dicts_pos, sample_dicts_neg, trivial_name, y_axis_
             
         weight = (sum(fasta_dict['intensity_pos']) + sum(fasta_dict['intensity_neg'])) / fasta_len
         fig.add_trace(go.Scatter( x=[0, fasta_len], y=[weight, weight], mode='lines', name='Weight', line=dict(
-        color="#182773",
-        width=2,
-        dash="dash",
-        )))
+                color="#182773",
+                width=2,
+                dash="dash",
+                )))
         
         difference = []
         for i in list(range(len(fasta_dict["index"]))):
@@ -925,7 +922,7 @@ def proteins_present_in_all_samples(master):
     return proteins_present_in_all_samples
 
 def create_peptide_datatable(peptide_df, abundance_metric):
-    columns_to_keep = ['Peptide', 'Start', 'End', 'metric_g1','sd_g1','metric_g2','sd_g2']
+    columns_to_keep = ['Peptide', 'Start', 'End', 'metric_g1','sd_g1','metric_g2','sd_g2','p-value']
     peptide_df = peptide_df.copy()
     peptide_df['Start'] = peptide_df.apply (lambda row: peptide_get_start(row), axis=1)
     peptide_df['End'] = peptide_df.apply(lambda row: peptide_get_end(row), axis=1)
@@ -933,19 +930,25 @@ def create_peptide_datatable(peptide_df, abundance_metric):
         area_columns = [col for col in peptide_df if col.startswith('Intensity')]
         area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
         area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
+        peptide_df['n1'] = peptide_df[area_columns_g1].astype(bool).sum(axis=1)
+        peptide_df['n2'] = peptide_df[area_columns_g2].astype(bool).sum(axis=1)
         peptide_df['metric_g1'] = peptide_df[area_columns_g1].mean(axis=1)
         peptide_df['metric_g2'] = peptide_df[area_columns_g2].mean(axis=1)
         peptide_df['sd_g1'] = peptide_df[area_columns_g1].std(axis=1)
         peptide_df['sd_g2'] = peptide_df[area_columns_g2].std(axis=1)
+        peptide_df['p-value'] = peptide_df.apply(lambda row: peptide_get_pvalue(row), axis=1)
         
     elif abundance_metric == 'spectral_count':
         spc_columns = [col for col in peptide_df if col.startswith('Spectral')]
         spc_columns_g1 = [col for col in spc_columns if col.endswith('g1')]
         spc_columns_g2 = [col for col in spc_columns if col.endswith('g2')]
+        peptide_df['n1'] = peptide_df[spc_columns_g1].astype(bool).sum(axis=1)
+        peptide_df['n2'] = peptide_df[spc_columns_g2].astype(bool).sum(axis=1)
         peptide_df['metric_g1'] = peptide_df[spc_columns_g1].mean(axis=1)
         peptide_df['metric_g2'] = peptide_df[spc_columns_g2].mean(axis=1)
         peptide_df['sd_g1'] = peptide_df[spc_columns_g1].std(axis=1)
         peptide_df['sd_g2'] = peptide_df[spc_columns_g2].std(axis=1)
+        peptide_df['p-value'] = peptide_df.apply(lambda row: peptide_get_pvalue(row), axis=1)
         
     peptide_df = peptide_df[columns_to_keep]
     peptide_df.sort_values(by=['metric_g1','metric_g2'], ascending=False, inplace=True)
@@ -973,6 +976,8 @@ def create_protein_datatable(protein_df, abundance_metric):
     else:
         if abundance_metric == 'area_sum':
             protein_df = protein_df.groupby(by=['Accession','trivname','seq'], as_index=False).sum()
+            protein_df['n1'] = protein_df[area_columns_g1].astype(bool).sum(axis=1)
+            protein_df['n2'] = protein_df[area_columns_g2].astype(bool).sum(axis=1)
             protein_df['metric_g1'] = protein_df[area_columns_g1].mean(axis=1)
             protein_df['metric_g2'] = protein_df[area_columns_g2].mean(axis=1)
             protein_df['sd_g1'] = protein_df[area_columns_g1].std(axis=1)
@@ -980,6 +985,8 @@ def create_protein_datatable(protein_df, abundance_metric):
             protein_df['p_val'] = protein_df.apply (lambda row: protein_get_pvalue(row), axis=1)
         elif abundance_metric == 'area_mean':
             protein_df = protein_df.groupby(by=['Accession','trivname','seq'], as_index=False).mean()
+            protein_df['n1'] = protein_df[area_columns_g1].astype(bool).sum(axis=1)
+            protein_df['n2'] = protein_df[area_columns_g2].astype(bool).sum(axis=1)
             protein_df['metric_g1'] = protein_df[area_columns_g1].mean(axis=1)
             protein_df['metric_g2'] = protein_df[area_columns_g2].mean(axis=1)
             protein_df['sd_g1'] = protein_df[area_columns_g1].std(axis=1)
@@ -987,6 +994,8 @@ def create_protein_datatable(protein_df, abundance_metric):
             protein_df['p_val'] = protein_df.apply (lambda row: protein_get_pvalue(row), axis=1)
         elif abundance_metric == 'spc_sum':
             protein_df = protein_df.groupby(by=['Accession','trivname','seq'], as_index=False).sum()
+            protein_df['n1'] = protein_df[spc_columns_g1].astype(bool).sum(axis=1)
+            protein_df['n2'] = protein_df[spc_columns_g2].astype(bool).sum(axis=1)
             protein_df['metric_g1'] = protein_df[spc_columns_g1].mean(axis=1)
             protein_df['metric_g2'] = protein_df[spc_columns_g2].mean(axis=1)
             protein_df['sd_g1'] = protein_df[spc_columns_g1].std(axis=1)
@@ -995,6 +1004,8 @@ def create_protein_datatable(protein_df, abundance_metric):
         else:
             protein_df = protein_df.groupby(by=['Accession','trivname','seq'], as_index=False).mean()                
             protein_df = protein_df.groupby(by=['Accession','trivname','seq'], as_index=False).sum()
+            protein_df['n1'] = protein_df[spc_columns_g1].astype(bool).sum(axis=1)
+            protein_df['n2'] = protein_df[spc_columns_g2].astype(bool).sum(axis=1)
             protein_df['metric_g1'] = protein_df[spc_columns_g1].mean(axis=1)
             protein_df['metric_g2'] = protein_df[spc_columns_g2].mean(axis=1)
             protein_df['sd_g1'] = protein_df[spc_columns_g1].std(axis=1)

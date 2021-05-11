@@ -268,12 +268,12 @@ def protein_get_pvalue(row):
     g2 = row['metric_g2']
     sd_g1 = row['sd_g1']
     sd_g2 = row['sd_g2']
-    n1 = row['#peptides_g1']
-    n2 = row['#peptides_g2']
+    n1 = row['n1']
+    n2 = row['n2']
     if n1 > 2 and n2 > 2 and g1 > 0 and g2 > 0 and sd_g1 > 0 and sd_g2 > 0:
         ttest, pvalue = ttest_ind_from_stats(g1, sd_g1, n1, g2, sd_g2, n2)
     else: 
-        pvalue = np.nan
+        pvalue = -1
     return pvalue
 
     

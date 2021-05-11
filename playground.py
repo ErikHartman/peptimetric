@@ -25,12 +25,6 @@ master = protein_create_protein_list(master, 'homo-sapiens')
 trivname='TITIN_HUMAN'
 peptide_df =  master[master['trivname'] == trivname]
 peptide_df.fillna(0, inplace=True)
-c = get_current_time()
-x,y,z = pre_process_peptide_fig(peptide_df, abundance_metric='area')
-c = get_current_time()
-fig = create_peptide_fig(x,y, trivname, z, average=False, square=[(10, 30)])
-c = get_current_time()
-fig.show()
 
 
 
