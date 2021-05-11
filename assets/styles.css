@@ -75,6 +75,14 @@ h6{
 }
 
 img{
-  max-width: 30;
-  max-height: 30;
+  width: auto;
+  height: 30px;
+  margin-left: 15px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  margin-top: 5px;
+}
+
+h5{
+  margin-top: 10px;
 }

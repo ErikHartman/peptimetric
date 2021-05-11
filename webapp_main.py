@@ -614,8 +614,8 @@ peptide_info = html.Div(dash_table.DataTable(id='peptide-info-table',
 )
 
 documentation = dbc.Col([
-    dbc.Row([html.Img(src = app.get_asset_url ('document.jpg'), style={'height':'2%', 'width':'2%'}),
-        dbc.Col(html.H1('Documentation'))]),
+    dbc.Row([html.Img(src = app.get_asset_url ('document.jpg'), style={'height':'40px','width':'auto'}),
+        (html.H1('Documentation', style={'margin-top':'5px','margin-bottom':'10px'}))]),
     html.Hr(),
     Documentation,
     

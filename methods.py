@@ -649,7 +649,7 @@ def pre_process_peptide_fig(peptide_df, trivname, abundance_metric):
             if s != None and e!= None:
                 for i in range(s, e):
                     sample_dict['intensity'][i] += intensity 
-                    if intensity != 0:
+                    if intensity > 0:
                         sample_dict['counter'][i] += 1
         sample_dicts_pos.append(sample_dict)
 
@@ -665,7 +665,7 @@ def pre_process_peptide_fig(peptide_df, trivname, abundance_metric):
             if s != None and e!= None:
                 for i in range(s, e):
                     sample_dict['intensity'][i] += - intensity
-                    if intensity != 0:
+                    if intensity > 0:
                         sample_dict['counter'][i] += 1
         sample_dicts_neg.append(sample_dict)
 
@@ -688,7 +688,7 @@ def create_peptide_fig(sample_dicts_pos, sample_dicts_neg, trivial_name, y_axis_
         for sample_dict in sample_dicts_neg:
             nbr_of_peptides = nbr_of_peptides + sample_dict['counter']
         
-        nbr_of_peptides = [i for i in nbr_of_peptides if i != 0]
+        nbr_of_peptides = [i for i in nbr_of_peptides if i > 0]
         color_thresholds = get_thresholds(nbr_of_peptides)
         i=0
         for sample_dict in sample_dicts_pos:
