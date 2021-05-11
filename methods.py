@@ -910,6 +910,7 @@ def create_length_histogram(df, **kwargs):
         paper_bgcolor='rgb(255, 255, 255)',
         plot_bgcolor='rgb(255, 255, 255)',
         )
+    fig.update_traces(hovertemplate="<br>".join(["Abundance: %{y}","Length: %{x}<extra></extra>" ]))
     fig.update_yaxes(title_text='Abundance', row=1, col=1)
     return fig
 
