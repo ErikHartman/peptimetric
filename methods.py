@@ -1021,25 +1021,45 @@ def normalize_data(df, housekeeping_protein=False):
     if housekeeping_protein == False:
         area_columns = [col for col in df if col.startswith('Intensity')]
         spc_columns = [col for col in df if col.startswith('Spectral')]
+        area_sum=[]
+        spc_sum=[]
         for col in area_columns:
             col_sum = df[col].sum()
+            area_sum.append(col_sum)
             df[col] = df[col].apply(lambda x: x/col_sum)
         for col in spc_columns:
             col_sum = df[col].sum()
+            spc_sum.append(col_sum)
             df[col] = df[col].apply(lambda x: x/col_sum)
+        mean_area = statistics.mean(area_sum)
+        mean_spc = statistics.mean(spc_sum)
+        for col in area_columns:
+            df[col] = df[col].apply(lambda x: x*mean_area)
+        for col in spc_columns:
+            df[col] = df[col].apply(lambda x: x*mean_spc)
+        
         return df
 
     elif housekeeping_protein != False and housekeeping_protein != '':
         housekeeping_df = df.loc[df['trivname'] == housekeeping_protein]
         area_columns = [col for col in df if col.startswith('Intensity')]
         spc_columns = [col for col in df if col.startswith('Spectral')]
+        area_sum=[]
+        spc_sum=[]
         for col in area_columns:
             housekeeping_intensity = housekeeping_df[col].sum()
+            area_sum.append(housekeeping_intensity)
             df[col] = df[col].apply(lambda x: x/housekeeping_intensity)
         for col in spc_columns:
             housekeeping_spc = housekeeping_df[col].sum()
+            spc_sum.append(housekeeping_spc)
             df[col] = df[col].apply(lambda x: x/housekeeping_spc)
-        print(df)
+        mean_area = statistics.mean(area_sum)
+        mean_spc = statistics.mean(spc_sum)
+        for col in area_columns:
+            df[col] = df[col].apply(lambda x: x*mean_area)
+        for col in spc_columns:
+            df[col] = df[col].apply(lambda x: x*mean_spc)
         return df
     else:
         print('Error: Data Normalization')
