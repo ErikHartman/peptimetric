@@ -365,7 +365,6 @@ def create_protein_df_fig(protein_df, **kwargs):
     trivial_name = sum_df['trivname'].array
     nbr_of_peptides = sum_df['nbr_of_peptides'].array
     accession_list = sum_df['Accession'].array
-
     color_thresholds = get_thresholds(nbr_of_peptides)
     col, size = set_color_and_size(nbr_of_peptides, color_thresholds)
     for s in size:
@@ -1046,19 +1045,27 @@ def normalize_data(df, housekeeping_protein=False):
         spc_columns = [col for col in df if col.startswith('Spectral')]
         area_sum=[]
         spc_sum=[]
+        intensity_cols_keep = []
+        spc_cols_keep = []
         for col in area_columns:
             housekeeping_intensity = housekeeping_df[col].sum()
+            if housekeeping_intensity !=  0:
+                intensity_cols_keep.append(col)
+                df[col] = df[col].apply(lambda x: x/housekeeping_intensity)
             area_sum.append(housekeeping_intensity)
-            df[col] = df[col].apply(lambda x: x/housekeeping_intensity)
+            
         for col in spc_columns:
             housekeeping_spc = housekeeping_df[col].sum()
+            if housekeeping_spc != 0:
+                spc_cols_keep.append(col)
+                df[col] = df[col].apply(lambda x: x/housekeeping_spc)
             spc_sum.append(housekeeping_spc)
-            df[col] = df[col].apply(lambda x: x/housekeeping_spc)
+            
         mean_area = statistics.mean(area_sum)
         mean_spc = statistics.mean(spc_sum)
-        for col in area_columns:
+        for col in intensity_cols_keep:
             df[col] = df[col].apply(lambda x: x*mean_area)
-        for col in spc_columns:
+        for col in spc_cols_keep:
             df[col] = df[col].apply(lambda x: x*mean_spc)
         return df
     else:

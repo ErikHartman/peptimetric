@@ -12,27 +12,33 @@ from methods import get_current_time
 
 import gzip
 import numpy as np
+from os import listdir
 
-tot_df = pd.read_csv('./diabetes-files/control.csv')
-print(tot_df)
-tot_df['Source File'] = tot_df['Source File'].apply(lambda x: x.split('_')[1])
-for source_file, df in tot_df.groupby('Source File'):
-    file = 'control-'+df['Source File'].values[0]+'.csv'
+for file in listdir('./diabetes-files-separated'):
+    file_source = './diabetes-files-separated/' + file
+    df = pd.read_csv(file_source)
+    df_area_columns = [col for col in df.columns if col.startswith('Area')][0]
+    print(df_area_columns)
+    df.rename(columns={df_area_columns:'Area'}, inplace=True)
     df.to_csv(file)
 
 
+# control = []
+# type_1 = []
+# for file in listdir('./diabetes-files-separated'):
+#     if file.startswith('control'):
+#         file = './diabetes-files-separated/' + file
+#         control.append(file)
+#     else:
+#         file = './diabetes-files-separated/' + file
+#         type_1.append(file)
 
+# sample_g1 = concatenate_dataframes(make_peptide_dfs(control, control))
+# sample_g2 = concatenate_dataframes(make_peptide_dfs(type_1, type_1))
+# sample_g1 = log_intensity(sample_g1)
+# sample_g2 = log_intensity(sample_g2)
+# sample_files = merge_dataframes(sample_g1,sample_g2)
+# sample_files = protein_create_protein_list(sample_files, 'homo-sapiens')
+# print(sample_files.columns)
+# df_fig = create_protein_df_fig(sample_files)
 
-
-# peptide_df, peptide_list = peptide_create_peptide_list(master, 'P69905')
-# x,y,z = pre_process_peptide_fig(peptide_df, peptide_list, abundance_metric='area')
-# fig = stacked_samples_peptide(x,y, 'HBA_HUMAN',z, average=False, square=[(120,140)])
-# fig.show()
-#df_fig = create_protein_df_fig(protein_list)
-
-#fig = create_protein_fig(df_fig, abundance_metric = 'area_sum', show_stdev = False)
-#fig.show()
-#fig = create_length_histogram(g1,g2, accession='P69905', peptide_or_protein_list = 'peptide_list')
-#fig  = create_venn_bar(g1,g2, accession='P69905', complete_proteome=False)
-#fig = amino_acid_piecharts(g1, g2, peptide_or_protein_list = 'protein_list', abundance_metric='area')
-#fig.show()

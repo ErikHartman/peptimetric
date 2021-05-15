@@ -14,6 +14,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from dash import no_update
 import plotly.graph_objects as go
+from os import listdir
 
 from methods import pre_process_peptide_fig
 from methods import make_peptide_dfs, concatenate_dataframes, merge_dataframes, create_protein_df_fig, create_protein_fig , create_peptide_fig
@@ -36,10 +37,18 @@ app.layout = html.Div([
 
 #---------------------------------------PAGE-ELEMENTS------------------------------------------------
 file_columns = ['Sample', 'File']
-sample_g1 = ['./example_files/peptide_sample_13.csv', './example_files/peptide_sample_21.csv', './example_files/peptide_sample_33.csv']
-sample_g2 = ['./example_files/peptide_sample_31.csv', './example_files/peptide_sample_34.csv', './example_files/peptide_sample_39.csv']
-sample_g1 = concatenate_dataframes(make_peptide_dfs(sample_g1,sample_g1))
-sample_g2 = concatenate_dataframes(make_peptide_dfs(sample_g2,sample_g2))
+control = []
+type_1 = []
+for file in listdir('./diabetes-files-separated'):
+    if file.startswith('control'):
+        file = './diabetes-files-separated/' + file
+        control.append(file)
+    else:
+        file = './diabetes-files-separated/' + file
+        type_1.append(file)
+    
+sample_g1 = concatenate_dataframes(make_peptide_dfs(control, control))
+sample_g2 = concatenate_dataframes(make_peptide_dfs(type_1, type_1))
 sample_g1 = log_intensity(sample_g1)
 sample_g2 = log_intensity(sample_g2)
 sample_files = merge_dataframes(sample_g1,sample_g2)
@@ -789,7 +798,7 @@ def apply_cutoffs_to_protein_list(master_df, apply_normalization_n_clicks, apply
             return [], pd.DataFrame(), []
         if present_in_all_samples:
             master_df = proteins_present_in_all_samples(master_df)
-    
+        print(master_df)
         trivnames = master_df['trivname'].unique()
         for name in trivnames:
             triv_names.append(html.Option(value=name))
@@ -848,6 +857,7 @@ checkbox_values, generate_protein_graph_n_clicks, df_fig, df_protein_info, prote
             highlighted_triv_names = list(selected_rows_df.iloc[derived_virtual_selected_rows, 0])
             if not rows:
                 highlighted_triv_names = []
+        print(triv_names_holder)
         marker_color_list = ['rgba(0,0,0,0)' for n in range(len(triv_names_holder))]
         for triv_name in highlighted_triv_names:
             for i in range(len(triv_names_holder)):
