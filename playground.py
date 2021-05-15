@@ -13,18 +13,13 @@ from methods import get_current_time
 import gzip
 import numpy as np
 
-wd = os.getcwd()
-g2 = [wd+'/example_files/peptide_sample_33.csv', wd+'/example_files/peptide_sample_31.csv', wd+'/example_files/peptide_sample_34.csv', wd+'/example_files/peptide_sample_21.csv']
-g1 = [wd+'/example_files/peptide_sample_39.csv', wd+'/example_files/peptide_sample_21.csv']
-g1 = concatenate_dataframes(make_peptide_dfs(g1,g1))
-g2 = concatenate_dataframes(make_peptide_dfs(g2,g2))
-g1 = log_intensity(g1)
-g2 = log_intensity(g2)
-master = merge_dataframes(g1,g2)
-master = protein_create_protein_list(master, 'homo-sapiens')
-trivname='TITIN_HUMAN'
-peptide_df =  master[master['trivname'] == trivname]
-peptide_df.fillna(0, inplace=True)
+tot_df = pd.read_csv('./diabetes-files/control.csv')
+print(tot_df)
+tot_df['Source File'] = tot_df['Source File'].apply(lambda x: x.split('_')[1])
+for source_file, df in tot_df.groupby('Source File'):
+    file = 'control-'+df['Source File'].values[0]+'.csv'
+    df.to_csv(file)
+
 
 
 
