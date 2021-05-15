@@ -388,30 +388,30 @@ def create_protein_fig(df_fig, **kwargs):
         df_fig.rename(columns={'g1_area_sum':'G1','g2_area_sum':'G2'}, inplace=True)
         g1_intensity, g2_intensity = 'G1','G2'
         g1_std, g2_std = 'g1_area_sum_stdev', 'g2_area_sum_stdev'
-        x_label = 'Group 1: log(Sum of peptide intensity)'
-        y_label = 'Group 2: log(Sum of peptide intensity)'
+        x_label = 'Group 2: log(Sum of peptide intensity)'
+        y_label = 'Group 1: log(Sum of peptide intensity)'
         df_fig['Difference'] = np.abs(df_fig['G1'] - df_fig['G2'])
 
     elif kwargs.get('abundance_metric') == 'area_mean':
         df_fig.rename(columns={'g1_area_mean':'G1','g2_area_mean':'G2'}, inplace=True)
         g1_intensity, g2_intensity = 'G1','G2'
         g1_std, g2_std = 'g1_area_mean_stdev', 'g2_area_mean_stdev'
-        x_label = 'Group 1: log(Peptide intensity mean)'
-        y_label = 'Group 2: log(Peptide intensity mean)'
+        x_label = 'Group 2: log(Peptide intensity mean)'
+        y_label = 'Group 1: log(Peptide intensity mean)'
 
     elif kwargs.get('abundance_metric') == 'spc_sum':
         df_fig.rename(columns={'g1_spc_sum':'G1','g2_spc_sum':'G2'}, inplace=True)
         g1_intensity, g2_intensity = 'G1', 'G2'
         g1_std, g2_std = 'g1_spc_sum_stdev', 'g2_spc_sum_stdev'
-        x_label = 'Group 1: Sum of spectral count'
-        y_label = 'Group 2: Sum of spectral count'
+        x_label = 'Group 2: Sum of spectral count'
+        y_label = 'Group 1: Sum of spectral count'
 
     elif kwargs.get('abundance_metric') == 'spc_mean':
         df_fig.rename(columns={'g1_spc_mean':'G1','g2_spc_mean':'G2'}, inplace=True)
         g1_intensity, g2_intensity = 'G1', 'G2'
         g1_std, g2_std = 'g1_spc_mean_stdev', 'g2_spc_mean_stdev'
-        x_label = 'Group 1: Mean of spectral count'
-        y_label = 'Group 2: Mean of spectral count'
+        x_label = 'Group 2: Mean of spectral count'
+        y_label = 'Group 1: Mean of spectral count'
 
     df_fig['Difference'] = np.abs(df_fig['G1'] - df_fig['G2'])
     df_fig.rename(columns={'trivial_name':'Trivial name', 'nbr_of_peptides':'# Peptides', 'accession':'Accession'}, inplace=True)
@@ -690,27 +690,28 @@ def create_peptide_fig(sample_dicts_pos, sample_dicts_neg, trivial_name, y_axis_
         nbr_of_peptides = [i for i in nbr_of_peptides if i > 0]
         color_thresholds = get_thresholds(nbr_of_peptides)
         i=0
-        for sample_dict in sample_dicts_pos:
-            col, size = set_color_and_size(sample_dict['counter'], color_thresholds)
-            fig.add_trace(go.Bar(x=sample_dict["index"], y=sample_dict["intensity"], name=f's{i}_g1', width=1, marker=dict(line=dict(width=0), color=col), customdata=sample_dict['counter']
+        for sample_dict_pos, sample_dict_neg in zip(sample_dicts_pos, sample_dicts_neg):
+            col_pos, size = set_color_and_size(sample_dict_pos['counter'], color_thresholds)
+            fig.add_trace(go.Bar(x=sample_dict_pos["index"], y=sample_dict_pos["intensity"], name=f's{i}_g1', width=1, marker=dict(line=dict(width=0), color=col_pos), customdata=sample_dict['counter']
+            , hovertext=sample_dict['counter']))
+            col_neg, size = set_color_and_size(sample_dict_neg['counter'], color_thresholds)
+            fig.add_trace(go.Bar(x=sample_dict_neg["index"], y=sample_dict_neg["intensity"], name=f's{i}_g2', width=1, marker=dict(line=dict(width=0), color=col_neg), customdata=sample_dict['counter']
             , hovertext=sample_dict['counter']))
             i += 1
-        i=0
-        for sample_dict in sample_dicts_neg:
-            col, size = set_color_and_size(sample_dict['counter'], color_thresholds)
-            fig.add_trace(go.Bar(x=sample_dict["index"], y=sample_dict["intensity"], name=f's{i}_g2', width=1, marker=dict(line=dict(width=0), color=col), customdata=sample_dict['counter']
-            , hovertext=sample_dict['counter']))
-            i += 1
+
         fasta_dict = {"index": [], "counter": [], "intensity_pos": [], "intensity_neg": []}
         fasta_len = len(sample_dicts_pos[0]['counter'])
+        fasta_dict["index"] = list(range(fasta_len))
+        fasta_dict["counter"] = [0]*fasta_len
+        fasta_dict["intensity_pos"] = [0]*fasta_len
+        fasta_dict["intensity_neg"] = [0]*fasta_len
+        difference = []
         for i in range(fasta_len):
-            fasta_dict["index"].append(i)
-            fasta_dict['intensity_pos'].append(0)    
-            fasta_dict['intensity_neg'].append(0)      
-            for sample_dict_pos in sample_dicts_pos:
+            for sample_dict_pos, sample_dict_neg in zip(sample_dicts_pos, sample_dicts_neg):
                 fasta_dict['intensity_pos'][i] += sample_dict_pos['intensity'][i]
-            for sample_dict_neg in sample_dicts_neg:
                 fasta_dict['intensity_neg'][i] += sample_dict_neg['intensity'][i]
+
+            difference.append(fasta_dict['intensity_pos'][i] + fasta_dict['intensity_neg'][i])
             
         weight = (sum(fasta_dict['intensity_pos']) + sum(fasta_dict['intensity_neg'])) / fasta_len
         fig.add_trace(go.Scatter( x=[0, fasta_len], y=[weight, weight], mode='lines', name='Weight', line=dict(
@@ -719,9 +720,6 @@ def create_peptide_fig(sample_dicts_pos, sample_dicts_neg, trivial_name, y_axis_
                 dash="dash",
                 )))
         
-        difference = []
-        for i in list(range(len(fasta_dict["index"]))):
-            difference.append(fasta_dict['intensity_pos'][i] + fasta_dict['intensity_neg'][i])
         fig.add_trace(go.Scatter(name='Difference', x=fasta_dict["index"], y=difference, mode='lines', line=dict(color='rgb(208,28,139)', width=2), opacity=0.5))
         maximum_intensity = max(fasta_dict['intensity_pos'] + np.abs(fasta_dict['intensity_neg']))
         
@@ -736,12 +734,11 @@ def create_peptide_fig(sample_dicts_pos, sample_dicts_neg, trivial_name, y_axis_
         neg_nbr_of_peptides = []
         color_pos = []
         color_neg = []
-        for sample_dict in sample_dicts_pos:
-            pos_intensity_sample.append(sample_dict['intensity'])
-            pos_nbr_of_peptides.append(sample_dict['counter'])
-        for sample_dict in sample_dicts_neg:
-            neg_intensity_sample.append(sample_dict['intensity'])
-            neg_nbr_of_peptides.append(sample_dict['counter'])
+        for sample_dict_pos, sample_dict_neg in zip(sample_dicts_pos, sample_dicts_neg):
+            pos_intensity_sample.append(sample_dict_pos['intensity'])
+            pos_nbr_of_peptides.append(sample_dict_pos['counter'])
+            neg_intensity_sample.append(sample_dict_neg['intensity'])
+            neg_nbr_of_peptides.append(sample_dict_neg['counter'])       
             
         for i in range(len(pos_intensity_sample[0])):
             pos_average = []
@@ -950,6 +947,7 @@ def create_peptide_datatable(peptide_df, abundance_metric):
         peptide_df['p-value'] = peptide_df.apply(lambda row: peptide_get_pvalue(row), axis=1)
         
     peptide_df = peptide_df[columns_to_keep]
+    peptide_df = peptide_df.round(decimals=4)
     peptide_df.sort_values(by=['metric_g1','metric_g2'], ascending=False, inplace=True)
     return peptide_df
 
@@ -1012,6 +1010,7 @@ def create_protein_datatable(protein_df, abundance_metric):
             protein_df['p_val'] = protein_df.apply (lambda row: protein_get_pvalue(row), axis=1)
     protein_df.rename(columns={'trivname':'Protein','Accession':'UniProt id'}, inplace=True)
     protein_df = protein_df[columns_to_keep]
+    protein_df = protein_df.round(decimals=4)
     protein_df.sort_values(by=['metric_g1','metric_g2'], ascending=False, inplace=True)
     return protein_df
 

@@ -798,7 +798,6 @@ def apply_cutoffs_to_protein_list(master_df, apply_normalization_n_clicks, apply
             return [], pd.DataFrame(), []
         if present_in_all_samples:
             master_df = proteins_present_in_all_samples(master_df)
-        print(master_df)
         trivnames = master_df['trivname'].unique()
         for name in trivnames:
             triv_names.append(html.Option(value=name))
@@ -857,7 +856,6 @@ checkbox_values, generate_protein_graph_n_clicks, df_fig, df_protein_info, prote
             highlighted_triv_names = list(selected_rows_df.iloc[derived_virtual_selected_rows, 0])
             if not rows:
                 highlighted_triv_names = []
-        print(triv_names_holder)
         marker_color_list = ['rgba(0,0,0,0)' for n in range(len(triv_names_holder))]
         for triv_name in highlighted_triv_names:
             for i in range(len(triv_names_holder)):
