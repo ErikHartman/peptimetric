@@ -281,7 +281,7 @@ def protein_present_in_all_samples(df):
     df.fillna(0, inplace=True)
     area_sum_all_samples = protein_get_area_sum_all_samples(df)
     for area in area_sum_all_samples.values():
-        if area  < 0:
+        if area  <= 0:
             return False
     return True
 

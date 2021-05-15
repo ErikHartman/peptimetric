@@ -37,12 +37,8 @@ def peptide_unique_or_common(df):
     area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
     g1_count=0
     g2_count=0
-    for area in area_columns_g1:
-        if float(df_unique[area]) != 0:
-            g1_count += 1
-    for area in area_columns_g2:
-        if float(df_unique[area]) != 0:
-            g2_count += 1
+    g1 = df[area_columns_g1].astype(bool).sum(axis=1)
+    g2 = df[area_columns_g2].astype(bool).sum(axis=1)
     return g1_count, g2_count
 
 def peptide_get_area(df):
