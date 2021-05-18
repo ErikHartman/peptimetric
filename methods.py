@@ -562,8 +562,12 @@ def all_sample_bar_chart(protein_df, accession, **kwargs):
         intensities = protein_get_spectral_count_mean_all_samples(protein)
         df = pd.DataFrame(intensities.items(), columns=['Sample', 'SpC'])
         y='SpC'
+    
     fig = px.bar(df, x = 'Sample', y=y, color=y, color_continuous_scale=px.colors.diverging.Temps, title=title)
-    fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}, showlegend=False)
+    fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}, showlegend=False,
+     modebar ={
+                    'bgcolor': 'rgba(255,255,255,1)'
+                })
     
     return fig
 

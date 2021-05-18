@@ -1,6 +1,7 @@
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
+from dash_html_components.A import A
 from dash_html_components.H4 import H4
 
 how_to_use = html.Div([
@@ -30,21 +31,21 @@ _Complete proteome_ in the dropdown under **General Characteristics** (_selectin
 ])
 
 General = dbc.Card(html.P(children=['''
-Peptimetric was developed by Erik Hartman and Simon Mahdavi @ Lunds University to help researchers visualize and explore differences in the proteome and peptidome of sample groups.
- The main features of the peptimetric are: normalizing data, applying cutoffs and interacively showcasing the proteome and peptidome of a dataset. There are many interactive elements to allow for easy manipulation and explorations of the users dataset. The web app
+Peptimetric was developed by Erik Hartman and Simon Mahdavi @ Lunds University to help researchers visualize and explore differences in peptidomic data of sample groups.
+ The main features of the peptimetric are: normalizing data, applying cutoffs and interactively showcasing the proteome and peptidome of a dataset. There are many interactive elements to allow for easy manipulation and exploration of the users dataset. The web app
 was developed using ''', html.A('Plotly Dash library for Python', href='https://plotly.com/dash/'), ''' and published on the cloud platform ''', html.A('Heroku.', href='https://www.heroku.com/')],
  style={'font-weight':'light'}),  color='#F8F8F8', style={'border':0, 'padding-top':10 })
 
 Data_processing = html.Div([dbc.Row([html.Img(src = './assets/computer.jpg'),
         html.H5('Data processing', style={"font-weight": "bold"}),]),
     html.P(['''Peptimetric requires a minimum of one input file per group, however, statistical analyses require at least 
-    three files per group. The input files should be provided in a comma separated values (.csv, recommended) format. Uploading many large
+    three files per group. The input files should be provided in a comma separated values (.csv) format. Uploading many large
     files may result in a ''', html.A('server timeout error',href ='https://devcenter.heroku.com/articles/error-codes#h12-request-timeout'), 
     '''. If this happens to your data, consider concatenating some of your .csv files for faster uploads. The files are stored 
     on Heroku's servers during the session and will be lost after closing or refreshing the tab (''', html.A('Dash data storage).', href='https://dash.plotly.com/dash-core-components/store')]),
     dbc.Card([
         html.P( ['''The input files require four columns describing the ''', html.A('''peptide sequence, precursor protein ID, intensity and spectral count. ''', style={'font-weight':'bold'})
-        , '''To accommodate for the use of different dataprocessing softwares we have included the following allowed names (including some capitalization variation) for the various columns:
+        , '''To accommodate for the use of different data processing softwares we have included the following allowed names (including some capitalization variation) for the various columns:
     '''], style={'padding-top':15}),
     html.P('Peptide sequence: ', style={'font-weight':'bold', 'margin-bottom':0}), html.P('Peptide, Sequence', style= {'color':'#c7254e', 'font-family':'monospace'})
     , html.P('Precursor protein ID:', style={'font-weight':'bold','margin-bottom':0}), html.P('Accession, Protein, UniProt id', style= {'color':'#c7254e', 'font-family':'monospace'})
@@ -63,20 +64,20 @@ Settings = html.Div([dbc.Row([html.Img(src = './assets/settings.jpg',),
         html.H5('Pre-processing data', style={"font-weight": "bold"}),]),
 html.H6('Normalization', style={'font-weight':'bold', 'margin-bottom':0, }),
 dbc.Row([dbc.Col([html.P('''
-Peptimetric accommodates for two ways of normalizing your data: using the global sample values, and by using a housekeeping protein. Both methods 
+Peptimetric accommodate for two ways of normalizing your data: using the global sample values, and by using a housekeeping protein. Both methods 
 are valid ways of normalizing MS and MSMS data and may reduce the inter-sample biases introduced in sample preparation and loading. When normalizing by 
-global sample values, each intensity and spectral count value is divided by the sum of all values in the sample. When normalizing by housekeeping protein
-all values are divided by the sum of the values of the housekeeping protein.
+global sample values, each intensity and spectral count value is divided by the sum of all values in the sample and then multiplied by the group mean. When normalizing by housekeeping protein
+all values are divided by the sum of the values of the housekeeping protein and then multiplied by the group mean.
 ''', style={}),
-html.P('''All the intensity values from the input files are converted to the logarithm (log) scale. If the values present in the input files are 
-already in the logarithmic scale the option in the mark the checkbox in the normalization popup. The logarithmic scale is generally used when analysing data from MS, as
-logarithmic intensities tend to follow Gaussian distribution.''', style={})], width={'size':7}),
-dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/normalization.jpg', style={'height':'100%', 'width':'100%'})), width={'size':4, 'offset':0}),
+html.P('''All the intensity values from the input files are converted to the 10th logarithm (log10) scale. If the values present in the input files are 
+already in the logarithmic scale mark the checkbox in the normalization popup. The logarithmic scale is generally used when analysing intensities from MS, as
+logarithmic intensities tend to follow Gaussian (normal) distribution.''', style={})], width={'size':7}),
+dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/normalization.jpg', style={'height':'80%', 'width':'80%'})), width={'size':4, 'offset':0}),
 ]),
 html.H6('Cutoffs', style={'font-weight':'bold', 'margin-bottom':0}),
 dbc.Row([dbc.Col([html.P('''
-MS samples may contain proteins and peptides of very low quality and/or abundance.
-We therefore give you the option to apply cutoffs to your dataset to remove these proteins.
+MSMS samples may contain proteins and peptides of very low quality and/or abundance.
+Peptimetric therefore give you the option to apply cutoffs to your dataset in order to remove these proteins.
 ''', style={}),
 html.P(' Peptide cutoffs', style={'font-weight':'bold', 'margin-bottom':0}),
 html.P('''Peptide cutoffs allow you to remove peptides with low intensity and/or low spectral count. We also give you the option
@@ -86,9 +87,9 @@ three standard deviations from the mean. The peptide cutoffs are applied before 
 html.P('Protein cutoffs', style={'font-weight':'bold', 'margin-bottom':0}),
 html.P('''Protein cutoffs allow you to remove proteins with either low total intensity, low total spectral count or a low amount of peptides.
 These cutoffs are applied after the peptide cutoffs are applied. Therefore, if a protein contains many peptides of low quality or abundance
-it will be removed from the dataset if the peptide cutoffs are properly applied.
+it will be removed from the dataset (if the peptide cutoffs are properly applied).
 ''', style={})], width={'size':7}),
-dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/cutoff.jpg', style={'height':'100%', 'width':'100%'})), width={'size':4, 'offset':0}),
+dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/cutoff.jpg', style={'height':'80%', 'width':'80%'})), width={'size':4, 'offset':0}),
 ]),
 
 ])
@@ -108,11 +109,12 @@ Visualization = html.Div([
     html.P('''The protein table contains information about the proteins in the samples, including the number of peptides in both groups, as well as the chosen
     abundance metric and standard deviation.
     '''),
+
     dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/protein_view_fig.png', style={'height':'100%', 'width':'100%'})), width= {'size':8, 'offset':2}),
     html.P('''
     Peptide View
     ''', style={'font-weight':'bold', 'margin-bottom':0, }),
-        dbc.Col([
+
         html.P('''
         The peptide view showcases the peptides for the selected precursor protein present in the dataset. There are two modes for demonstrating peptide abundance:
         stacking each sample and viewing them separately or taking the mean of the group. When viewing each sample, the individual samples may be toggled by clicking 
@@ -123,7 +125,6 @@ Visualization = html.Div([
         The peptide table showcases the peptides present in the sample, alongside the start and end position of the sequence in the precursor protein, as well as the sample mean of the
         chosen abundance metric.
         ''', style={} ),
-        ]),
         
     html.P('''
     General Characteristics
@@ -135,8 +136,8 @@ Visualization = html.Div([
     '''),
 
 dbc.Row([
-    dbc.Col(dbc.Card([dbc.CardBody(html.H4('Peptide view')), dbc.CardImg(src ='./assets/peptide_view_fig.png', style={'height':'100%', 'width':'100%'})]), width= {'size':4, 'offset':1}),
-    dbc.Col(dbc.Card([dbc.CardBody(html.H4('General characteristics')), dbc.CardImg(src ='./assets/general-characteristics.png', style={'height':'100%', 'width':'100%'})]), width= {'size':4, 'offset':2})
+    dbc.Col(dbc.Card([dbc.CardBody(html.H5('Peptide view')), dbc.CardImg(src ='./assets/peptide_view_fig.png', style={'height':'100%', 'width':'100%'})]), width= {'size':4, 'offset':1}),
+    dbc.Col(dbc.Card([dbc.CardBody(html.H5('General characteristics')), dbc.CardImg(src ='./assets/general-characteristics.png', style={'height':'100%', 'width':'100%'})]), width= {'size':4, 'offset':2})
 ])
 ])
 
@@ -154,7 +155,7 @@ Interactivity = html.Div([
     html.P(['''
     Peptrimetric uses the built-in ''', html.A('modebars from Plotly', href='https://plotly.com/chart-studio-help/getting-to-know-the-plotly-modebar/'),'''  for
     graph interaction. This provides functions such as
-    downloading the publication quality plots to .png-format, zooming, autoscaling and resetting axes.
+    downloading the publication quality plots to .svg-format, zooming, autoscaling and resetting axes.
     '''], style={} ),
     html.P('''
     Selecting a protein
@@ -175,7 +176,7 @@ Interactivity = html.Div([
     Peptide graph
     ''', style={'font-weight':'bold', 'margin-bottom':0, } ),
     html.P(['''
-        All the individual components of the peptide graph may be hidden or showed by clicking on the figure legend. A slider allow you to focus on specific region in the graph.
+        All the individual components of the peptide graph may be hidden or shown by clicking on the figure legend. A slider allow you to focus on specific region in the graph.
     '''], style={} ),
     
     html.P('''
@@ -217,6 +218,14 @@ Contact = html.Div([
     contact_text,
 ])
 
+Example_data= html.Div([
+    dbc.Row([html.Img(src = './assets/data.jpg',),
+        html.H5('Example data', style={"font-weight": "bold" })]),
+    html.P(['''By clicking on Load Example Data in the How to Use-window you generate a dataset derived from ''', html.A('Van et al., 2020,', href='https://pubmed.ncbi.nlm.nih.gov/31879271/'), ''' describing peptidomic analysis of urine.
+    The study profiles the urinary peptides from youths with type-1-diabetes and the peptidomes of 15 patients with type-1-diabetes was compared against 15 without. This study is well suited for analysis using Peptimetric as it contains groups of samples and uses a discovery peptidomics approach.''']),
+    
+    html.P(['''Van JAD, Clotet-Freixas S, Zhou J, Batruch I, Sun C, Glogauer M, Rampoldi L, Elia Y, Mahmud FH, Sochett E, Diamandis EP, Scholey JW, Konvalinka A. Peptidomic Analysis of Urine from Youths with Early Type 1 Diabetes Reveals Novel Bioactivity of Uromodulin Peptides In Vitro. Mol Cell Proteomics. 2020 Mar;19(3):501-517. ''', html.A('doi:10.1074/mcp.RA119.001858', href='https://www.mcponline.org/article/S1535-9476(20)35037-4/fulltext'),'''. Epub 2019 Dec 26. PMID: 31879271; PMCID: PMC7050109.'''])
+])
 
 Documentation = html.Div([
     General,
@@ -228,6 +237,8 @@ Documentation = html.Div([
     Visualization,
     html.Hr(),
     Interactivity,
+    html.Hr(),
+    Example_data,
     html.Hr(),
     Cite,
     html.Hr(),
