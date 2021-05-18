@@ -241,7 +241,7 @@ normalization_modal = dbc.Modal([
                     dbc.FormGroup([
                         dbc.Col(dbc.RadioItems(
                                     options=[
-                                    {'label': 'Normalize on global intensity', 'value': 'global-intensity'},
+                                    {'label': 'Normalize on global values', 'value': 'global-intensity'},
                                     {'label': 'Normalize on housekeeping protein', 'value': 'housekeeping-protein'}
                                     ],
                                     value='',
@@ -458,14 +458,22 @@ protein_fig = html.Div([
             dbc.Col(dbc.Button('Generate protein graph', id='generate-protein-graph', color='success'))
         ]),
         dcc.Loading(type='cube', color = '#9ce286',
-            children=dcc.Graph(id='protein-fig', figure={}, config={'displaylogo':False})
+            children=dcc.Graph(id='protein-fig', figure={}, config={'toImageButtonOptions': {
+            'format': 'svg',
+            'scale': 2 # Multiply title/legend/axis/canvas sizes by this factor
+        },'displaylogo':False})
         )
         
         ])
 
 all_samples_protein_fig = html.Div([
     dcc.Graph(id='hover-all-protein-samples', figure={}, style={'height': 300, 'width':500},
-    config={'displaylogo': False, 'modeBarButtonsToRemove': ['toggleSpikelines','hoverCompareCartesian','zoom2d', 'pan2d', 'select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d','hoverClosestGl2d',
+    config={
+        'toImageButtonOptions': {
+            'format': 'svg',
+            'scale': 2 # Multiply title/legend/axis/canvas sizes by this factor
+        },
+        'displaylogo': False, 'modeBarButtonsToRemove': ['toggleSpikelines','hoverCompareCartesian','zoom2d', 'pan2d', 'select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d','hoverClosestGl2d',
                 'hoverClosestGl2d','hoverClosestPie', 'hoverClosestCartesian', 'autoScale2d', 'resetScale2d']})])
 
 peptide_fig_radioitems = html.Div([
@@ -503,7 +511,10 @@ peptide_fig = html.Div([
             dbc.Col(dbc.Button('Choose a protein', disabled=True, id='generate-peptide-fig', color='success'))             
         ]),
         dcc.Loading(type='cube', color = '#9ce286',
-            children=dcc.Graph(id='peptide-fig', figure={}, config={'displaylogo': False})
+            children=dcc.Graph(id='peptide-fig', figure={}, config={'toImageButtonOptions': {
+            'format': 'svg',
+            'scale': 2
+        },'displaylogo': False})
         ),
         ])
 
@@ -525,7 +536,10 @@ amino_acid_figs = html.Div([
         html.H3('Amino Acid Profile'),
         dcc.Loading(type='cube', color = '#9ce286',
             children=[ dbc.Row([
-                dbc.Col(dcc.Graph(id='aa-fig', figure={}, style={'height': '700px'}, config={'displaylogo': False, 'modeBarButtonsToRemove': ['toggleSpikelines','hoverCompareCartesian','zoom2d', 'pan2d', 'select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d','hoverClosestGl2d',
+                dbc.Col(dcc.Graph(id='aa-fig', figure={}, style={'height': '700px'}, config={'toImageButtonOptions': {
+            'format': 'svg',
+            'scale': 2 
+        },'displaylogo': False, 'modeBarButtonsToRemove': ['toggleSpikelines','hoverCompareCartesian','zoom2d', 'pan2d', 'select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d','hoverClosestGl2d',
                 'hoverClosestPie', 'hoverClosestCartesian', 'autoScale2d', 'resetScale2d']})),
             ]) 
             ]
@@ -537,7 +551,10 @@ peptide_length_fig = html.Div([
     dcc.Loading(type='cube', color = '#9ce286',
         children=[    
         dbc.Row([
-            dbc.Col(dcc.Graph(id='peptide-length-fig', figure={}, config={'displaylogo': False, 'modeBarButtonsToRemove': ['toggleSpikelines','hoverCompareCartesian','zoom2d', 'pan2d', 'select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d','hoverClosestGl2d',
+            dbc.Col(dcc.Graph(id='peptide-length-fig', figure={}, config={'toImageButtonOptions': {
+            'format': 'svg',
+            'scale': 2
+        },'displaylogo': False, 'modeBarButtonsToRemove': ['toggleSpikelines','hoverCompareCartesian','zoom2d', 'pan2d', 'select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d','hoverClosestGl2d',
                 'hoverClosestGl2d','hoverClosestPie', 'hoverClosestCartesian', 'autoScale2d', 'resetScale2d']}))
         ]),])
 ])
@@ -548,7 +565,10 @@ venn_bar_fig = html.Div([
         children=[    
         dbc.Row([
             dbc.Col([
-                dcc.Graph(id='venn-bar', figure={}, config={'displaylogo': False, 'modeBarButtonsToRemove': ['toggleSpikelines','hoverCompareCartesian','zoom2d', 'pan2d', 'select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d','hoverClosestGl2d',
+                dcc.Graph(id='venn-bar', figure={}, config={'toImageButtonOptions': {
+            'format': 'svg',
+            'scale': 2
+        },'displaylogo': False, 'modeBarButtonsToRemove': ['toggleSpikelines','hoverCompareCartesian','zoom2d', 'pan2d', 'select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d','hoverClosestGl2d',
                 'hoverClosestGl2d','hoverClosestPie', 'hoverClosestCartesian', 'autoScale2d', 'resetScale2d']})]),
         ])]
     )

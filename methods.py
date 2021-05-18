@@ -250,26 +250,26 @@ def amino_acid_frequency(df, accession, **kwargs):
 
 def amino_acid_piecharts(df, **kwargs):
     color_dict = [
-            'rgb(230,222,122)',
-            'rgb(230,222,122)',
-            'rgb(230,222,122)',
-            'rgb(230,222,122)',
-            'rgb(230,222,122)',
-            'rgb(230,222,122)',
-            'rgb(230,222,122)',
-            'rgb(230,222,122)',
-            'rgb(230,222,122)',
-            'rgb(77,172,38)',
-            'rgb(77,172,38)',
-            'rgb(77,172,38)',
-            'rgb(77,172,38)',
-            'rgb(77,172,38)',
-            'rgb(77,172,38)',
-            'rgb(145, 173, 196)',
-            'rgb(145, 173, 196)',
-            'rgb(145, 173, 196)',
-            'rgb(208,28,139)',
-            'rgb(208,28,139)',
+            '#e9e29c',
+            '#e9e29c',
+            '#e9e29c',
+            '#e9e29c',
+            '#e9e29c',
+            '#e9e29c',
+            '#e9e29c',
+            '#e9e29c',
+            '#e9e29c',
+            'rgb(156, 203, 134)',
+            'rgb(156, 203, 134)',
+            'rgb(156, 203, 134)',
+            'rgb(156, 203, 134)',
+            'rgb(156, 203, 134)',
+            'rgb(156, 203, 134)',
+            'rgb(0, 147, 146)',
+            'rgb(0, 147, 146)',
+            'rgb(0, 147, 146)',
+            'rgb(232, 132, 113)',
+            'rgb(232, 132, 113)',
     ]
     default_settings = {
         'peptide_or_protein_list'
@@ -601,9 +601,9 @@ def create_venn_bar(df, accession, complete_proteome = True):
         paper_bgcolor='rgb(255, 255, 255)',
         plot_bgcolor='rgb(255, 255, 255)',
         )
-    fig.add_trace(go.Bar(x=[''], y=[len(group_2_unique)], name='Group 2: Unique', marker=dict(color='rgb(208,28,139)')))
-    fig.add_trace(go.Bar(x=[''], y=[len(common)], name='Common', marker=dict(color=green['medium'])))
-    fig.add_trace(go.Bar(x=[''], y=[len(group_1_unique)], name='Group 1: Unique', marker=dict(color='rgb(77,172,38)')))
+    fig.add_trace(go.Bar(x=[''], y=[len(group_2_unique)], name='Group 2: Unique', marker=dict(color='rgb(232, 132, 113)')))
+    fig.add_trace(go.Bar(x=[''], y=[len(common)], name='Common', marker=dict(color='#e9e29c')))
+    fig.add_trace(go.Bar(x=[''], y=[len(group_1_unique)], name='Group 1: Unique', marker=dict(color='rgb(156, 203, 134)')))
     fig.update_traces(hovertemplate="<br>".join(["Number of peptides: %{y}<extra></extra>"]))
     fig.update_yaxes(title_text='Number of peptides')
     fig.update_layout(hoverlabel_align = 'left')
@@ -720,7 +720,7 @@ def create_peptide_fig(sample_dicts_pos, sample_dicts_neg, trivial_name, y_axis_
                 dash="dash",
                 )))
         
-        fig.add_trace(go.Scatter(name='Difference', x=fasta_dict["index"], y=difference, mode='lines', line=dict(color='rgb(208,28,139)', width=2), opacity=0.5))
+        fig.add_trace(go.Scatter(name='Difference', x=fasta_dict["index"], y=difference, mode='lines', line=dict(color=red['medium'], width=2), opacity=0.5))
         maximum_intensity = max(fasta_dict['intensity_pos'] + np.abs(fasta_dict['intensity_neg']))
         
     if kwargs.get('average') == True:
@@ -771,7 +771,7 @@ def create_peptide_fig(sample_dicts_pos, sample_dicts_neg, trivial_name, y_axis_
         color_thresholds = get_thresholds(nbr_of_peptides)
         color_pos, size = set_color_and_size(color_pos, color_thresholds)
         color_neg, size = set_color_and_size(color_neg, color_thresholds)
-        x=sample_dict['index']
+        x=sample_dict_pos['index']
         y_upper = [a + b for a, b in zip(pos_mean, pos_std)]
         y_lower = [a - b for a, b in zip(pos_mean, pos_std)]
         fig.add_trace(go.Bar(x=x, y=pos_mean, name='g1_mean', marker=dict(line=dict(width=0), color=color_pos), width=1))
@@ -807,7 +807,7 @@ def create_peptide_fig(sample_dicts_pos, sample_dicts_neg, trivial_name, y_axis_
         difference = []
         for i in range(len(pos_mean)):
             difference.append(pos_mean[i] + neg_mean[i])
-        fig.add_trace(go.Scatter(name='difference', x=x, y=difference, mode='lines', line=dict(color='rgb(208,28,139)', width=2), opacity=0.5))
+        fig.add_trace(go.Scatter(name='difference', x=x, y=difference, mode='lines', line=dict(color='rgb(232, 132, 113)', width=2), opacity=0.5))
 
         maximum_intensity = max(pos_mean + np.abs(neg_mean))
     
@@ -847,7 +847,7 @@ def create_length_histogram(df, **kwargs):
     length_g1 = [] 
     length_g2 = []
 
-    colors = ['rgb(57, 177, 133)','rgb(207, 89, 126)']
+    colors = ['rgb(232, 132, 113)','rgb(156, 203, 134)']
     intensity_columns = [col for col in df if col.startswith(metric)]
     intensity_columns_g1 = [col for col in intensity_columns if col.endswith('g1')]
     intensity_columns_g2 = [col for col in intensity_columns if col.endswith('g2')]

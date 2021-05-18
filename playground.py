@@ -9,18 +9,12 @@ import pandas as pd
 
 from protein_methods import protein_create_protein_list, protein_create_protein, protein_get_nbr_of_peptides, protein_get_area_sum, protein_get_area_mean, protein_get_spectral_count_sum, protein_get_spectral_count_mean
 from methods import get_current_time
-
+import plotly.express as px
 import gzip
 import numpy as np
 from os import listdir
+print(px.colors.diverging.Temps)
 
-for file in listdir('./diabetes-files-separated'):
-    file_source = './diabetes-files-separated/' + file
-    df = pd.read_csv(file_source)
-    df_area_columns = [col for col in df.columns if col.startswith('Area')][0]
-    print(df_area_columns)
-    df.rename(columns={df_area_columns:'Area'}, inplace=True)
-    df.to_csv(file)
 
 
 # control = []

@@ -1,6 +1,7 @@
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
+from dash_html_components.H4 import H4
 
 how_to_use = html.Div([
 dbc.Row([html.Img(src = './assets/checklist.jpg'),
@@ -11,15 +12,16 @@ dcc.Markdown('''
 **0:** If you already know what normalizations and cutoffs to apply to your dataset, do so by pressing the `NORMALIZATION` and `CUTOFFS` buttons
  before uploading the files to reduce load time.
 
-**1:** Upload your files to the respective groups by pressing the `FILES` button (or load example data by pressing the button below).
+**1:** Upload your files .csv to the respective groups by pressing the `FILES` button (or load example data by pressing the button below).
 
-**2:** Choose a difference metric from the dropdown. Click `GENERATE PROTEIN GRAPH` to inspect the proteome. You may click on datapoints in the graph or use the generated table. 
-Hovering on a protein will generate a barchart showing the abundance metric of all the samples.
+**2:** Choose an abundance metric from the dropdown. Click `GENERATE PROTEIN GRAPH` to inspect the proteome. 
+Hovering on a protein will generate a sample graph, displaying the abundance metric of all the samples.
 
-**3:** Normalize and apply cutoffs to your data by pressing the `NORMALIZATION` and `CUTOFFS` buttons in the navbar. Note that the cutoffs will be applied 
+**3:** (If you wish) normalize and apply cutoffs to your data by pressing the `NORMALIZATION` and `CUTOFFS` buttons in the navbar. Note that the cutoffs will be applied 
 _after_ normalization. 
 
-**4:** Once a protein is chosen you may generate it's peptide view by clicking the button containing the protein name (eg. `HBA_HUMAN`).
+**4:** You may use the search bar, table or simply clicking on the dot to select it. 
+Once a protein is selected you may generate it's peptide view by clicking the button containing the protein name (eg. `HBA_HUMAN`).
 
 **5:** To view the length distribution, amino acid profile, and peptide overlap in your sample; select _Selected protein_ or 
 _Complete proteome_ in the dropdown under **General Characteristics** (_selecting complete proteome may result in a long loading time_). 
@@ -29,7 +31,7 @@ _Complete proteome_ in the dropdown under **General Characteristics** (_selectin
 
 General = dbc.Card(html.P(children=['''
 Peptimetric was developed by Erik Hartman and Simon Mahdavi @ Lunds University to help researchers visualize and explore differences in the proteome and peptidome of sample groups.
- The main features of the peptimetric are: normalizing data, applying cutoffs and showcasing the proteome and peptidome of a dataset. There are many interactive elements to allow for easy manipulation and explorations of the users dataset. The webapp
+ The main features of the peptimetric are: normalizing data, applying cutoffs and interacively showcasing the proteome and peptidome of a dataset. There are many interactive elements to allow for easy manipulation and explorations of the users dataset. The web app
 was developed using ''', html.A('Plotly Dash library for Python', href='https://plotly.com/dash/'), ''' and published on the cloud platform ''', html.A('Heroku.', href='https://www.heroku.com/')],
  style={'font-weight':'light'}),  color='#F8F8F8', style={'border':0, 'padding-top':10 })
 
@@ -58,7 +60,7 @@ Data_processing = html.Div([dbc.Row([html.Img(src = './assets/computer.jpg'),
 ])
 
 Settings = html.Div([dbc.Row([html.Img(src = './assets/settings.jpg',),
-        html.H5('Pre processing data', style={"font-weight": "bold"}),]),
+        html.H5('Pre-processing data', style={"font-weight": "bold"}),]),
 html.H6('Normalization', style={'font-weight':'bold', 'margin-bottom':0, }),
 dbc.Row([dbc.Col([html.P('''
 Peptimetric accommodates for two ways of normalizing your data: using the global sample values, and by using a housekeeping protein. Both methods 
@@ -106,36 +108,36 @@ Visualization = html.Div([
     html.P('''The protein table contains information about the proteins in the samples, including the number of peptides in both groups, as well as the chosen
     abundance metric and standard deviation.
     '''),
-    dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/protein_view1.jpg', style={'height':'100%', 'width':'100%'})), width= {'size':8, 'offset':2}),
+    dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/protein_view_fig.png', style={'height':'100%', 'width':'100%'})), width= {'size':8, 'offset':2}),
     html.P('''
     Peptide View
     ''', style={'font-weight':'bold', 'margin-bottom':0, }),
-    html.P('''
-    The peptide view showcases the peptides for the selected precursor protein present in the dataset. There are two modes for demonstrating peptide abundance:
-    stacking each sample and viewing them separately or taking the mean of the group. When viewing each sample, the individual samples may be toggled by clicking 
-    on the sample name in the figure legend. When viewing the mean, the standard deviations may be toggled in the same fashion. The figure also contains the weight 
-    and difference between the groups which may be toggled on (default) or off.
-    ''', style={} ),
-    html.P('''
-    The peptide table showcases the peptides present in the sample, alongside the start and end position of the sequence in the precursor protein, as well as the sample mean of the
-    chosen abundance metric.
-    ''', style={} ),
-
-    dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/peptide_view.jpg', style={'height':'100%', 'width':'100%'})), width= {'size':8, 'offset':2}),
-
+        dbc.Col([
+        html.P('''
+        The peptide view showcases the peptides for the selected precursor protein present in the dataset. There are two modes for demonstrating peptide abundance:
+        stacking each sample and viewing them separately or taking the mean of the group. When viewing each sample, the individual samples may be toggled by clicking 
+        on the sample name in the figure legend. When viewing the mean, the standard deviations may be toggled in the same fashion. The figure also contains the weight 
+        and difference between the groups which may be toggled on (default) or off.
+        ''', style={} ),
+        html.P('''
+        The peptide table showcases the peptides present in the sample, alongside the start and end position of the sequence in the precursor protein, as well as the sample mean of the
+        chosen abundance metric.
+        ''', style={} ),
+        ]),
+        
     html.P('''
     General Characteristics
     ''', style={'font-weight':'bold', 'margin-bottom':0, }),
-
+    
     html.P('''
     The general characteristics section contains three figures: length distribution, peptidome overlap and amino acid profile. You may select to view these figures
     for either the complete proteome or the selected protein (visible in the peptide view).
     '''),
 
-    dbc.Row([dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/general_info.jpg', style={'height':'100%', 'width':'100%'}))), 
-    dbc.Col(dbc.Card(dbc.CardImg(src ='./assets/aa_profile.jpg', style={'height':'100%', 'width':'100%'}))), 
-    ])
-
+dbc.Row([
+    dbc.Col(dbc.Card([dbc.CardBody(html.H4('Peptide view')), dbc.CardImg(src ='./assets/peptide_view_fig.png', style={'height':'100%', 'width':'100%'})]), width= {'size':4, 'offset':1}),
+    dbc.Col(dbc.Card([dbc.CardBody(html.H4('General characteristics')), dbc.CardImg(src ='./assets/general-characteristics.png', style={'height':'100%', 'width':'100%'})]), width= {'size':4, 'offset':2})
+])
 ])
 
 
