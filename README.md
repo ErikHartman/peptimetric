@@ -12,11 +12,7 @@ The data used to illustrate the usage of Peptimetric was retrieved from a study 
 
 ### Results
 
-Peptimetric is used to visualize and dynamically explore the difference between the peptidomes of groups of samples ,and the git contains all the code necessary to recreate the application and running it on a local server.
-
-
-
-![GitHub Actions badge](https://github.com/ErikHartman/kand/workflows/Test/badge.svg)
+Peptimetric is used to visualize and dynamically explore the difference between the peptidomes of groups of samples, and the git contains all the code necessary to recreate the application and running it on a local server.
 
 # Contact information 
 
