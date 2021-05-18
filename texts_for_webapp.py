@@ -37,7 +37,7 @@ was developed using ''', html.A('Plotly Dash library for Python', href='https://
  style={'font-weight':'light'}),  color='#F8F8F8', style={'border':0, 'padding-top':10 })
 
 Data_processing = html.Div([dbc.Row([html.Img(src = './assets/computer.jpg'),
-        html.H5('Data processing', style={"font-weight": "bold"}),]),
+        html.H5('Input files', style={"font-weight": "bold"}),]),
     html.P(['''Peptimetric requires a minimum of one input file per group, however, statistical analyses require at least 
     three files per group. The input files should be provided in a comma separated values (.csv) format. Uploading many large
     files may result in a ''', html.A('server timeout error',href ='https://devcenter.heroku.com/articles/error-codes#h12-request-timeout'), 
@@ -193,7 +193,7 @@ Interactivity = html.Div([
 Cite = html.Div([
     dbc.Row([html.Img(src = './assets/cite.jpg',),
         html.H5('Cite', style={"font-weight": "bold"}),]),
-    dbc.Card(html.P([ '''Please cite the authors: Erik Hartman and Simon Mahdavi, alongside the URL: ''', html.A('peptimetric.herokuapp.com', href='peptimetric.herokuapp.com')], style={'margin-top':'16px'}), color='#F8F8F8', style={'border':0 }),
+    dbc.Card(html.P([ '''Please cite the creators: Erik Hartman and Simon Mahdavi, alongside the URL: ''', html.A('peptimetric.herokuapp.com', href='peptimetric.herokuapp.com')], style={'margin-top':'16px'}), color='#F8F8F8', style={'border':0 }),
 ])
 
 Legal = html.Div([
@@ -222,7 +222,7 @@ Example_data= html.Div([
     dbc.Row([html.Img(src = './assets/data.jpg',),
         html.H5('Example data', style={"font-weight": "bold" })]),
     html.P(['''By clicking on Load Example Data in the How to Use-window you generate a dataset derived from ''', html.A('Van et al., 2020,', href='https://pubmed.ncbi.nlm.nih.gov/31879271/'), ''' describing peptidomic analysis of urine.
-    The study profiles the urinary peptides from youths with type-1-diabetes and the peptidomes of 15 patients with type-1-diabetes was compared against 15 without. This study is well suited for analysis using Peptimetric as it contains groups of samples and uses a discovery peptidomics approach.''']),
+    The study profiles the urinary peptides from youths with type-1-diabetes and the peptidomes of 15 patients with type-1-diabetes (uploaded as group 2) was compared against 15 without (uploaded as group 1). This study is well suited for analysis using Peptimetric as it contains groups of samples and uses a discovery peptidomics approach.''']),
     
     html.P(['''Van JAD, Clotet-Freixas S, Zhou J, Batruch I, Sun C, Glogauer M, Rampoldi L, Elia Y, Mahmud FH, Sochett E, Diamandis EP, Scholey JW, Konvalinka A. Peptidomic Analysis of Urine from Youths with Early Type 1 Diabetes Reveals Novel Bioactivity of Uromodulin Peptides In Vitro. Mol Cell Proteomics. 2020 Mar;19(3):501-517. ''', html.A('doi:10.1074/mcp.RA119.001858', href='https://www.mcponline.org/article/S1535-9476(20)35037-4/fulltext'),'''. Epub 2019 Dec 26. PMID: 31879271; PMCID: PMC7050109.'''])
 ])
