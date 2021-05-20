@@ -10,7 +10,6 @@ Peptimetric is a web app for visualizing and exploring differences in peptidomic
 ### Example data 
 The data used to illustrate the usage of Peptimetric was retrieved from a study by Van et al (Peptidomic Analysis of Urine from Youths with Early Type 1 Diabetes Reveals Novel Bioactivity of Uromodulin Peptides In Vitro, 2020).
 
-
 # Contact information 
 For any questions regarding Peptimetric, please contact:
 Erik Hartman - erik.hartman@hotmail.com
