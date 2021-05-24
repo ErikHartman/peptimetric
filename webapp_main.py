@@ -811,7 +811,7 @@ def make_protein_list(n, load_sample_file_n_clicks, df_g1, df_g2, species):
     if load_sample_file_n_clicks and load_sample_file_n_clicks > n:
         return sample_files
     if n and n > load_sample_file_n_clicks and not df_g1.empty and not df_g2.empty:
-        master = merge_dataframes(df_g1,df_g2)  
+        master = merge_dataframes(df_g1,df_g2)
         master = protein_create_protein_list(master, species)
         return master
     else:

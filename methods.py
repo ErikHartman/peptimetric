@@ -89,8 +89,10 @@ def make_peptide_dfs(files, filenames):
         df.dropna(subset=['Accession'], inplace=True)
         accessions = []
         for index, row in df.iterrows():
-            if '|' in str(row['Accession']):
+            if 'sp|' in str(row['Accession']):
                 accessions.append(row['Accession'].split('|')[1])
+            elif '|' in str(row['Accession']):
+                accessions.append(row['Accession'].split('|')[0])
             else:
                 accessions.append(row['Accession'])
         df['Accession'] = accessions

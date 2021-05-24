@@ -35,7 +35,6 @@ def protein_create_protein_list(df, species):
     df_proteome.rename(columns = {'accession':'Accession'}, inplace=True)
     df_proteome = df_proteome[['Accession', 'trivname' , 'seq']]
     master_df = df.merge(df_proteome, on = 'Accession', how='inner')
-    accession_list = master_df['Accession'].unique()
     return master_df
 
 def protein_get_area_sum_all_samples(df):

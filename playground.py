@@ -14,41 +14,15 @@ import gzip
 import numpy as np
 from os import listdir
 
-control = []
-type_1 = []
-for file in listdir('./example-files'):
-    if file.startswith('control'):
-        file = './example-files/' + file
-        control.append(file)
-    else:
-        file = './example-files/' + file
-        type_1.append(file)
+control = ['./example-files/n13_10K.csv']
+type_1 = ['./example-files/p30_10k.xlsx']
+
     
 sample_g1 = concatenate_dataframes(make_peptide_dfs(control, control))
 sample_g2 = concatenate_dataframes(make_peptide_dfs(type_1, type_1))
 sample_g1 = log_intensity(sample_g1)
 sample_g2 = log_intensity(sample_g2)
 sample_files = merge_dataframes(sample_g1,sample_g2)
-sample_files.to_csv('./example-files/all-files.csv')
+print(sample_files)
 
-
-
-# control = []
-# type_1 = []
-# for file in listdir('./diabetes-files-separated'):
-#     if file.startswith('control'):
-#         file = './diabetes-files-separated/' + file
-#         control.append(file)
-#     else:
-#         file = './diabetes-files-separated/' + file
-#         type_1.append(file)
-
-# sample_g1 = concatenate_dataframes(make_peptide_dfs(control, control))
-# sample_g2 = concatenate_dataframes(make_peptide_dfs(type_1, type_1))
-# sample_g1 = log_intensity(sample_g1)
-# sample_g2 = log_intensity(sample_g2)
-# sample_files = merge_dataframes(sample_g1,sample_g2)
-# sample_files = protein_create_protein_list(sample_files, 'homo-sapiens')
-# print(sample_files.columns)
-# df_fig = create_protein_df_fig(sample_files)
 
