@@ -1,19 +1,15 @@
-import os
-import sys
+
 import base64
-import datetime
 import io
 import dash
-import json
 import dash_table
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 from dash import no_update
-import plotly.graph_objects as go
+
 from os import listdir
 
 from methods import pre_process_peptide_fig
@@ -22,9 +18,7 @@ from methods import amino_acid_piecharts, all_sample_bar_chart, protein_create_p
 from methods import apply_protein_cutoffs, apply_peptide_cutoffs, create_venn_bar
 from methods import proteins_present_in_all_samples, create_protein_datatable, create_peptide_datatable, log_intensity, normalize_data, create_length_histogram
 from texts_for_webapp import how_to_use, Documentation, contact_text
-from datetime import datetime
-from dash_extensions.enrich import Dash, ServersideOutput, Output, Input, State, Trigger
-from dash_extensions.enrich import FileSystemStore
+from dash_extensions.enrich import Dash, ServersideOutput, Output, Input, State
 
 
 app = Dash(__name__, title='peptimetric', external_stylesheets=[dbc.themes.SANDSTONE], suppress_callback_exceptions=True)
@@ -37,21 +31,7 @@ app.layout = html.Div([
 
 #---------------------------------------PAGE-ELEMENTS------------------------------------------------
 file_columns = ['Sample', 'File']
-control = []
-type_1 = []
-for file in listdir('./diabetes-files-separated'):
-    if file.startswith('control'):
-        file = './diabetes-files-separated/' + file
-        control.append(file)
-    else:
-        file = './diabetes-files-separated/' + file
-        type_1.append(file)
-    
-sample_g1 = concatenate_dataframes(make_peptide_dfs(control, control))
-sample_g2 = concatenate_dataframes(make_peptide_dfs(type_1, type_1))
-sample_g1 = log_intensity(sample_g1)
-sample_g2 = log_intensity(sample_g2)
-sample_files = merge_dataframes(sample_g1,sample_g2)
+sample_files = pd.read_csv('./example-files/all-files.csv')
 sample_files = protein_create_protein_list(sample_files, 'homo-sapiens')
 
 modal_file = html.Div([
@@ -101,7 +81,7 @@ modal_file = html.Div([
                                 data=[],
                                 style_data_conditional = [{
                                         'if' : {'row_index':'odd'},
-                                        'backgroundColor' : '#9ce286'
+                                        'backgroundColor' : '#a4d694'
                                     }
                                     ],
                                     style_header={
@@ -123,7 +103,7 @@ modal_file = html.Div([
                                 data=[],
                                 style_data_conditional = [{
                                         'if' : {'row_index':'odd'},
-                                        'backgroundColor' : '#9ce286'
+                                        'backgroundColor' : '#a4d694'
                                     }
                                     ],
                                     style_header={
@@ -377,7 +357,7 @@ sample_collapse = html.Div(
                                 data=[],
                                 style_data_conditional = [{
                                         'if' : {'row_index':'odd'},
-                                        'backgroundColor' : '#9ce286'
+                                        'backgroundColor' : '#a4d694'
                                     }
                                     ],
                                     style_header={
@@ -399,7 +379,7 @@ sample_collapse = html.Div(
                                 data=[],
                                 style_data_conditional = [{
                                         'if' : {'row_index':'odd'},
-                                        'backgroundColor' : '#9ce286'
+                                        'backgroundColor' : '#a4d694'
                                     }
                                     ],
                                     style_header={
@@ -457,7 +437,7 @@ protein_fig = html.Div([
             dbc.Col(protein_fig_radioitems),
             dbc.Col(dbc.Button('Generate protein graph', id='generate-protein-graph', color='success'))
         ]),
-        dcc.Loading(type='cube', color = '#9ce286',
+        dcc.Loading(type='cube', color = '#a4d694',
             children=dcc.Graph(id='protein-fig', figure={}, config={'toImageButtonOptions': {
             'format': 'svg',
             'scale': 2 # Multiply title/legend/axis/canvas sizes by this factor
@@ -510,7 +490,7 @@ peptide_fig = html.Div([
             dbc.Col(peptide_fig_radioitems)    ,
             dbc.Col(dbc.Button('Choose a protein', disabled=True, id='generate-peptide-fig', color='success'))             
         ]),
-        dcc.Loading(type='cube', color = '#9ce286',
+        dcc.Loading(type='cube', color = '#a4d694',
             children=dcc.Graph(id='peptide-fig', figure={}, config={'toImageButtonOptions': {
             'format': 'svg',
             'scale': 2
@@ -534,7 +514,7 @@ amino_acid_radioitems = html.Div([
 
 amino_acid_figs = html.Div([
         html.H3('Amino Acid Profile'),
-        dcc.Loading(type='cube', color = '#9ce286',
+        dcc.Loading(type='cube', color = '#a4d694',
             children=[ dbc.Row([
                 dbc.Col(dcc.Graph(id='aa-fig', figure={}, style={'height': '700px'}, config={'toImageButtonOptions': {
             'format': 'svg',
@@ -548,7 +528,7 @@ amino_acid_figs = html.Div([
 
 peptide_length_fig = html.Div([
     html.H3('Peptide Length'),
-    dcc.Loading(type='cube', color = '#9ce286',
+    dcc.Loading(type='cube', color = '#a4d694',
         children=[    
         dbc.Row([
             dbc.Col(dcc.Graph(id='peptide-length-fig', figure={}, config={'toImageButtonOptions': {
@@ -561,7 +541,7 @@ peptide_length_fig = html.Div([
 
 venn_bar_fig = html.Div([
     html.H3('Peptide overlap'),
-    dcc.Loading(type='cube', color = '#9ce286',
+    dcc.Loading(type='cube', color = '#a4d694',
         children=[    
         dbc.Row([
             dbc.Col([
@@ -588,7 +568,7 @@ protein_info = html.Div(dash_table.DataTable(
             selected_rows=[],
             style_data_conditional = [{
                 'if' : {'row_index':'odd'},
-                'backgroundColor' : '#9ce286'
+                'backgroundColor' : '#a4d694'
             }
             ],
             style_header={
@@ -622,7 +602,7 @@ peptide_info = html.Div(dash_table.DataTable(id='peptide-info-table',
 
             style_data_conditional = [{
                 'if' : {'row_index':'odd'},
-                'backgroundColor' : '#9ce286'
+                'backgroundColor' : '#a4d694'
             }
             ],
             style_header={

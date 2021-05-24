@@ -13,7 +13,23 @@ import plotly.express as px
 import gzip
 import numpy as np
 from os import listdir
-print(px.colors.diverging.Temps)
+
+control = []
+type_1 = []
+for file in listdir('./example-files'):
+    if file.startswith('control'):
+        file = './example-files/' + file
+        control.append(file)
+    else:
+        file = './example-files/' + file
+        type_1.append(file)
+    
+sample_g1 = concatenate_dataframes(make_peptide_dfs(control, control))
+sample_g2 = concatenate_dataframes(make_peptide_dfs(type_1, type_1))
+sample_g1 = log_intensity(sample_g1)
+sample_g2 = log_intensity(sample_g2)
+sample_files = merge_dataframes(sample_g1,sample_g2)
+sample_files.to_csv('./example-files/all-files.csv')
 
 
 

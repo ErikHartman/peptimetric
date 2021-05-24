@@ -193,7 +193,8 @@ Interactivity = html.Div([
 Cite = html.Div([
     dbc.Row([html.Img(src = './assets/cite.jpg',),
         html.H5('Cite', style={"font-weight": "bold"}),]),
-    dbc.Card(html.P([ '''Please cite the creators: Erik Hartman and Simon Mahdavi, alongside the URL: ''', html.A('peptimetric.herokuapp.com', href='peptimetric.herokuapp.com')], style={'margin-top':'16px'}), color='#F8F8F8', style={'border':0 }),
+    dbc.Card(html.P([html.P('If you use Peptimetric, please cite the following article'), '''Hartman E., Mahdavi S., Kjellström S., Schmidtchen A., Peptimetric: Quantifying and visualizing differences in peptidomic data.
+bioRxiv 2021.05.18.444693; doi: ''', html.A('https://doi.org/10.1101/2021.05.18.444693', href='https://doi.org/10.1101/2021.05.18.444693')], style={'margin-top':'16px'}), color='#F8F8F8', style={'border':0 }),
 ])
 
 Legal = html.Div([
