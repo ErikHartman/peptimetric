@@ -4,6 +4,10 @@ import dash_core_components as dcc
 from dash_html_components.A import A
 from dash_html_components.H4 import H4
 
+"""
+This script contains all the sections of text used for the webapp.
+"""
+
 how_to_use = html.Div([
 dbc.Row([html.Img(src = './assets/checklist.jpg'),
 html.H3('How to use', style={'padding-left':5})]),

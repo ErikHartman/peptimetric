@@ -1,16 +1,18 @@
 from methods import *
 import numpy as np
 import statistics
-import prody
 from scipy.stats import ttest_ind_from_stats
 import pandas as pd
-from datetime import datetime
 
+"""
+This script contains all the methods to manipulate the data on a protein level.
+"""
 
 def protein_create_protein(df, accession):
     df = df.loc[(df['Accession'] == accession)]
     return df
 
+# map the detected proteins to a proteome database.
 def protein_create_protein_list(df, species):
     if species == 'homo-sapiens':
         df_proteome = pd.read_csv('./uniprot_proteomes/human_proteome.gz')
@@ -284,6 +286,7 @@ def protein_present_in_all_samples(df):
             return False
     return True
 
+# return the top 100 proteins based on number of peptides
 def get_top_proteins(df):
     df.fillna(0, inplace=True)
     df['nbr_of_peptides'] = 1

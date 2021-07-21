@@ -2,9 +2,11 @@ import re
 import statistics
 import numpy as np
 from scipy.stats import ttest_ind_from_stats
-from protein_methods import protein_create_protein
 import pandas as pd
 
+"""
+This script contains all the methods used to manipulate the data on a peptide-level.
+"""
 
 def peptide_create_peptide(df, peptide):
     df = df[(df['Peptide'] == peptide)]
@@ -35,10 +37,8 @@ def peptide_unique_or_common(df):
     area_columns = [col for col in df_unique if col.startswith('Intensity')]
     area_columns_g1 = [col for col in area_columns if col.endswith('g1')]
     area_columns_g2 = [col for col in area_columns if col.endswith('g2')]
-    g1_count=0
-    g2_count=0
-    g1 = df[area_columns_g1].astype(bool).sum(axis=1)
-    g2 = df[area_columns_g2].astype(bool).sum(axis=1)
+    g1_count = df[area_columns_g1].astype(bool).sum(axis=1)
+    g2_count = df[area_columns_g2].astype(bool).sum(axis=1)
     return g1_count, g2_count
 
 def peptide_get_area(df):
@@ -75,7 +75,7 @@ def peptide_get_area_all_samples(df):
         df_area.fillna(0, inplace=True)
         area_g2.append(df_area[a].mean())
     return area_g1, area_g2
-    [3, 4, 5], [3,1,1]
+
 
 def peptide_get_spectral_count_all_samples(df):
     spc_columns = [col for col in df if col.startswith('Spectral')]

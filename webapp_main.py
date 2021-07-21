@@ -21,6 +21,10 @@ from texts_for_webapp import how_to_use, Documentation, contact_text
 from dash_extensions.enrich import Dash, ServersideOutput, Output, Input, State
 
 
+"""
+This script contains the complete code to run the webapp. The webapp is created using the Dash library.
+"""
+
 app = Dash(__name__, title='peptimetric', external_stylesheets=[dbc.themes.SANDSTONE], suppress_callback_exceptions=True)
 server=app.server
 
@@ -719,7 +723,7 @@ documentation_page = dbc.Container([
     
 ], fluid=True, style={'padding':0})
 
-#-----------------DEFS AND CALLBACKS--------------------------------------------------------------
+#-----------------METHODS AND CALLBACKS--------------------------------------------------------------
 def display_page(pathname):
     if pathname == '/':
         return main_page
