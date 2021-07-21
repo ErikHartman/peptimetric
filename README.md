@@ -4,11 +4,11 @@ This git repository contains the code and data for a research project conducted 
 Feel free to clone this repository and run webapp_main.py to run Peptimetric locally.
 
 ### Background
-Peptimetric is a web app for visualizing and exploring differences in peptidomic datasets retrived from MS and MSMS. 
+Peptimetric is a web app for visualizing and exploring differences in peptidomic datasets retrived from MS and MSMS. Peptimetric is souly written in Python and uses the Dash library from plotly for visualization. It is dependent on a local proteome database to fetch FASTA sequences.
 
 ### Example data 
 The data used to illustrate the usage of Peptimetric was retrieved from a study by Van et al (Peptidomic Analysis of Urine from Youths with Early Type 1 Diabetes Reveals Novel Bioactivity of Uromodulin Peptides In Vitro, 2020). The data was searched using PEAKS Xpro 
-and the resulting files are stored in the diabetes-files-separated directory.
+and the resulting files are stored in the example-files directory.
 
 ## Contact information 
 For any questions regarding Peptimetric, please contact:
